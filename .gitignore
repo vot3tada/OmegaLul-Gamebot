@@ -1,0 +1,3 @@
+bot_venv/
+config.ini
+*.env
