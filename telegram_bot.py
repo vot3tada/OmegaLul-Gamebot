@@ -101,6 +101,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 class Event(StatesGroup):
     name = State()
 
+class Image(StatesGroup):
+    image = State()
+
 chats = dict()
 
 
@@ -136,6 +139,23 @@ async def echo_end(message : types.Message, state: FSMContext):
     chats[str(message.chat.id)] = None
 
 
+@dp.message_handler(content_types=['photo'])
+async def get_image(message : types.Message, state: FSMContext):
+    await message.photo[-1].download(str(message.from_user.id)+'.png')
+    async with state.proxy() as data:
+        data['image'] = str(message.from_user.id)+'.png'
+    await message.answer('Фото загружено')
+
+@dp.message_handler(commands='Get')
+async def get_image(message : types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        if data and data['image']:
+            photo=open(data['image'], "rb")
+            await message.answer_photo(photo)
+            await state.finish()
+        else:
+            await message.answer('Нет изображения')
+
 @dp.message_handler()
 async def echo_send(message : types.Message):
     #async with state.proxy() as data:
@@ -145,6 +165,9 @@ async def echo_send(message : types.Message):
         await message.answer(message.from_user.first_name +': '+message.text)
     
 
+
+
+            
 
 
 
