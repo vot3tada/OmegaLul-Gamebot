@@ -4,3 +4,6 @@
 *.jpg
 .vscode
 *.dat
+bot_venv/
+config.ini
+*.env

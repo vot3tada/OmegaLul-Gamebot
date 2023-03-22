@@ -13,7 +13,7 @@ def getClasses() -> list:
     """
     return list(classes.keys())
 
-def getAvatar(original :str, user_id :str, avatar_class :str = 'knight') -> str: 
+def getAvatar(original :str, avatar_class :str = 'knight') -> str: 
     """
     Возвращает аватар с подставленным лицом указанного класса
     """
@@ -198,6 +198,5 @@ def getAvatar(original :str, user_id :str, avatar_class :str = 'knight') -> str:
 
     plt.imshow(cv2.cvtColor(seamlessclone, cv2.COLOR_BGR2RGB))
 
-    dst = f"./static/{user_id}.jpg"
-    cv2.imwrite(dst, seamlessclone)
-    return dst
+    cv2.imwrite(original, seamlessclone)
+    return original
