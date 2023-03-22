@@ -1,0 +1,6 @@
+/FaceEnv
+/static
+*.png
+*.jpg
+.vscode
+*.dat
