@@ -117,7 +117,6 @@ config.read('config.ini')
 
 
 
-
 bot = Bot(token=config['DEFAULT']['TOKEN'])
 dp = Dispatcher(bot, storage=storage)
 
