@@ -3,6 +3,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 from create_bot import dp, bot
+from bot_telegram import users
 import avatarCreator as ac
 
 class FSMRegistation(StatesGroup):
@@ -18,18 +19,23 @@ async def reg_start(message : types.Message):
     await FSMRegistation.name.set()
     await message.reply('Напиши имя')
 
-@dp.message_handler(state=FSMRegistation.name)
+#@dp.message_handler(state=FSMRegistation.name)
 async def get_name(message : types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['name'] = message.text
     await FSMRegistation.photo.set()
     await message.reply('Добавь фото')
 
-@dp.message_handler(content_types=['photo'], state=FSMRegistation.photo)
+#@dp.message_handler(content_types=['photo'], state=FSMRegistation.photo)
 async def end_registation(message : types.Message, state: FSMContext):
     orig = f'./static/{message.from_user.id}.jpg'
     await message.photo[-1].download(orig)
-    ac.getAvatar(orig)
+    try:
+        ac.getAvatar(orig)
+    except:
+        await message.reply('Плохое фото, попробуй ещё раз')
+    async with state.proxy() as data:
+        users[str(message.from_user.id)] = data['name'] 
     await state.reset_state(with_data=False)
     await message.reply('Регистрация завершена')
     

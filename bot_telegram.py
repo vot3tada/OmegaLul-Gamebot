@@ -1,6 +1,8 @@
 from aiogram.utils import executor
 from create_bot import dp
 
+users = []
+
 
 
 from handlers import registration

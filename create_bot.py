@@ -10,6 +10,5 @@ config.read('./../config.ini')
 
 storage = MemoryStorage()
 
-#bot = Bot(token=config['DEFAULT']['TOKEN'])
-bot = Bot('6292851990:AAExo7VLTMj62VEyurq5Dax3hj9oknqmrkM')
+bot = Bot(token=config['DEFAULT']['TOKEN'])
 dp = Dispatcher(bot, storage=storage)
