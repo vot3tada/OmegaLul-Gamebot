@@ -8,4 +8,4 @@ bot_venv/
 config.ini
 *.env
 main.py
-__pycache__/avatarCreator.cpython-39.pyc
+/__pycache__
