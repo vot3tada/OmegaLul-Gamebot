@@ -1,9 +1,8 @@
 from aiogram.utils import executor
 from create_bot import dp
+from aiogram import types
 
-users = []
-
-
+users = dict()
 
 from handlers import registration
 
