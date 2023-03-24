@@ -7,3 +7,5 @@
 bot_venv/
 config.ini
 *.env
+/__pycache__
+*.pyc
