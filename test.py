@@ -1,25 +1,16 @@
-"""
-from aiogram import Bot, types
-from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
+from create_bot import dp
+import handlers
 
-import configparser
-config = configparser.ConfigParser()
-config.read('config.ini')
+handlers.register_handlers(dp)
 
+executor.start_polling(dp, skip_updates=True)
 
-
-
-bot = Bot(token=config['DEFAULT']['TOKEN'])
-dp = Dispatcher(bot)
-
-
-
-
-@dp.message_handler()
-async def echo_send(message : types.Message):
-    await message.answer(message.from_user.first_name +': '+message.text)
+"""@dp.message_handler(commands='Аватар')
+async def login_start(message: types.Message, state: FSMContext):
     
+    await state.set_state(Login)
+    await message.answer
 
 
 
@@ -117,7 +108,6 @@ config.read('config.ini')
 
 
 
-
 bot = Bot(token=config['DEFAULT']['TOKEN'])
 dp = Dispatcher(bot, storage=storage)
 
@@ -162,16 +152,8 @@ async def get_image(message : types.Message, state: FSMContext):
 async def echo_send(message : types.Message):
     #async with state.proxy() as data:
         #if data and data['name'] == 'play':
-    print(message.chat.id)
+    print(f'Ебанат натрия {message.chat.id}')
     if str(message.chat.id) in chats and chats[str(message.chat.id)]:
-        await message.answer(message.from_user.first_name +': '+message.text)
-    
-
-
-
-            
-
-
-
+        await message.answer(message.from_user.first_name +': '+message.text)"""
 
 executor.start_polling(dp, skip_updates = True)
