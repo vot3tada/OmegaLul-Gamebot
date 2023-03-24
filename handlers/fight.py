@@ -70,5 +70,5 @@ def register_fight_handlers(dp : Dispatcher):
     dp.register_message_handler(fight_call, regexp='^Дуэль$')
     dp.register_message_handler(fight_refuse, state=[None,Fight.Ready], regexp='^Отменить дуэль$')
     dp.register_message_handler(fight_accept, regexp='^Принять дуэль$')
-    dp.register_message_handler(attack, state=Fight.Ready ,regexp='^Ебашь$')
+    dp.register_message_handler(attack, state=Fight.Ready ,regexp='Ебашь$')
 
