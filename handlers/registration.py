@@ -27,6 +27,12 @@ async def get_name(message : types.Message, state: FSMContext):
         text += i + '\n'
     await message.reply('Выбери класс фото:' + text)
 
+async def change_photo(message : types.Message):
+    await FSMRegistation.photoclass.set()
+    text = '\n'
+    for i in ac.classes.keys():
+        text += i + '\n'
+    await message.reply('Выбери класс фото:' + text)
 
 async def get_photoclass(message : types.Message, state: FSMContext):
     if (str. lower(message.text) not in ac.classes.keys()):
