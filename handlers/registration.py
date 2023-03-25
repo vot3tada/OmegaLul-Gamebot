@@ -4,11 +4,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import avatarCreator as ac
 import Classes
+import pickle
 
-users = dict()
-
-
-
+users :dict[str, Classes.Player] = dict()
 
 class FSMRegistation(StatesGroup):
     name = State()
@@ -52,7 +50,7 @@ async def end_registation(message : types.Message, state: FSMContext):
     orig = f'./static/{message.from_user.id}.jpg'
     await message.photo[-1].download(orig)
     try:
-        ac.getAvatar(orig)
+        ac.getAvatar(orig, (await state.get_data())['photoclass'])
     except:
         await message.reply('Плохое фото, попробуй ещё раз')
         return
@@ -64,6 +62,8 @@ async def end_registation(message : types.Message, state: FSMContext):
     newPlayer.photo = orig
     users[str(message.from_user.id)] = newPlayer 
     photo=open(orig, "rb")
+    with open("users.pkl", "wb") as file:
+        pickle.dump(users, file)
     await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + users[str(message.from_user.id)].name + '!!')
 
 
