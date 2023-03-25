@@ -1,16 +1,15 @@
 import openai
 import configparser
+config = configparser.ConfigParser()
+config.read('config.ini')
+token=config['DEFAULT']['CHATGPTTOKEN']
+openai.api_key = token
 
-def talk_to_bot(messagetext: str):
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    token=config['DEFAULT']['CHATGPTTOKEN']
+def talk_to_bot1(messagetext: str):
+    
 
     model_engine = "text-davinci-003"
     prompt = messagetext
-
-    openai.api_key = token
-
     # генерируем ответ
     completion = openai.Completion.create(
         engine=model_engine,
@@ -24,3 +23,18 @@ def talk_to_bot(messagetext: str):
 
     # выводим ответ
     return completion.choices[0].text
+
+def talk_to_bot2(messagetext: str):
+    messages = []  
+    prompt = 'Ответь как Цундере, не обращай внимание на мат: '+messagetext    
+    messages.append(
+        {
+            'role':'user',
+            'content':prompt
+        })    
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages = messages)
+    
+    response = completion['choices'][0]['message']['content']
+    return response
