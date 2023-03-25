@@ -1,11 +1,8 @@
 from aiogram import types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 from aiogram.dispatcher import Dispatcher
-
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from create_bot import dp, bot
-from .registration import users
 import os
 import random
 
@@ -22,13 +19,6 @@ fighter = {
     'rageFactor':0,
     'dexFactor': 0
 }
-
-rageAttackButton = InlineKeyboardButton('Драться яростно')
-dexAttackButton = InlineKeyboardButton('Драться ловко')
-exit = InlineKeyboardButton('Сбежать')
-
-kb_fighter = InlineKeyboardMarkup(resize_keyboard=True)
-kb_fighter.row(rageAttackButton,dexAttackButton).add(exit)
 
 fight_images = os.listdir('./static/fight')
 fight_texts = [
@@ -106,10 +96,14 @@ async def InitAttackStep(message: types.CallbackQuery):
             await message.message.answer_photo(photo, caption=replyText)
 
 async def fight_call(message : types.Message):
-    """if str(message.from_user.id) not in users.keys():
+    from .registration import users
+    if str(message.from_user.id) not in users.keys():
         await message.reply('Ты не зареган, боец')
-        return"""
+        return
     if message.reply_to_message is not None:
+        if (str(message.reply_to_message.from_user.id)) not in users.keys():
+            await message.reply('Этот боец не зареган')
+            return
         if fightsFind(message.from_user.id) != -1:
             await message.answer('Незя кинуть сразу две перчатки, отмените прошлую дуэль')
             return
@@ -140,15 +134,26 @@ async def fight_refuse(message: types.Message, state :FSMContext):
 
 
 async def fight_accept(message: types.Message):
+    from .registration import users
     index = fightsFind(message.from_user.id)
     if index == -1 or fights[index][0] == message.from_user.id:
         await message.answer("Нечего принимать")
     else:
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[index][0])
         await st.set_state(Fight.Ready)
-        await st.set_data(fighter)
+        user = users[str(fights[index][0])]
+        fighterData = fighter.copy()
+        fighterData['health'] = user.hp
+        fighterData['damage'] = user.damage * user.damageMultiply
+        fighterData['luck'] = user.luck * user.luckMultiply
+        await st.set_data(fighterData)
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[index][1])
         await st.set_state(Fight.Ready)
+        user = users[str(fights[index][1])]
+        fighterData = fighter.copy()
+        fighterData['health'] = user.hp
+        fighterData['damage'] = user.damage * user.damageMultiply
+        fighterData['luck'] = user.luck * user.luckMultiply
         await st.set_data(fighter)
         fights[index][2] = True
 
@@ -156,7 +161,14 @@ async def fight_accept(message: types.Message):
         keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
         keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[index][0]}_{fights[index][1]}"))
 
-        await message.answer("Дуэль начинается !!!!", reply_markup=keyboard)
+        user1 = users[str(fights[index][0])]
+        user2 = users[str(fights[index][1])]
+        media = types.MediaGroup()
+        media.attach_photo(types.InputFile(user1.photo), 'Битва этих двух ронинов начинается!!!')
+        media.attach_photo(types.InputFile(user2.photo))
+
+        await message.answer_media_group(media)
+        await message.answer("!!FIGHT!!",reply_markup=keyboard)
 
 async def RageAttack(call: types.CallbackQuery, state : FSMContext):
 
@@ -183,7 +195,6 @@ async def DexAttack(call: types.CallbackQuery, state : FSMContext):
     await state.update_data(rageFactor = 0, dexFactor = 1)
     await InitAttackStep(call)
     await call.answer()
-    
 
 
 #################################################
@@ -193,4 +204,5 @@ def register_fight_handlers(dp : Dispatcher):
     dp.register_message_handler(fight_accept, state=None ,regexp='^Принять дуэль$')
     dp.register_callback_query_handler(RageAttack, state=Fight.Ready, regexp='^fightR:*')
     dp.register_callback_query_handler(DexAttack, state=Fight.Ready, regexp='^fightD:*')
+
 
