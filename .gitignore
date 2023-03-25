@@ -1,7 +1,7 @@
 /FaceEnv
 /static
-*.png
 *.jpg
+*.png
 .vscode
 *.dat
 bot_venv/

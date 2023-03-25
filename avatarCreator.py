@@ -4,7 +4,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 classes = {
-    'knight':"./static/classes/knight2.png"
+    'knight':"./static/classes/knight.png",
+    'thief':"./static/classes/thief.jpg"
 }
 
 def getClasses() -> list:
@@ -13,7 +14,7 @@ def getClasses() -> list:
     """
     return list(classes.keys())
 
-def getAvatar(original :str, avatar_class :str = 'knight') -> str: 
+def getAvatar(original :str, avatar_class :str = 'thief') -> str: 
     """
     Возвращает аватар с подставленным лицом указанного класса
     """
