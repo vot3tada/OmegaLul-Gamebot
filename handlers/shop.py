@@ -5,8 +5,6 @@ from aiogram import types
 import handlers
 import Classes
 
-users = handlers.registration.users
-
 class FSMShop(StatesGroup):
     isShopping = State()
     goods = ['Хилка - восполнить хп', 
@@ -15,6 +13,7 @@ class FSMShop(StatesGroup):
              'НУЖНО НАПИСАТЬ НОРМАЛЬНЫЙ КЛАСС ПРЕДМЕТОВ И ИХ СВОЙСТВ']
 
 async def shop_start(message : types.Message):
+    from .registration import users
     if str(message.from_user.id) not in users.keys():
         await message.reply('Зарегайся другалек')
         return
@@ -26,6 +25,7 @@ async def shop_start(message : types.Message):
     await message.reply(text)
 
 async def shopping(message: types.Message, state: FSMContext):
+    from .registration import users
     good = 0
     try:
         good = int(message.text)
