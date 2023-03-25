@@ -4,7 +4,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 classes = {
-    'knight':"./static/classes/knight2.png"
+    'knight':"knight.png",
+    'thief':"thief.jpg",
+    'engineer':'eng1.png'
 }
 
 def getClasses() -> list:
@@ -19,7 +21,7 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     """
     # Loading base images and coverting them to grayscale
     face = cv2.imread(original)
-    body = cv2.imread(classes[avatar_class])
+    body = cv2.imread(f'./static/classes/{classes[avatar_class]}')
 
     face_gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
     body_gray = cv2.cvtColor(body, cv2.COLOR_BGR2GRAY)
@@ -52,8 +54,6 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
 
     face_cp = face.copy()
     plt.imshow(cv2.cvtColor((cv2.polylines(face_cp, [convexhull], True, (255,255,255), 3)), cv2.COLOR_BGR2RGB))
-
-    face_image_1 = cv2.bitwise_and(face, face, mask=mask)
 
     rect = cv2.boundingRect(convexhull)
 
@@ -115,7 +115,6 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     body_cp = body.copy()
     plt.imshow(cv2.cvtColor((cv2.polylines(body_cp, [convexhull2], True, (255,255,255), 3)), cv2.COLOR_BGR2RGB))
 
-    lines_space_new_face = np.zeros((height, width, channels), np.uint8)
     body_new_face = np.zeros((height, width, channels), np.uint8)
 
     height, width = face_gray.shape

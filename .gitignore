@@ -1,7 +1,7 @@
 /FaceEnv
 /static
-*.png
 *.jpg
+*.png
 .vscode
 *.dat
 bot_venv/
@@ -9,3 +9,4 @@ config.ini
 *.env
 /__pycache__
 *.pyc
+*.pkl
