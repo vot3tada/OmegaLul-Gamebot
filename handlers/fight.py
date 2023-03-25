@@ -104,16 +104,20 @@ async def fight_call(message : types.Message):
         if (str(message.reply_to_message.from_user.id)) not in users.keys():
             await message.reply('Этот боец не зареган')
             return
-        if fightsFind(message.from_user.id) != -1:
-            await message.answer('Незя кинуть сразу две перчатки, отмените прошлую дуэль')
+        index = fightsFind(message.from_user.id) 
+        if index != -1:
+            if fights[index][0] == message.from_user.id:
+                await message.reply('Незя кинуть сразу две перчатки, отмените прошлую дуэль')
+            else:
+                await message.reply('Этому войну уже кинули перчатку')
             return
         if message.reply_to_message.from_user.id == message.from_user.id:
-            await message.answer('Незя дуэлиться с шизой')
+            await message.reply('Незя дуэлиться с шизой')
             return
         if message.reply_to_message.from_user.id == (await bot.get_me()).id:
             await message.answer('Этот противник вам не по зубам, салага')
             return
-        fights.append([message.from_user.id, message.reply_to_message.from_user.id, False])
+        fights.append([message.from_user.id, message.reply_to_message.from_user.id])
         await message.answer(f'{message.from_user.full_name} бросил вызов {message.reply_to_message.from_user.full_name}!')
     else:
         await message.answer(f'С кем дуэль то, {message.from_user.full_name} ?')
@@ -123,15 +127,16 @@ async def fight_refuse(message: types.Message, state :FSMContext):
     if index == -1:
         await message.answer("Нечего отменять")
     else:
-        st = dp.current_state(chat= message.chat.id, user=fights[index][0])
-        if await st.get_state() == 'Fight:Ready':
-            await state.finish()
-        st = dp.current_state(chat=message.chat.id, user=fights[index][1])
-        if await st.get_state() == 'Fight:Ready':
-            await state.finish()
+        if await state.get_state() == 'Fight:Ready' or await state.get_state() == 'Fight:Attack':
+            st = dp.current_state(chat= message.chat.id, user=fights[index][0])
+            st.finish()
+            st = dp.current_state(chat= message.chat.id, user=fights[index][1])
+            st.finish()
+            reply_text = f'{message.from_user.full_name} позорно бежит с поля боя!\n'
+        else:
+            reply_text = f'{message.from_user.full_name} отказался от дуэли!\n'
         fights.pop(index)
-        await message.answer("Дуэль отменена")
-
+        await message.answer(reply_text)
 
 async def fight_accept(message: types.Message):
     from .registration import users
@@ -155,7 +160,6 @@ async def fight_accept(message: types.Message):
         fighterData['damage'] = user.damage * user.damageMultiply
         fighterData['luck'] = user.luck * user.luckMultiply
         await st.set_data(fighter)
-        fights[index][2] = True
 
         keyboard = types.InlineKeyboardMarkup()
         keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
@@ -200,7 +204,7 @@ async def DexAttack(call: types.CallbackQuery, state : FSMContext):
 #################################################
 def register_fight_handlers(dp : Dispatcher):
     dp.register_message_handler(fight_call, state=None, regexp='^Дуэль$')
-    dp.register_message_handler(fight_refuse, state=[None,Fight.Ready], regexp='^Отменить дуэль$')
+    dp.register_message_handler(fight_refuse, state=[None,Fight.Ready,Fight.Attack], regexp='^Отменить дуэль$')
     dp.register_message_handler(fight_accept, state=None ,regexp='^Принять дуэль$')
     dp.register_callback_query_handler(RageAttack, state=Fight.Ready, regexp='^fightR:*')
     dp.register_callback_query_handler(DexAttack, state=Fight.Ready, regexp='^fightD:*')
