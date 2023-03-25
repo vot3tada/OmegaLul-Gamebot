@@ -1,4 +1,5 @@
 class Player():
+
     name = ''
     exp = 0
     money = 100
@@ -11,5 +12,10 @@ class Player():
     hp = 100
     damage = 25
     damageMultiply = 1
+
+    def __init__(self):
+        self.inventory = []
+
+    
     
     
