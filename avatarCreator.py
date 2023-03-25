@@ -4,8 +4,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 classes = {
-    'knight':"./static/classes/knight.png",
-    'thief':"./static/classes/thief.jpg"
+    'knight':"knight.png",
+    'thief':"thief.jpg",
+    'engineer':'eng1.png'
 }
 
 def getClasses() -> list:
@@ -20,7 +21,7 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     """
     # Loading base images and coverting them to grayscale
     face = cv2.imread(original)
-    body = cv2.imread(classes[avatar_class])
+    body = cv2.imread(f'./static/classes/{classes[avatar_class]}')
 
     face_gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
     body_gray = cv2.cvtColor(body, cv2.COLOR_BGR2GRAY)
