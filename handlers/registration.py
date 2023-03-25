@@ -77,7 +77,7 @@ async def get_inventory(message : types):
     player = users[str(message.from_user.id)]
     text = 'Ваш инвентарь:'
     if len(player.inventory) == 0:
-        text += 'Ой, ваш инвентарь пуст😢'
+        text += '\nОй, ваш инвентарь пуст😢'
     for i in player.inventory:
         text += f'\n{i}'
     await message.reply(text)
