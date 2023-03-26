@@ -62,11 +62,11 @@ async def shopp(call: types.CallbackQuery, state : FSMContext):
         #    return
         good = [i for i in FSMShop.goods if i.name == buy][0]
         if users[str(call.from_user.id)].money < good.price:
-            await call.message.answer('У вас не хватает денег')
+            await call.answer('У вас не хватает денег')
             return
-        users[str(call.from_user.id)].money - good.price
+        users[str(call.from_user.id)].money -= good.price
         users[str(call.from_user.id)].inventory.append(good)
-        await call.message.answer('Вы купили')
+        await call.answer('Вы купили')
         await call.answer()
     except:
         state.finish()

@@ -9,8 +9,10 @@ async def get_avatar(message : types, state: FSMContext):
     from .registration import users
     player = users[str(message.from_user.id)]
     orig = player.photo
+    text = f'Имя: {player.name}\nХП: {player.hp}\nОпыт: {player.exp}\nДеньги: {player.money}'
     photo=open(orig, "rb")
-    await message.answer_photo(photo, caption=player.name)
+    await message.answer_photo(photo, caption=text)
+
 
 async def get_inventory(message : types):
     from .registration import users
