@@ -2,11 +2,10 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import gpt
+import utils.gpt as gpt
 
 class FSMTalk(StatesGroup):
     talk=State()
-
 
 async def talk_start(message : types.Message):
     await FSMTalk.talk.set()

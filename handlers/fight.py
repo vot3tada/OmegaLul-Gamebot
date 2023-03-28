@@ -2,9 +2,10 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from create_bot import dp, bot
+from utils.create_bot import dp, bot
 import os
 import random
+from Classes.Player import Players
 
 fights = []
 
@@ -96,12 +97,12 @@ async def InitAttackStep(message: types.CallbackQuery):
             await message.message.answer_photo(photo, caption=replyText)
 
 async def fight_call(message : types.Message):
-    from .registration import users
-    if str(message.from_user.id) not in users.keys():
+
+    if str(message.from_user.id) not in Players.keys():
         await message.reply('Ты не зареган, боец')
         return
     if message.reply_to_message is not None:
-        if (str(message.reply_to_message.from_user.id)) not in users.keys():
+        if (str(message.reply_to_message.from_user.id)) not in Players.keys():
             await message.reply('Этот боец не зареган')
             return
         index = fightsFind(message.from_user.id) 
@@ -139,14 +140,14 @@ async def fight_refuse(message: types.Message, state :FSMContext):
         await message.answer(reply_text)
 
 async def fight_accept(message: types.Message):
-    from .registration import users
+
     index = fightsFind(message.from_user.id)
     if index == -1 or fights[index][0] == message.from_user.id:
         await message.answer("Нечего принимать")
     else:
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[index][0])
         await st.set_state(Fight.Ready)
-        user = users[str(fights[index][0])]
+        user = Players[str(fights[index][0])]
         fighterData = fighter.copy()
         fighterData['health'] = user.hp
         fighterData['damage'] = user.damage * user.damageMultiply
@@ -154,7 +155,7 @@ async def fight_accept(message: types.Message):
         await st.set_data(fighterData)
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[index][1])
         await st.set_state(Fight.Ready)
-        user = users[str(fights[index][1])]
+        user = Players[str(fights[index][1])]
         fighterData = fighter.copy()
         fighterData['health'] = user.hp
         fighterData['damage'] = user.damage * user.damageMultiply
@@ -165,8 +166,8 @@ async def fight_accept(message: types.Message):
         keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
         keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[index][0]}_{fights[index][1]}"))
 
-        user1 = users[str(fights[index][0])]
-        user2 = users[str(fights[index][1])]
+        user1 = Players[str(fights[index][0])]
+        user2 = Players[str(fights[index][1])]
         media = types.MediaGroup()
         media.attach_photo(types.InputFile(user1.photo), 'Битва этих двух ронинов начинается!!!')
         media.attach_photo(types.InputFile(user2.photo))

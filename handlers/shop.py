@@ -2,8 +2,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import handlers
-import Classes
+from Classes.Player import Players
+import Classes.Items as Items
 
 
 #keyboard = types.InlineKeyboardMarkup()
@@ -11,17 +11,15 @@ import Classes
 #keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[index][0]}_{fights[index][1]}"))
 
 
-
-
 class FSMShop(StatesGroup):
     isShopping = State()
-    goods = [Classes.HPPotion(),
-             Classes.DamagePotion(),
-             Classes.LuckPotion()]
+    goods = [Items.HPPotion(),
+             Items.DamagePotion(),
+             Items.LuckPotion()]
 
 async def shop_start(message : types.message):
-    from .registration import users
-    if str(message.from_user.id) not in users.keys():
+    from .registration import Players
+    if str(message.from_user.id) not in Players.keys():
         await message.reply('Зарегайся другалек')
         return
     #await FSMShop.isShopping.set()
@@ -33,7 +31,7 @@ async def shop_start(message : types.message):
     await message.reply(text, reply_markup=keyboard)
 
 async def shopping(message: types.Message, state: FSMContext):
-    from .registration import users
+
     good = 0
     try:
         good = int(message.text)
@@ -47,25 +45,24 @@ async def shopping(message: types.Message, state: FSMContext):
     if good > len(FSMShop.goods) or good < 1:
         await message.reply('У нас нет такого товара')
         return
-    users[str(message.from_user.id)].inventory.append(FSMShop.goods[good-1])
+    Players[str(message.from_user.id)].inventory.append(FSMShop.goods[good-1])
     await message.reply('Товар успешно куплен')
 
 
 
 async def shopp(call: types.CallbackQuery, state : FSMContext):
     try:
-        from .registration import users
         buy = call.data.replace("buy:",'')
         #if buy == 'Exit':
         #    await state.finish()
         #    await call.message.answer('Вы вышли из магазина')
         #    return
         good = [i for i in FSMShop.goods if i.name == buy][0]
-        if users[str(call.from_user.id)].money < good.price:
+        if Players[str(call.from_user.id)].money < good.price:
             await call.answer('У вас не хватает денег')
             return
-        users[str(call.from_user.id)].money -= good.price
-        users[str(call.from_user.id)].inventory.append(good)
+        Players[str(call.from_user.id)].money -= good.price
+        Players[str(call.from_user.id)].inventory.append(good)
         await call.answer('Вы купили')
         await call.answer()
     except:

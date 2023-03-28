@@ -2,39 +2,28 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-from scheduler import scheduler
-from Classes import Player
-
-
+from utils.scheduler import scheduler
+from Classes.Player import Players, Player
+from Classes.Work import Works
 
 class FSMWork(StatesGroup):
     work=State()
-
-
-
-# Массив работ: название, необходимый уровень, опыт, деньги
-Works : list[list[str, int, int]]  =  [
-    ['Учить детей питону в шараге',0, 200, 100],
-    ['Подработка у Задорожного плюсовиком', 2, 400, 200]
-]
 
 async def work_info(message : types.Message):
     work_text = 'Хотите отправить вашего работягу по вашим стопам ?\nГде будем батрачить ?\n'
     keyboard = types.InlineKeyboardMarkup()
     for i in range(len(Works)):
-        work_text += f'{i}) {Works[i][0]} (нужен уровень: {Works[i][1]})\nОпыт: {Works[i][2]} Деньги: {Works[i][3]}\n\n'
-        keyboard.add(types.InlineKeyboardButton(text=Works[i][0], callback_data=f"work:{i}"))
+        work_text += f'{i}) {Works[i].name} (нужен уровень: {Works[i].levelRequired})\nОпыт: {Works[i].expReward} Деньги: {Works[i].moneyReward}\n\n'
+        keyboard.add(types.InlineKeyboardButton(text=Works[i].name, callback_data=f"work:{i}"))
     work_text += 'Время работы: 2 часика'
     await message.answer(work_text, reply_markup=keyboard)
 
 
 async def work_start(call: types.CallbackQuery, state : FSMContext):
-    from .registration import users
-
-    if str(call.from_user.id) not in users:
-        await call.message.reply('БезАватарный незя работать')
+    if str(call.from_user.id) not in Players:
+        await call.message.reply('Нужно зарегаться для такого')
         return
-    user = users[str(call.from_user.id)]
+    user = Players[str(call.from_user.id)]
     work_id = call.data.replace('work:','')
     try:
         work_id = int(work_id)

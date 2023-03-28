@@ -1,18 +1,13 @@
 from aiogram.utils import executor
-from create_bot import dp
+from utils.create_bot import dp
 import handlers
-from handlers.registration import users
-from scheduler import scheduler
-import pickle
-
-async def LoadUsers(dp):
-    with open("users.pkl", "rb") as file:
-        handlers.registration.users = pickle.load(file)
+from Classes.Player import SaveUsers
+from utils.scheduler import scheduler
 
 async def Shutdown(dp):
     scheduler.shutdown()
-    with open("users.pkl", "wb") as file:
-        pickle.dump(users, file)
+    SaveUsers()
+    
 
 handlers.register_handlers(dp)
-executor.start_polling(dp, skip_updates = True, on_startup=LoadUsers, on_shutdown=Shutdown)
+executor.start_polling(dp, skip_updates = True, on_shutdown=Shutdown)

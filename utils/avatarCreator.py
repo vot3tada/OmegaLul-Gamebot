@@ -33,7 +33,7 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     height, width, channels = body.shape
 
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+    predictor = dlib.shape_predictor("utils/shape_predictor_68_face_landmarks.dat")
 
     rect = detector(face_gray)[0]
 

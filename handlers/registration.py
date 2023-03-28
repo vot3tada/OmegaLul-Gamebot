@@ -2,11 +2,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import avatarCreator as ac
-import Classes
-import pickle
-
-users :dict[str, Classes.Player] = dict()
+import utils.avatarCreator as ac
+import Classes.Items as Items
+from Classes.Player import Players, Player
 
 class FSMRegistation(StatesGroup):
     name = State()
@@ -14,7 +12,7 @@ class FSMRegistation(StatesGroup):
     photo = State()
 
 async def reg_start(message : types.Message):
-    if str(message.from_user.id) in users.keys():
+    if str(message.from_user.id) in Players.keys():
         await message.reply('Ты уже зареган(а)')
         return
     await FSMRegistation.name.set()
@@ -54,16 +52,16 @@ async def end_registation(message : types.Message, state: FSMContext):
     except:
         await message.reply('Плохое фото, попробуй ещё раз')
         return
-    newPlayer = Classes.Player()
+    newPlayer = Player()
     async with state.proxy() as data:
         newPlayer.name = data['name']
     await state.finish()
     orig = f'./static/{message.from_user.id}.jpg'
     newPlayer.photo = orig
-    users[str(message.from_user.id)] = newPlayer 
+    Players[str(message.from_user.id)] = newPlayer 
     photo=open(orig, "rb")
     
-    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + users[str(message.from_user.id)].name + '!!')
+    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + Players[str(message.from_user.id)].name + '!!')
 
 
 
