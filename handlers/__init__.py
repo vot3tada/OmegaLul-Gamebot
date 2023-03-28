@@ -1,4 +1,4 @@
-from handlers import avatar, registration, shop, fight, work
+from handlers import avatar, registration, shop, fight, work, event
 from aiogram.dispatcher import Dispatcher
 
 def register_handlers(dp : Dispatcher):
@@ -8,4 +8,5 @@ def register_handlers(dp : Dispatcher):
     #talk.register_handlers_talk(dp)
     work.register_handlers_work(dp)
     avatar.register_handlers_user(dp)
+    event.register_handlers_registration(dp)
     
