@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 from utils.scheduler import scheduler
 from Classes.Player import Players, Player
-from Classes.Work import Works
+from Classes.Work import Works, Work
 
 class FSMWork(StatesGroup):
     work=State()
@@ -32,23 +32,25 @@ async def work_start(call: types.CallbackQuery, state : FSMContext):
         await call.message.reply('Что то ты не то нажал')
         return
     
-    scheduler.add_job(work_complete, trigger='interval', seconds=5, args=[call.message, f'w_{call.from_user.id}', state, user], coalesce=False, id=f'w_{call.from_user.id}')
+    scheduler.add_job(work_complete, trigger='interval',hours=2, args=[call.message, state, user, work], coalesce=True, id=f'work_{call.from_user.id}')
 
     await FSMWork.work.set()
     photo = open(user.photo, 'rb')
-    await call.message.reply_photo(photo=photo,caption=f'{user.name} отправился батрачить...')
+    await call.message.reply_photo(photo=photo,caption=f'{user.name} отправился {work.name}')
     await call.answer()
 
-async def work_complete(message: types.Message, id : str, state : FSMContext, user : Player):
+async def work_complete(message: types.Message, state : FSMContext, user : Player, work :Work):
     if await state.get_state() == 'FSMWork:work':
-        await message.answer(f"{user.name} вернулся с работенки")
+        user.exp += work.expReward
+        user.money += work.moneyReward
         await state.finish()
-    scheduler.remove_job(id)
+        await message.reply_photo(photo=open(user.photo,'rb'),caption=f"{user.name} вернулся с работенки и получил:\n{work.expReward} опыта\n{work.moneyReward} денег")  
     return
 
 async def work_end(message: types.CallbackQuery, state : FSMContext):
+    user = Players[str(message.from_user.id)]
     await state.finish()
-    await message.reply('Вы в страхе сбежали с работы')
+    await message.reply(f'{user.name} в страхе сбежал(а) с работы')
 
 def register_handlers_work(dp: Dispatcher):
     dp.register_message_handler(work_info, state=None, regexp='^На работу$')

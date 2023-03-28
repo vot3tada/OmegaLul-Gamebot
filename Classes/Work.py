@@ -10,7 +10,7 @@ class Work():
         self.expReward = expReward
         self.moneyReward = moneyReward
 
-
+#Имя работы должно начинаться с глагола в инфинитиве
 Works : list[Work] = [
     Work( 
         'Учить детей питону в шараге',
@@ -19,7 +19,7 @@ Works : list[Work] = [
         200
      ),
      Work( 
-        'Подработка у Задорожного плюсовиком',
+        'Подрабатывать у Задорожного плюсовиком',
         2,
         200,
         400
