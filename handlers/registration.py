@@ -62,8 +62,7 @@ async def end_registation(message : types.Message, state: FSMContext):
     newPlayer.photo = orig
     users[str(message.from_user.id)] = newPlayer 
     photo=open(orig, "rb")
-    with open("users.pkl", "wb") as file:
-        pickle.dump(users, file)
+    
     await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + users[str(message.from_user.id)].name + '!!')
 
 
