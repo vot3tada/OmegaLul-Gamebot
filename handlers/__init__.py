@@ -1,4 +1,4 @@
-from . import fight, registration, shop, work
+from . import user, registration, shop, talk, fight,  work
 from aiogram.dispatcher import Dispatcher
 
 def register_handlers(dp : Dispatcher):
@@ -7,4 +7,5 @@ def register_handlers(dp : Dispatcher):
     shop.register_handlers_shop(dp)
     #talk.register_handlers_talk(dp)
     work.register_handlers_work(dp)
+    user.register_handlers_user(dp)
     
