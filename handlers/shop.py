@@ -18,8 +18,7 @@ class FSMShop(StatesGroup):
              Items.LuckPotion()]
 
 async def shop_start(message : types.message):
-    from .registration import Players
-    if str(message.from_user.id) not in Players.keys():
+    if not f'{message.chat.id}_{message.from_user.id}' in Players.keys():
         await message.reply('Зарегайся другалек')
         return
     #await FSMShop.isShopping.set()
@@ -45,12 +44,15 @@ async def shopping(message: types.Message, state: FSMContext):
     if good > len(FSMShop.goods) or good < 1:
         await message.reply('У нас нет такого товара')
         return
-    Players[str(message.from_user.id)].inventory.append(FSMShop.goods[good-1])
+    Players[f'{message.chat.id}_{message.from_user.id}'].inventory.append(FSMShop.goods[good-1])
     await message.reply('Товар успешно куплен')
 
 
 
 async def shopp(call: types.CallbackQuery, state : FSMContext):
+    if not f'{call.message.chat.id}_{call.from_user.id}' in Players.keys():
+        await call.message.reply('Зарегайся другалек')
+        return
     try:
         buy = call.data.replace("buy:",'')
         #if buy == 'Exit':
@@ -58,15 +60,16 @@ async def shopp(call: types.CallbackQuery, state : FSMContext):
         #    await call.message.answer('Вы вышли из магазина')
         #    return
         good = [i for i in FSMShop.goods if i.name == buy][0]
-        if Players[str(call.from_user.id)].money < good.price:
+        if Players[f'{call.message.chat.id}_{call.from_user.id}'].money < good.price:
             await call.answer('У вас не хватает денег')
             return
-        Players[str(call.from_user.id)].money -= good.price
-        Players[str(call.from_user.id)].inventory.append(good)
+        Players[f'{call.message.chat.id}_{call.from_user.id}'].money -= good.price
+        Players[f'{call.message.chat.id}_{call.from_user.id}'].inventory.append(good)
         await call.answer('Вы купили')
         await call.answer()
     except:
-        state.finish()
+        await state.finish()
+        await call.answer()
     
 
 def register_handlers_shop(dp: Dispatcher):

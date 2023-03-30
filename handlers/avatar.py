@@ -5,10 +5,10 @@ from aiogram import types
 from Classes.Player import Players
 
 async def get_avatar(message : types, state: FSMContext):
-    if str(message.from_user.id) not in Players:
+    if not f'{message.chat.id}_{message.from_user.id}'  in Players.keys():
         await message.reply('Нужно зарегаться для такого')
         return
-    player = Players[str(message.from_user.id)]
+    player = Players[f'{message.chat.id}_{message.from_user.id}']
     orig = player.photo
     text = f'Имя: {player.name}\nХП: {player.hp}\nОпыт: {player.exp}\nДеньги: {player.money}'
     photo=open(orig, "rb")
@@ -16,10 +16,10 @@ async def get_avatar(message : types, state: FSMContext):
 
 
 async def get_inventory(message : types):
-    if str(message.from_user.id) not in Players:
+    if not f'{message.chat.id}_{message.from_user.id}' in Players.keys():
         await message.reply('Нужно зарегаться для такого')
         return
-    player = Players[str(message.from_user.id)]
+    player = Players[f'{message.chat.id}_{message.from_user.id}']
     text = 'Ваш инвентарь:'
     if len(player.inventory) == 0:
         text += '\nОй, ваш инвентарь пуст😢'

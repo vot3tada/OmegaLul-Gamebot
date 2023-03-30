@@ -20,10 +20,10 @@ async def work_info(message : types.Message):
 
 
 async def work_start(call: types.CallbackQuery, state : FSMContext):
-    if str(call.from_user.id) not in Players:
+    if not f'{call.message.chat.id}_{call.from_user.id}' in Players.keys():
         await call.message.reply('Нужно зарегаться для такого')
         return
-    user = Players[str(call.from_user.id)]
+    user = Players[f'{call.message.chat.id}_{call.from_user.id}']
     work_id = call.data.replace('work:','')
     try:
         work_id = int(work_id)
@@ -32,7 +32,7 @@ async def work_start(call: types.CallbackQuery, state : FSMContext):
         await call.message.reply('Что то ты не то нажал')
         return
     
-    scheduler.add_job(work_complete, trigger='interval',hours=2, args=[call.message, state, user, work], coalesce=True, id=f'work_{call.from_user.id}')
+    scheduler.add_job(work_complete, trigger='interval',seconds=10, args=[call.message, state, user, work], coalesce=True, id=f'work_{call.message.chat.id}{call.from_user.id}')
 
     await FSMWork.work.set()
     photo = open(user.photo, 'rb')
@@ -44,11 +44,12 @@ async def work_complete(message: types.Message, state : FSMContext, user : Playe
         user.exp += work.expReward
         user.money += work.moneyReward
         await state.finish()
+        scheduler.remove_job(f'work_{message.chat.id}{message.from_user.id}')
         await message.reply_photo(photo=open(user.photo,'rb'),caption=f"{user.name} вернулся с работенки и получил:\n{work.expReward} опыта\n{work.moneyReward} денег")  
     return
 
-async def work_end(message: types.CallbackQuery, state : FSMContext):
-    user = Players[str(message.from_user.id)]
+async def work_end(message: types.Message, state : FSMContext):
+    user = Players[f'{message.chat.id}_{message.from_user.id}']
     await state.finish()
     await message.reply(f'{user.name} в страхе сбежал(а) с работы')
 
