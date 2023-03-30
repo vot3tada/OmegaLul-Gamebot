@@ -18,7 +18,8 @@ class Player():
     def __init__(self):
         self.inventory = []
 
-Players :dict[str, Player] = load(open("users.pkl","rb"))
+#Players :dict[str, Player] = load(open("users.pkl","rb"))
+Players = dict()
 
 def SaveUsers():
     with open("users.pkl", "wb") as file:

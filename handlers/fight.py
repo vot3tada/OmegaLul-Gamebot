@@ -7,7 +7,7 @@ import os
 import random
 from Classes.Player import Players
 
-fights = []
+fights : dict[int, list[int, int]] = {}
 
 class Fight(StatesGroup):
     Ready = State()
@@ -30,16 +30,16 @@ fight_texts = [
     'Выноси бычьё!\n'
 ]
 
-def fightsFind(id : int):
-    for i in range(len(fights)):
-        if fights[i][0] == id or fights[i][1] == id:
+def fightsFind(chat_id:int, player_id : int):
+    for i in range(len(fights[chat_id])):
+        if fights[chat_id][i][0] == player_id or fights[chat_id][i][1] == player_id:
             return i
     return -1
 
 async def InitAttackStep(message: types.CallbackQuery):
-    index = fightsFind(message.from_user.id) 
-    st1 : FSMContext = dp.current_state(chat=message.message.chat.id, user=fights[index][0])
-    st2 : FSMContext = dp.current_state(chat=message.message.chat.id, user=fights[index][1])
+    index = fightsFind(message.message.chat.id, message.from_user.id) 
+    st1 : FSMContext = dp.current_state(chat=message.message.chat.id, user=fights[message.message.chat.id][index][0])
+    st2 : FSMContext = dp.current_state(chat=message.message.chat.id, user=fights[message.message.chat.id][index][1])
     st1s = await st1.get_state()
     st2s = await st2.get_state()
     if st1s == 'Fight:Attack' and st2s == 'Fight:Attack':
@@ -59,8 +59,8 @@ async def InitAttackStep(message: types.CallbackQuery):
                               (st1d.get('damage') * 0.2 * st1d.get('rageFactor')))))
         )
         replyText = random.choice(fight_texts) 
-        name1 = (await bot.get_chat_member(chat_id=message.message.chat.id, user_id=fights[index][0])).user.full_name
-        name2 = (await bot.get_chat_member(chat_id=message.message.chat.id, user_id=fights[index][1])).user.full_name
+        name1 = Players[f'{message.message.chat.id}_{fights[message.message.chat.id][index][0]}'].name
+        name2 = Players[f'{message.message.chat.id}_{fights[message.message.chat.id][index][1]}'].name
         if lk1 == 0: 
             replyText += f'{name1} словил(а) удачу и уворачивается от урона!\n'
         else:
@@ -80,8 +80,8 @@ async def InitAttackStep(message: types.CallbackQuery):
             await st2.set_state(Fight.Ready)
 
             keyboard = types.InlineKeyboardMarkup()
-            keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
-            keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[index][0]}_{fights[index][1]}"))
+            keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
+            keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
 
             await message.message.answer_photo(photo, caption=replyText, reply_markup=keyboard)
         else:
@@ -93,21 +93,28 @@ async def InitAttackStep(message: types.CallbackQuery):
                 replyText += f'Победитель: {name2}!!\nХвала чемпиону зверей!'
             else:
                 replyText += f'Победителя нет! Оба бойца ушатали друг друга!\nНикогда такого не было и вот опять...'
-            fights.pop(index)
+            fights[message.message.chat.id].pop(index)
             await message.message.answer_photo(photo, caption=replyText)
 
 async def fight_call(message : types.Message):
+    if not message.chat.id in fights.keys():
+        fights[message.chat.id] = []
 
-    if str(message.from_user.id) not in Players.keys():
+    if f'{message.chat.id}_{message.from_user.id}' not in Players.keys():
         await message.reply('Ты не зареган, боец')
         return
+    playerTo = Players[f'{message.chat.id}_{message.from_user.id}']
     if message.reply_to_message is not None:
-        if (str(message.reply_to_message.from_user.id)) not in Players.keys():
+        if message.reply_to_message.from_user.id == (await bot.get_me()).id:
+            await message.answer('Омегалюль вам не по зубам, салага')
+            return
+        if f'{message.chat.id}_{message.reply_to_message.from_user.id}' not in Players.keys():
             await message.reply('Этот боец не зареган')
             return
-        index = fightsFind(message.from_user.id) 
+        playerFrom = Players[f'{message.chat.id}_{message.reply_to_message.from_user.id}']
+        index = fightsFind(message.chat.id, message.from_user.id) 
         if index != -1:
-            if fights[index][0] == message.from_user.id:
+            if fights[message.chat.id][index][0] == message.from_user.id:
                 await message.reply('Незя кинуть сразу две перчатки, отмените прошлую дуэль')
             else:
                 await message.reply('Этому войну уже кинули перчатку')
@@ -115,16 +122,15 @@ async def fight_call(message : types.Message):
         if message.reply_to_message.from_user.id == message.from_user.id:
             await message.reply('Незя дуэлиться с шизой')
             return
-        if message.reply_to_message.from_user.id == (await bot.get_me()).id:
-            await message.answer('Этот противник вам не по зубам, салага')
-            return
-        fights.append([message.from_user.id, message.reply_to_message.from_user.id])
-        await message.answer(f'{message.from_user.full_name} бросил вызов {message.reply_to_message.from_user.full_name}!')
+        fights[message.chat.id].append([message.from_user.id, message.reply_to_message.from_user.id])
+        await message.answer(f'{playerTo.name} бросил вызов {playerFrom.name}!')
     else:
-        await message.answer(f'С кем дуэль то, {message.from_user.full_name} ?')
+        await message.answer(f'С кем дуэль то, {playerTo.name} ?')
 
 async def fight_refuse(message: types.Message, state :FSMContext):
-    index = fightsFind(message.from_user.id)
+    if not message.chat.id in fights.keys():
+        fights[message.chat.id] = []
+    index = fightsFind(message.chat.id, message.from_user.id)
     if index == -1:
         await message.answer("Нечего отменять")
     else:
@@ -136,38 +142,37 @@ async def fight_refuse(message: types.Message, state :FSMContext):
             reply_text = f'{message.from_user.full_name} позорно бежит с поля боя!\n'
         else:
             reply_text = f'{message.from_user.full_name} отказался от дуэли!\n'
-        fights.pop(index)
+        fights[message.chat.id].pop(index)
         await message.answer(reply_text)
 
 async def fight_accept(message: types.Message):
-
-    index = fightsFind(message.from_user.id)
-    if index == -1 or fights[index][0] == message.from_user.id:
+    if not message.chat.id in fights.keys():
+        fights[message.chat.id] = []
+    index = fightsFind(message.chat.id, message.from_user.id)
+    if index == -1 or fights[message.chat.id][index][0] == message.from_user.id:
         await message.answer("Нечего принимать")
     else:
-        st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[index][0])
+        st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][0])
         await st.set_state(Fight.Ready)
-        user = Players[str(fights[index][0])]
+        user1 = Players[f'{message.chat.id}_{fights[message.chat.id][index][0]}']
         fighterData = fighter.copy()
-        fighterData['health'] = user.hp
-        fighterData['damage'] = user.damage * user.damageMultiply
-        fighterData['luck'] = user.luck * user.luckMultiply
+        fighterData['health'] = user1.hp
+        fighterData['damage'] = user1.damage * user1.damageMultiply
+        fighterData['luck'] = user1.luck * user1.luckMultiply
         await st.set_data(fighterData)
-        st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[index][1])
+        st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][1])
         await st.set_state(Fight.Ready)
-        user = Players[str(fights[index][1])]
+        user2 = Players[f'{message.chat.id}_{fights[message.chat.id][index][1]}']
         fighterData = fighter.copy()
-        fighterData['health'] = user.hp
-        fighterData['damage'] = user.damage * user.damageMultiply
-        fighterData['luck'] = user.luck * user.luckMultiply
+        fighterData['health'] = user2.hp
+        fighterData['damage'] = user2.damage * user2.damageMultiply
+        fighterData['luck'] = user2.luck * user2.luckMultiply
         await st.set_data(fighter)
 
         keyboard = types.InlineKeyboardMarkup()
-        keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
-        keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[index][0]}_{fights[index][1]}"))
+        keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
+        keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
 
-        user1 = Players[str(fights[index][0])]
-        user2 = Players[str(fights[index][1])]
         media = types.MediaGroup()
         media.attach_photo(types.InputFile(user1.photo), 'Битва этих двух ронинов начинается!!!')
         media.attach_photo(types.InputFile(user2.photo))

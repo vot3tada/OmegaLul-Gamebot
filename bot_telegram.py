@@ -4,6 +4,7 @@ import handlers
 from Classes.Player import SaveUsers
 from utils.scheduler import scheduler
 
+
 async def Shutdown(dp):
     scheduler.shutdown()
     SaveUsers()
