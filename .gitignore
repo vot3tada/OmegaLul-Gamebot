@@ -10,3 +10,4 @@ config.ini
 /__pycache__
 *.pyc
 *.pkl
+/venv
