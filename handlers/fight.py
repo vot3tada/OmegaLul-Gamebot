@@ -5,7 +5,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from utils.create_bot import dp, bot
 import os
 import random
-from Classes.Player import Players
+import Classes.Player as Player
 
 fights : dict[int, list[int, int]] = {}
 
@@ -59,8 +59,8 @@ async def InitAttackStep(message: types.CallbackQuery):
                               (st1d.get('damage') * 0.2 * st1d.get('rageFactor')))))
         )
         replyText = random.choice(fight_texts) 
-        name1 = Players[f'{message.message.chat.id}_{fights[message.message.chat.id][index][0]}'].name
-        name2 = Players[f'{message.message.chat.id}_{fights[message.message.chat.id][index][1]}'].name
+        name1 = Player.GetPlayer(f'{message.message.chat.id}_{message.message.from_user.id}').name
+        name2 = Player.GetPlayer(f'{message.message.chat.id}_{message.message.from_user.id}').name
         if lk1 == 0: 
             replyText += f'{name1} словил(а) удачу и уворачивается от урона!\n'
         else:
@@ -100,18 +100,18 @@ async def fight_call(message : types.Message):
     if not message.chat.id in fights.keys():
         fights[message.chat.id] = []
 
-    if f'{message.chat.id}_{message.from_user.id}' not in Players.keys():
+    if not Player.FindPlayer(f'{message.chat.id}_{message.from_user.id}'):
         await message.reply('Ты не зареган, боец')
         return
-    playerTo = Players[f'{message.chat.id}_{message.from_user.id}']
-    if message.reply_to_message is not None:
+    playerTo = Player.GetPlayer(f'{message.chat.id}_{message.from_user.id}')
+    if not message.reply_to_message is None:
         if message.reply_to_message.from_user.id == (await bot.get_me()).id:
             await message.answer('Омегалюль вам не по зубам, салага')
             return
-        if f'{message.chat.id}_{message.reply_to_message.from_user.id}' not in Players.keys():
+        if not Player.GetPlayer(f'{message.chat.id}_{message.reply_to_message.from_user.id}'):
             await message.reply('Этот боец не зареган')
             return
-        playerFrom = Players[f'{message.chat.id}_{message.reply_to_message.from_user.id}']
+        playerFrom = Player.GetPlayer(f'{message.chat.id}_{message.reply_to_message.from_user.id}')
         index = fightsFind(message.chat.id, message.from_user.id) 
         if index != -1:
             if fights[message.chat.id][index][0] == message.from_user.id:
@@ -135,9 +135,9 @@ async def fight_refuse(message: types.Message, state :FSMContext):
         await message.answer("Нечего отменять")
     else:
         if await state.get_state() == 'Fight:Ready' or await state.get_state() == 'Fight:Attack':
-            st = dp.current_state(chat= message.chat.id, user=fights[index][0])
+            st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][0])
             st.finish()
-            st = dp.current_state(chat= message.chat.id, user=fights[index][1])
+            st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][1])
             st.finish()
             reply_text = f'{message.from_user.full_name} позорно бежит с поля боя!\n'
         else:
@@ -154,7 +154,7 @@ async def fight_accept(message: types.Message):
     else:
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][0])
         await st.set_state(Fight.Ready)
-        user1 = Players[f'{message.chat.id}_{fights[message.chat.id][index][0]}']
+        user1 = Player.GetPlayer(f'{message.chat.id}_{fights[message.chat.id][index][0]}')
         fighterData = fighter.copy()
         fighterData['health'] = user1.hp
         fighterData['damage'] = user1.damage * user1.damageMultiply
@@ -162,7 +162,7 @@ async def fight_accept(message: types.Message):
         await st.set_data(fighterData)
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][1])
         await st.set_state(Fight.Ready)
-        user2 = Players[f'{message.chat.id}_{fights[message.chat.id][index][1]}']
+        user2 = Player.GetPlayer(f'{message.chat.id}_{fights[message.chat.id][index][1]}')
         fighterData = fighter.copy()
         fighterData['health'] = user2.hp
         fighterData['damage'] = user2.damage * user2.damageMultiply

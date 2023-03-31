@@ -12,4 +12,3 @@ class Event():
 
 
 a = f'{datetime(2005, 7, 14, 12, 30):%Y-%m-%d-%H-%M}'
-print(a)
