@@ -1,27 +1,59 @@
-from pickle import load, dump
+from Classes.Good import Good
+from typing import Union
 
 class Player():
 
-    name = ''
-    exp = 0
-    money = 1000
-    photo = ''
-    inventory = []
+    userId : str 
+    name : str
+    exp : int
+    money : int
+    photo : str
+    inventory : list[Good]
 
-    luck = 0.2
-    luckMultiply = 1
+    luck : float
+    luckMultiply : int
 
-    hp = 100
-    damage = 25
-    damageMultiply = 1
+    hp : int
+    damage : int
+    damageMultiply : int
 
-    def __init__(self):
-        self.inventory = []
+    status : list[Good]
 
-Players :dict[str, Player] = load(open("users.pkl","rb"))
+    def __init__(self, 
+                 userId : str,
+                 name: str, 
+                 photo : str,
+                 exp : int  = 0,
+                 money: int  = 1000,
+                 inventory : list[Good] = [],
+                 luck : float = 0.2,
+                 luckMultiply : int = 1,
+                 hp : int = 100,
+                 damage : int = 20,
+                 damageMultyply : int = 1,
+                 status : list[Good] = []):
+        self.userId = userId
+        self.name = name
+        self.exp = exp
+        self.money = money
+        self.photo = photo
+        self.inventory = inventory
+        self.luck = luck
+        self.luckMultiply = luckMultiply
+        self.hp = hp
+        self.damage = damage
+        self.damageMultiply = damageMultyply
+        self.status = status
 
-def SaveUsers():
-    with open("users.pkl", "wb") as file:
-        dump(Players, file)
+Players :list[Player] = None
+
+def FindPlayer(id: str) -> bool:
+    return id in [player.userId for player in Players]
+
+def GetPlayer(id : str) -> Union[Player, None]:
+    for player in Players:
+        if player.userId == id:
+            return player
+    return None 
 
 
