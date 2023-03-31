@@ -21,7 +21,7 @@ async def shop_start(message : types.Message):
     text = 'Добро пожаловать в магазин!\nУ нас есть:'
     keyboard = types.InlineKeyboardMarkup()
     for i in Items.values():
-        keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.name}"))
+        keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.id}"))
     #keyboard.add(types.InlineKeyboardButton(text = 'Выйти', callback_data=f"buy:Exit"))
     await message.reply(text, reply_markup=keyboard)
 

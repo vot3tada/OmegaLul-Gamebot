@@ -7,7 +7,6 @@ import Classes.Player as Player
 
 async def Startup(dp):
     Player.Players = JsonParser.LoadUsers()
-    print()
 
 async def Shutdown(dp):
     scheduler.shutdown()
