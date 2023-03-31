@@ -3,7 +3,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 from Classes.Player import Players
-import Classes.Items as Items
+import Classes.Item as Item
 
 
 #keyboard = types.InlineKeyboardMarkup()
@@ -13,9 +13,9 @@ import Classes.Items as Items
 
 class FSMShop(StatesGroup):
     isShopping = State()
-    goods = [Items.HPPotion(),
-             Items.DamagePotion(),
-             Items.LuckPotion()]
+    goods = [Item.HPPotion(),
+             Item.DamagePotion(),
+             Item.LuckPotion()]
 
 async def shop_start(message : types.message):
     if not f'{message.chat.id}_{message.from_user.id}' in Players.keys():
@@ -29,6 +29,7 @@ async def shop_start(message : types.message):
     #keyboard.add(types.InlineKeyboardButton(text = 'Выйти', callback_data=f"buy:Exit"))
     await message.reply(text, reply_markup=keyboard)
 
+<<<<<<< HEAD
 async def shopping(message: types.Message, state: FSMContext):
 
     good = 0
@@ -50,6 +51,9 @@ async def shopping(message: types.Message, state: FSMContext):
 
 
 async def shopp(call: types.CallbackQuery, state : FSMContext):
+=======
+async def shopping(call: types.CallbackQuery, state : FSMContext):
+>>>>>>> remotes/origin/telegrambot_2
     if not f'{call.message.chat.id}_{call.from_user.id}' in Players.keys():
         await call.message.reply('Зарегайся другалек')
         return
@@ -74,5 +78,5 @@ async def shopp(call: types.CallbackQuery, state : FSMContext):
 
 def register_handlers_shop(dp: Dispatcher):
     dp.register_message_handler(shop_start, regexp='^Магазин$', state=None)
-    dp.register_callback_query_handler(shopp, regexp='^buy:*')
+    dp.register_callback_query_handler(shopping, regexp='^buy:*')
 

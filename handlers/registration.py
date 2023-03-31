@@ -3,7 +3,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import utils.avatarCreator as ac
-import Classes.Items as Items
+import Classes.Item as Item
 from Classes.Player import Players, Player
 
 class FSMRegistation(StatesGroup):
@@ -47,20 +47,6 @@ async def change_photo(message : types.Message):
         text += i + '\n'
     await message.reply('Выбери класс фото:' + text)
 
-async def shopp(call: types.CallbackQuery, state : FSMContext):
-    try:
-        buy = call.data.replace("buy:",'')
-        good = [i for i in FSMShop.goods if i.name == buy][0]
-        if Players[str(call.from_user.id)].money < good.price:
-            await call.answer('У вас не хватает денег')
-            return
-        Players[str(call.from_user.id)].money -= good.price
-        Players[str(call.from_user.id)].inventory.append(good)
-        await call.answer('Вы купили')
-        await call.answer()
-    except:
-        state.finish()
-
 async def get_photoclass(call: types.CallbackQuery, state : FSMContext):
     try:
         photoClass = call.data.replace("class:",'')
@@ -90,9 +76,6 @@ async def end_registation(message : types.Message, state: FSMContext):
     photo=open(orig, "rb")
     
     await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + Players[f'{message.chat.id}_{message.from_user.id}'].name + '!!')
-
-
-
 
 
 async def cancel_registration(message: types, state: FSMContext):

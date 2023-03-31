@@ -2,7 +2,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-from Classes.events import Event
+from Classes.Event import Event
 from datetime import datetime, date, time
 
 class FSMEvent(StatesGroup):
