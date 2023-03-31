@@ -18,7 +18,7 @@ class Decoder(json.JSONDecoder):
 
     def object_hook(self, o):
         if not o.get('userId') is None:
-            decoded =  Player.Player(
+            decoded = Player.Player(
                 o.get('userId'), 
                 o.get('name'), 
                 o.get('photo'),
@@ -33,7 +33,7 @@ class Decoder(json.JSONDecoder):
                 o.get('status')
             )
         elif not o.get('id') is None:
-            decoded = getattr(Item, o.get('id'))()
+            decoded = Item.Items[o.get('id')]
         return decoded
     
 def LoadUsers() -> list[Player.Player]:
