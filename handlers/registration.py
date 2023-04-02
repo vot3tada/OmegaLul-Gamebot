@@ -21,7 +21,9 @@ async def reg_start(message : types.Message):
     await message.reply('Напиши имя')
 
 async def change_name_start(message : types.Message):
-    #Проверочку бы...
+    if f'{message.chat.id}_{message.from_user.id}' not in Players.keys():
+        await message.reply('Ты ещё не зареган(а)')
+        return
     await FSMRegistation.change_name.set()
     await message.reply('Напиши имя')
 
@@ -51,8 +53,7 @@ async def get_photoclass(call: types.CallbackQuery, state : FSMContext):
     try:
         photoClass = call.data.replace("class:",'')
         async with state.proxy() as data:
-            data['photoclass'] = photoClass.lower()
-            print(photoClass)
+            data['photoclass'] = photoClass
         await FSMRegistation.photo.set()
         await call.message.reply('Добавь фото')
     except:
@@ -75,7 +76,10 @@ async def end_registation(message : types.Message, state: FSMContext):
     Players[f'{message.chat.id}_{message.from_user.id}'] = newPlayer 
     photo=open(orig, "rb")
     
-    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + Players[f'{message.chat.id}_{message.from_user.id}'].name + '!!')
+    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + Players[str(message.from_user.id)].name + '!!')
+
+
+
 
 
 async def cancel_registration(message: types, state: FSMContext):
@@ -84,7 +88,7 @@ async def cancel_registration(message: types, state: FSMContext):
     
 def register_handlers_registration(dp: Dispatcher):
     dp.register_message_handler(reg_start, regexp='^Регистрация$', state=None)
-    dp.register_message_handler(cancel_registration, regexp='^Отмена$', state=[FSMRegistation.name,FSMRegistation.photoclass, FSMRegistation.photo])
+    dp.register_message_handler(cancel_registration, regexp='^Отмена$', state=[FSMRegistation.name, FSMRegistation.photo])
     dp.register_message_handler(get_name, state=FSMRegistation.name)
     dp.register_callback_query_handler(get_photoclass, state=FSMRegistation.photoclass, regexp='^class:*')
     dp.register_message_handler(end_registation, content_types=['photo'], state=FSMRegistation.photo)
