@@ -4,6 +4,7 @@ class Event():
     name = ''
     datetime = datetime.today()
     players = []
+    creator = ''
     
     
     def __init__(self):
