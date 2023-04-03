@@ -3,7 +3,6 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import utils.avatarCreator as ac
-import Classes.Item as Item
 import Classes.Player as Player
 
 class FSMRegistation(StatesGroup):
@@ -66,15 +65,15 @@ async def end_registation(message : types.Message, state: FSMContext):
     except:
         await message.reply('Плохое фото, попробуй ещё раз')
         return
-    newPlayer = Player(
+    newPlayer = Player.Player(
         f'{message.chat.id}_{message.from_user.id}',
         (await state.get_data())['name'],
         orig
     )
     await state.finish()
-    Player.Players.append(newPlayer)
+    Player.AddPlayer(newPlayer)
     photo=open(orig, "rb")
-    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + Player.Players[-1].name + '!!')
+    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + newPlayer.name + '!!')
 
 
 async def cancel_registration(message: types, state: FSMContext):

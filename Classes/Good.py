@@ -5,7 +5,6 @@ class Good():
     price :int
     description : str
 
-    @classmethod
     def Effect(cls, user_id_from : int, user_id_to : int = 0) -> bool:
         pass
 

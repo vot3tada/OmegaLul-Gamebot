@@ -3,22 +3,6 @@ from typing import Union
 
 class Player():
 
-    userId : str 
-    name : str
-    exp : int
-    money : int
-    photo : str
-    inventory : list[Good]
-
-    luck : float
-    luckMultiply : int
-
-    hp : int
-    damage : int
-    damageMultiply : int
-
-    status : list[Good]
-
     def __init__(self, 
                  userId : str,
                  name: str, 
@@ -32,18 +16,127 @@ class Player():
                  damage : int = 20,
                  damageMultyply : int = 1,
                  status : list[Good] = []):
-        self.userId = userId
-        self.name = name
-        self.exp = exp
-        self.money = money
-        self.photo = photo
-        self.inventory = inventory
-        self.luck = luck
-        self.luckMultiply = luckMultiply
-        self.hp = hp
-        self.damage = damage
-        self.damageMultiply = damageMultyply
-        self.status = status
+        self._userId = userId
+        self._name = name
+        self._exp = exp
+        self._money = money
+        self._photo = photo
+        self._inventory = inventory
+        self._luck = luck
+        self._luckMultiply = luckMultiply
+        self._hp = hp
+        self._damage = damage
+        self._damageMultiply = damageMultyply
+        self._status = status
+
+    @property
+    def userId(self):
+        return self._userId
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def hp(self):
+        return self._hp
+
+    @hp.setter
+    def hp(self, x :int):
+        if x < 0:
+            self._hp = 0
+        elif x > 100:
+            self._hp = 100
+        else:
+            self._hp = x
+
+    @property
+    def exp(self):
+        return self._exp
+    
+    @exp.setter
+    def exp(self, x: int):
+        if self._exp >= x:
+            raise ValueError('Опыт не может не увеличиваться')
+        self._exp = x
+
+    @property
+    def money(self):
+        return self._money
+    
+    @money.setter
+    def money(self, x: int):
+        if x < 0:
+            raise ValueError('Баланс ушел в минус')
+        self._money = x
+
+    @property
+    def level(self):
+        _level = -1
+        exp = self.exp
+        while exp > 0:
+            _level += 1 
+            exp -= 100 + 10 * _level
+        return _level
+    
+    @property
+    def damage(self):
+        return self._damage
+    
+    @property
+    def damageMultiply(self):
+        return self._damageMultiply
+    
+    @damageMultiply.setter
+    def damageMultiply(self, x :int):
+        if x < 0:
+            raise ValueError('Множитель не может быть отрицательным')
+        self._damageMultiply = x
+
+    @property 
+    def luck(self):
+        return self._luck
+        
+    @property
+    def luckMultiply(self):
+        return self._luckMultiply
+    
+    @luckMultiply.setter
+    def luckMultiply(self, x: int):
+        if x < 0:
+            raise ValueError('Множитель не может быть отрицательным')
+        self._luckMultiply = x
+
+    @property 
+    def photo(self):
+        return self._photo
+    
+    @property
+    def inventory(self):
+        return self._inventory
+    
+    @property
+    def status(self):
+        return self._status.copy()
+    
+    def FindStatus(self, item : Good) -> bool:
+        return item.id in [good.id for good in self._status]
+    
+    def AddStatus(self, item : Good):
+        if self.FindStatus(item):
+            raise ValueError('Двойной статус запрещен')
+        self._status.append(item)
+
+    def GetStatus(self, item : Good) -> Union[Good, None]:
+        for _item in self._status:
+            if _item.id == item.id:
+                return _item
+        return None 
+
+    def RemoveStatus(self, item : Good):
+        if not self.FindStatus(item):
+            raise ValueError('Попытка удалить несуществующий статус')
+        self._status.remove(self.GetStatus(item))
 
 Players :list[Player] = None
 
@@ -56,4 +149,5 @@ def GetPlayer(id : str) -> Union[Player, None]:
             return player
     return None 
 
-
+def AddPlayer(player : Player):
+    Players.append(player)

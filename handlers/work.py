@@ -29,7 +29,7 @@ async def work_start(call: types.CallbackQuery, state : FSMContext):
         work_id = int(work_id)
         work = Works[work_id]
     except:
-        await call.reply('Что то ты не то нажал')
+        await call.answer('Что то ты не то нажал')
         return
     
     scheduler.add_job(work_complete, trigger='interval', seconds=10, args=[call.message, state, user, work], coalesce=True, id=f'work_{user.userId}')
@@ -39,7 +39,7 @@ async def work_start(call: types.CallbackQuery, state : FSMContext):
     await call.message.reply_photo(photo=photo,caption=f'{user.name} отправился {work.name}')
     await call.answer()
 
-async def work_complete(message: types.Message, state : FSMContext, user : Player, work :Work):
+async def work_complete(message: types.Message, state : FSMContext, user : Player.Player, work :Work):
     if await state.get_state() == 'FSMWork:work':
         user.exp += work.expReward
         user.money += work.moneyReward

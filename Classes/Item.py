@@ -9,11 +9,9 @@ class HPPotion(Good):
     price : int = 50
     description : str = 'Хиляет перса'
 
-    @classmethod
-    def Effect(cls, user_id_from : int, user_id_to : int = 0) -> bool:
+    def Effect(self, user_id_from : int, user_id_to : int = 0) -> bool:
         player = Player.GetPlayer(user_id_from)
         player.hp += 50
-        if player.hp > 100: player.hp = 100
         return True
 
 
@@ -24,22 +22,21 @@ class LuckPotion(Good):
     price : int = 200
     description : str = 'Увеличивает удачу'
 
-    @classmethod
-    def Effect(cls, user_id_from : int, user_id_to : int = 0) -> bool:
+    def Effect(self, user_id_from : int, user_id_to : int = 0) -> bool:
+        if not scheduler.get_job(f'{self.id}_{user_id_from}') is None:
+            return False
         player = Player.GetPlayer(user_id_from)
         player.luckMultiply *= 1.5
-        if not scheduler.get_job(f'{cls.id}_{user_id_from}') is None:
-            return False
-        player.status[f'{cls.id}_{user_id_from}'] = f'{cls.name}: 1.5х удачи'
-        scheduler.add_job(cls.endEffect, trigger='interval', hours=2, args=[user_id_from], id=f'item_{cls.id}_{user_id_from}')
+        player.AddStatus(self)
+        item_id = f'item_{self.id}_{user_id_from}'
+        scheduler.add_job(self.endEffect, trigger='interval', seconds=10, args=[user_id_from, item_id], id=item_id)
         return True
     
-    @classmethod
-    def endEffect(cls, player_id : int, item_id : str):
+    def endEffect(self, player_id : int, item_id : int):
         player = Player.GetPlayer(player_id)
         player.luckMultiply /= 1.5
-        player.status[f'item_{item_id}_{player_id}'] = None
-        scheduler.remove_job(f'{item_id}_{player_id}')
+        player.RemoveStatus(self)
+        scheduler.remove_job(item_id)
     
 
 class DamagePotion(Good):
@@ -49,22 +46,21 @@ class DamagePotion(Good):
     price : int = 200
     description : str = 'Увеличивает силу'
 
-    @classmethod
-    def Effect(cls, user_id_from : int, user_id_to : int = 0) -> bool:
+    def Effect(self, user_id_from : int, user_id_to : int = 0) -> bool:
+        if not scheduler.get_job(f'{self.id}_{user_id_from}') is None:
+            return False
         player = Player.GetPlayer(user_id_from)
         player.damageMultiply *= 1.5
-        if not scheduler.get_job(f'{cls.id}_{user_id_from}') is None:
-            return False
-        player.status[f'{cls.id}_{user_id_from}'] = f'{cls.name}: 1.5х урона'
-        scheduler.add_job(cls.endEffect, trigger='interval', hours=2, args=[user_id_from], id=f'item_{cls.id}_{user_id_from}')
+        player.AddStatus(self)
+        item_id = f'item_{self.id}_{user_id_from}'
+        scheduler.add_job(self.endEffect, trigger='interval', seconds=10, args=[user_id_from, item_id], id=item_id)
         return True
 
-    @classmethod
-    def endEffect(cls ,player_id : int):
+    def endEffect(self ,player_id : int, item_id : int):
         player = Player.GetPlayer(player_id)
         player.damageMultiply /= 1.5
-        player.status[f'item_{cls.id}_{player_id}'] = None
-        scheduler.remove_job(f'{cls.id}_{player_id}')
+        player.RemoveStatus(self)
+        scheduler.remove_job(item_id)
     
 
 Items : dict[str, Good] = {
