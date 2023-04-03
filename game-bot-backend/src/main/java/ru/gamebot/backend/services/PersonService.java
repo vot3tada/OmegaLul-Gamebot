@@ -8,6 +8,7 @@ import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.repository.PersonRepository;
 import ru.gamebot.backend.util.PersonNotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,5 +26,9 @@ public class PersonService {
         return foundPerson.orElseThrow(PersonNotFoundException::new);
     }
 
+    public List<Person>  getAllPersons (){
+        List<Person> allFoundPersons = personRepository.findAll();
+        return allFoundPersons;
+    }
 
 }

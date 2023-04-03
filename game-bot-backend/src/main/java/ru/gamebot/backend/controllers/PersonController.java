@@ -9,6 +9,8 @@ import ru.gamebot.backend.services.PersonService;
 import ru.gamebot.backend.util.PersonErrorResponse;
 import ru.gamebot.backend.util.PersonNotFoundException;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/person")
 public class PersonController {
@@ -24,6 +26,12 @@ public class PersonController {
                                 @RequestParam(defaultValue = "empty") int userId){
         return personService.getPerson(chatId,userId);
     }
+
+    @GetMapping("/all")
+    public List<Person> getAllPersons(){
+        return personService.getAllPersons();
+    }
+
 
     @ExceptionHandler
     private ResponseEntity<PersonErrorResponse> handleException (PersonNotFoundException e){
