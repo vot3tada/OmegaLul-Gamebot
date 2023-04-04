@@ -169,7 +169,7 @@ class Player():
 
 Players :list[Player] = None
 
-def GetAllPlayers():
+def GetAllPlayers(chat_id : int) -> list[Player]:
     return Players.copy()
 
 def FindPlayer(chat_id: int, user_id: int) -> bool:
