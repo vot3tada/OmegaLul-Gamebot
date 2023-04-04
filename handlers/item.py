@@ -4,10 +4,10 @@ import Classes.Player as Player
 import Classes.Item as Item
 
 async def useItem(call : types.CallbackQuery):
-    if not Player.FindPlayer(f'{call.message.chat.id}_{call.from_user.id}'):
+    if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
         await call.answer('Нужно зарегаться для такого')
         return
-    player = Player.GetPlayer(f'{call.message.chat.id}_{call.from_user.id}')
+    player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
     itemId: str = call.data.replace("item:",'')
     good : Item.Item = Item.Items[itemId]
     if not player.FindItem(good):
