@@ -72,9 +72,9 @@ class Player():
 
     @property
     def level(self):
-        _level = -1
+        _level = 0
         exp = self.exp
-        while exp > 0:
+        while exp - 100 + 10 * _level >= 0:
             _level += 1 
             exp -= 100 + 10 * _level
         return _level

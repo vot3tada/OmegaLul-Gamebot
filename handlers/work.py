@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 from utils.scheduler import scheduler
 import Classes.Player as Player
-from Classes.Work import Works, Work
+import Classes.Work as Work
 
 class FSMWork(StatesGroup):
     work=State()
@@ -12,9 +12,9 @@ class FSMWork(StatesGroup):
 async def work_info(message : types.Message):
     work_text = 'Хотите отправить вашего работягу по вашим стопам ?\nГде будем батрачить ?\n'
     keyboard = types.InlineKeyboardMarkup()
-    for i in range(len(Works)):
-        work_text += f'{i}) {Works[i].name} (нужен уровень: {Works[i].levelRequired})\nОпыт: {Works[i].expReward} Деньги: {Works[i].moneyReward}\n\n'
-        keyboard.add(types.InlineKeyboardButton(text=Works[i].name, callback_data=f"work:{i}"))
+    for i in range(len(Work.Works)):
+        work_text += f'{i}) {Work.Works[i].name} (нужен уровень: {Work.Works[i].levelRequired})\nОпыт: {Work.Works[i].expReward} Деньги: {Work.Works[i].moneyReward}\n\n'
+        keyboard.add(types.InlineKeyboardButton(text=Work.Works[i].name, callback_data=f"work:{i}"))
     work_text += 'Время работы: 2 часика'
     await message.answer(work_text, reply_markup=keyboard)
 
@@ -27,11 +27,13 @@ async def work_start(call: types.CallbackQuery, state : FSMContext):
     work_id = call.data.replace('work:','')
     try:
         work_id = int(work_id)
-        work = Works[work_id]
+        work = Work.Works[work_id]
     except:
         await call.answer('Что то ты не то нажал')
         return
-    
+    if user.level < work.levelRequired:
+        await call.answer('Это не ваш уровень')
+        return
     scheduler.add_job(work_complete, trigger='interval', seconds=10, args=[call.message, state, user, work], coalesce=True, id=f'work_{user.userId}')
 
     await FSMWork.work.set()
@@ -41,7 +43,7 @@ async def work_start(call: types.CallbackQuery, state : FSMContext):
 
 async def work_complete(message: types.Message, state : FSMContext, user : Player.Player, work :Work):
     if await state.get_state() == 'FSMWork:work':
-        user.exp += work.expReward
+        user.exp += work.expReward 
         user.money += work.moneyReward
         await state.finish()
         scheduler.remove_job(f'work_{user.userId}')

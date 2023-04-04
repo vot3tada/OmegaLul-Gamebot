@@ -10,7 +10,7 @@ async def get_avatar(message : types.Message, state: FSMContext):
         return
     player = Player.GetPlayer(f'{message.chat.id}_{message.from_user.id}')
     orig = player.photo
-    text = f'Имя: {player.name}\nХП: {player.hp}\nОпыт: {player.exp}\nДеньги: {player.money}\nСтатус:\n'
+    text = f'Имя: {player.name}\nХП: {player.hp}\nУровень: {player.level} (опыт: {player.exp})\nДеньги: {player.money}\nСтатус:\n'
     for st in player.status:
         text += f'{st.name}: {st.description}\n'
     photo=open(orig, "rb")
