@@ -31,4 +31,8 @@ public class PersonService {
         return allFoundPersons;
     }
 
+    @Transactional
+    public void updatePerson(Person person){
+        personRepository.save(person);
+    }
 }

@@ -1,9 +1,11 @@
 package ru.gamebot.backend.models;
 
 
+import jakarta.persistence.Embeddable;
+
 import java.io.Serializable;
 import java.util.Objects;
-
+@Embeddable
 public class PersonPK implements Serializable {
 
     private int userId;

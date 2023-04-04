@@ -1,53 +1,45 @@
-package ru.gamebot.backend.models;
+package ru.gamebot.backend.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 
-
-@Entity
-@Table(name = "person")
-public class Person {
-
-    @EmbeddedId
-    private PersonPK personPk;
-
-
-    @Column(name="name")
+public class PersonDTO {
+    private int chatId;
+    private int userId;
     private String name;
 
-    @Column(name="experience")
     private int experience;
 
-    @Column(name="experienceMultiply")
+
     private int experienceMultiply;
 
-    @Column(name="money")
     private int money;
 
-    @Column(name="photo")
     private String photo;
 
-    @Column(name="luck")
     private float luck;
-
-    @Column(name="luckMultiply")
     private int luckMultiply;
 
-    @Column(name="hp")
     private int hp;
 
-    @Column(name="damage")
     private int damage;
-
-    @Column(name="damageMultiply")
     private int damageMultiply;
 
-    public PersonPK getPersonPk() {
-        return personPk;
+    public int getChatId() {
+        return chatId;
     }
 
-    public void setPersonPk(PersonPK personPk) {
-        this.personPk = personPk;
+    public void setChatId(int chatId) {
+        this.chatId = chatId;
     }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
     public String getName() {
         return name;
     }
@@ -127,8 +119,4 @@ public class Person {
     public void setDamageMultiply(int damageMultiply) {
         this.damageMultiply = damageMultiply;
     }
-
-
-
 }
-
