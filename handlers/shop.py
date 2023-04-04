@@ -2,54 +2,50 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-from Classes.Player import Players
-import Classes.Item as Items
+import Classes.Player as Player
+from Classes.Item import Items
 
 
 #keyboard = types.InlineKeyboardMarkup()
 #keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
 #keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[index][0]}_{fights[index][1]}"))
 
-
 class FSMShop(StatesGroup):
     isShopping = State()
-    goods = [Items.HPPotion(),
-             Items.DamagePotion(),
-             Items.LuckPotion()]
 
-async def shop_start(message : types.message):
-    if not f'{message.chat.id}_{message.from_user.id}' in Players.keys():
-        await message.reply('Зарегайся другалек')
+async def shop_start(message : types.Message):
+    if not Player.FindPlayer(f'{message.chat.id}_{message.from_user.id}'):
+        await message.reply('Нужно зарегаться для такого')
         return
     #await FSMShop.isShopping.set()
     text = 'Добро пожаловать в магазин!\nУ нас есть:'
     keyboard = types.InlineKeyboardMarkup()
-    for i in FSMShop.goods:
-        keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.name}"))
+    for i in Items.values():
+        keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.id}"))
     #keyboard.add(types.InlineKeyboardButton(text = 'Выйти', callback_data=f"buy:Exit"))
     await message.reply(text, reply_markup=keyboard)
 
 async def shopping(call: types.CallbackQuery, state : FSMContext):
-    if not f'{call.message.chat.id}_{call.from_user.id}' in Players.keys():
-        await call.message.reply('Зарегайся другалек')
+    if not Player.FindPlayer(f'{call.message.chat.id}_{call.from_user.id}'):
+        await call.answer('Нужно зарегаться для такого')
         return
-    try:
-        buy = call.data.replace("buy:",'')
-        #if buy == 'Exit':
-        #    await state.finish()
-        #    await call.message.answer('Вы вышли из магазина')
-        #    return
-        good = [i for i in FSMShop.goods if i.name == buy][0]
-        if Players[f'{call.message.chat.id}_{call.from_user.id}'].money < good.price:
-            await call.answer('У вас не хватает денег')
-            return
-        Players[f'{call.message.chat.id}_{call.from_user.id}'].money -= good.price
-        Players[f'{call.message.chat.id}_{call.from_user.id}'].inventory.append(good)
-        await call.answer('Вы купили')
-        await call.answer()
-    except:
+    """try:"""
+    buy : str = call.data.replace("buy:",'')
+    #if buy == 'Exit':
+    #    await state.finish()
+    #    await call.message.answer('Вы вышли из магазина')
+    #    return
+    good = Items[buy]
+    player = Player.GetPlayer(f'{call.message.chat.id}_{call.from_user.id}')
+    if player.money < good.price:
+        await call.answer('У вас не хватает денег')
+        return
+    player.money -= good.price
+    player.AddItem(good)
+    await call.answer('Вы купили')
+    """except:
         await state.finish()
-        await call.answer()
+        await call.answer()"""
     
 
 def register_handlers_shop(dp: Dispatcher):

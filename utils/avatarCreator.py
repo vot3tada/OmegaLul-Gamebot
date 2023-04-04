@@ -2,11 +2,18 @@ import cv2
 import dlib
 import numpy as np
 from matplotlib import pyplot as plt
+import random
 
-classes = {
-    'knight':"knight.png",
-    'thief':"thief.jpg",
-    'engineer':'eng1.png'
+classes : dict[str, list[str]] = {
+    'knight':[
+        "knight.png"
+    ],
+    'thief':[
+        "thief.jpg"
+    ],
+    'engineer':[
+        'eng1.png'
+    ]
 }
 
 def getClasses() -> list:
@@ -21,14 +28,13 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     """
     # Loading base images and coverting them to grayscale
     face = cv2.imread(original)
-    body = cv2.imread(f'./static/classes/{classes[str.lower(avatar_class)]}')
+    body = cv2.imread(f'./static/classes/{ random.choice(classes[str.lower(avatar_class)]) }')
 
     face_gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
     body_gray = cv2.cvtColor(body, cv2.COLOR_BGR2GRAY)
 
     # Create empty matrices in the images' shapes
     height, width = face_gray.shape
-    mask = np.zeros((height, width), np.uint8)
 
     height, width, channels = body.shape
 
@@ -141,8 +147,6 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
         cv2.line(lines_space_mask, pt1, pt2, 255)
         cv2.line(lines_space_mask, pt2, pt3, 255)
         cv2.line(lines_space_mask, pt1, pt3, 255)
-
-        lines_space = cv2.bitwise_and(face, face, mask=lines_space_mask)
 
         # Calculates the delaunay triangles of the second person's face
 

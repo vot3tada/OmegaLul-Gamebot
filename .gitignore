@@ -11,3 +11,4 @@ config.ini
 *.pyc
 *.pkl
 /venv
+*.json

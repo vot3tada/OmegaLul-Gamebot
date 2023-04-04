@@ -3,8 +3,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import utils.avatarCreator as ac
-import Classes.Item as Item
-from Classes.Player import Players, Player
+import Classes.Player as Player
 
 class FSMRegistation(StatesGroup):
     name = State()
@@ -14,7 +13,7 @@ class FSMRegistation(StatesGroup):
     photo = State()
 
 async def reg_start(message : types.Message):
-    if f'{message.chat.id}_{message.from_user.id}' in Players.keys():
+    if Player.FindPlayer(f'{message.chat.id}_{message.from_user.id}'):
         await message.reply('Ты уже зареган(а)')
         return
     await FSMRegistation.name.set()
@@ -28,7 +27,7 @@ async def change_name_start(message : types.Message):
     await message.reply('Напиши имя')
 
 async def change_name_end(message : types.Message, state: FSMContext):
-    Players[str(message.from_user.id)] = message.text
+    Player.GetPlayer(f'{message.chat.id}_{message.from_user.id}').name = message.text
     await state.finish()
 
 async def get_name(message : types.Message, state: FSMContext):
@@ -53,7 +52,7 @@ async def get_photoclass(call: types.CallbackQuery, state : FSMContext):
     try:
         photoClass = call.data.replace("class:",'')
         async with state.proxy() as data:
-            data['photoclass'] = photoClass
+            data['photoclass'] = photoClass.lower()
         await FSMRegistation.photo.set()
         await call.message.reply('Добавь фото')
     except:
@@ -68,18 +67,15 @@ async def end_registation(message : types.Message, state: FSMContext):
     except:
         await message.reply('Плохое фото, попробуй ещё раз')
         return
-    newPlayer = Player()
-    async with state.proxy() as data:
-        newPlayer.name = data['name']
+    newPlayer = Player.Player(
+        f'{message.chat.id}_{message.from_user.id}',
+        (await state.get_data())['name'],
+        orig
+    )
     await state.finish()
-    newPlayer.photo = orig
-    Players[f'{message.chat.id}_{message.from_user.id}'] = newPlayer 
+    Player.AddPlayer(newPlayer)
     photo=open(orig, "rb")
-    
-    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + Players[str(message.from_user.id)].name + '!!')
-
-
-
+    await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + newPlayer.name + '!!')
 
 
 async def cancel_registration(message: types, state: FSMContext):
