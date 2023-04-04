@@ -2,7 +2,6 @@ from aiogram.dispatcher import Dispatcher
 from aiogram import types
 import Classes.Player as Player
 import Classes.Item as Item
-from Classes.Good import Good
 
 async def useItem(call : types.CallbackQuery):
     if not Player.FindPlayer(f'{call.message.chat.id}_{call.from_user.id}'):
@@ -10,13 +9,12 @@ async def useItem(call : types.CallbackQuery):
         return
     player = Player.GetPlayer(f'{call.message.chat.id}_{call.from_user.id}')
     itemId: str = call.data.replace("item:",'')
-    good : Good = Item.Items[itemId]
-    if not player.inventory.count(good):
+    good : Item.Item = Item.Items[itemId]
+    if not player.FindItem(good):
         await call.answer('Нет такого предмета')
         return
-    itemIndex = player.inventory.index(good)
     good.Effect(f'{call.message.chat.id}_{call.from_user.id}')
-    player.inventory.pop(itemIndex)
+    player.RemoveItem(good)
     await call.answer('Предмет использован')
     return
 

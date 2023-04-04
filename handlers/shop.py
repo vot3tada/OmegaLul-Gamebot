@@ -29,24 +29,23 @@ async def shopping(call: types.CallbackQuery, state : FSMContext):
     if not Player.FindPlayer(f'{call.message.chat.id}_{call.from_user.id}'):
         await call.answer('Нужно зарегаться для такого')
         return
-    try:
-        buy : str = call.data.replace("buy:",'')
-        #if buy == 'Exit':
-        #    await state.finish()
-        #    await call.message.answer('Вы вышли из магазина')
-        #    return
-        good = Items[buy]
-        player = Player.GetPlayer(f'{call.message.chat.id}_{call.from_user.id}')
-        if player.money < good.price:
-            await call.answer('У вас не хватает денег')
-            return
-        player.money -= good.price
-        player.inventory.append(good)
-        await call.answer('Вы купили')
-        await call.answer()
-    except:
+    """try:"""
+    buy : str = call.data.replace("buy:",'')
+    #if buy == 'Exit':
+    #    await state.finish()
+    #    await call.message.answer('Вы вышли из магазина')
+    #    return
+    good = Items[buy]
+    player = Player.GetPlayer(f'{call.message.chat.id}_{call.from_user.id}')
+    if player.money < good.price:
+        await call.answer('У вас не хватает денег')
+        return
+    player.money -= good.price
+    player.AddItem(good)
+    await call.answer('Вы купили')
+    """except:
         await state.finish()
-        await call.answer()
+        await call.answer()"""
     
 
 def register_handlers_shop(dp: Dispatcher):

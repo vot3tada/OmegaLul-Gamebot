@@ -9,7 +9,7 @@ class Player():
                  photo : str,
                  exp : int  = 0,
                  money: int  = 1000,
-                 inventory : list[Good] = [],
+                 inventory : list[list[Good,int]] = [],
                  luck : float = 0.2,
                  luckMultiply : int = 1,
                  hp : int = 100,
@@ -113,11 +113,34 @@ class Player():
     
     @property
     def inventory(self):
-        return self._inventory
+        return self._inventory.copy()
     
     @property
     def status(self):
         return self._status.copy()
+    
+    def FindItem(self, item : Good) -> bool:
+        return item.id in [good[0].id for good in self._inventory]
+    
+    def GetItem(self, item : Good) -> Union[list[Good,int], None]:
+        for _item in self._inventory:
+            if _item[0].id == item.id:
+                return _item
+        return None 
+    
+    def AddItem(self, item : Good):
+        if self.FindItem(item):
+            self.GetItem(item)[1] += 1
+        else:
+            self._inventory.append([item, 1])
+    
+    def RemoveItem(self, item: Good):
+        if not self.FindItem(item):
+            raise ValueError('Попытка удалить несуществующий статус')
+        _item : list[Good, int] = self.GetItem(item)
+        _item[1] -= 1
+        if not _item[1]:
+            self._inventory.remove(_item)
     
     def FindStatus(self, item : Good) -> bool:
         return item.id in [good.id for good in self._status]

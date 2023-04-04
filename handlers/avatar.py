@@ -28,9 +28,8 @@ async def get_inventory(message : types.Message):
         await message.reply(text)
         return
     keyboard = types.InlineKeyboardMarkup()
-    setInventory = set(player.inventory)
-    for i in setInventory:
-        keyboard.add(types.InlineKeyboardButton(text = f'{i.name}: {player.inventory.count(i)}', callback_data=f"item:{i.id}"))
+    for i in player.inventory:
+        keyboard.add(types.InlineKeyboardButton(text = f'{i[0].name}: {player.inventory.count(i)}', callback_data=f"item:{i[0].id}"))
     await message.reply(text, reply_markup=keyboard)
 
 def register_handlers_user(dp: Dispatcher):

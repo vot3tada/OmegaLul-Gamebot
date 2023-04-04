@@ -5,5 +5,5 @@ class Good():
     price :int
     description : str
     duration : int = 10
-    
+
     
