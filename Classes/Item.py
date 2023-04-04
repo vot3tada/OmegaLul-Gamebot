@@ -1,66 +1,71 @@
 import Classes.Player as Player
 from Classes.Good import Good
 from utils.scheduler import scheduler
+
+class Item(Good):
+
+    def buff(self, player: Player.Player):
+        pass
+
+    def debuff(self, player: Player.Player):
+        pass
+
+    def Effect(self, user_id_from : int, user_id_to : int = 0) -> bool:
+        if not scheduler.get_job(f'{self.id}_{user_id_from}') is None:
+            raise ValueError('Попытка применения двойного эффекта')
+        player = Player.GetPlayer(user_id_from)
+        self.buff(player)
+        if self.duration:
+            player.AddStatus(self)
+            item_id = f'item_{self.id}_{user_id_from}'
+            scheduler.add_job(self.endEffect, trigger='interval', seconds=self.duration, args=[user_id_from, item_id], id=item_id)
+        return True
     
-class HPPotion(Good):
+    def endEffect(self, player_id : int, item_id : int):
+        player = Player.GetPlayer(player_id)
+        self.debuff(player)
+        player.RemoveStatus(self)
+        scheduler.remove_job(item_id)
+
+    
+class HPPotion(Item):
 
     name : str = 'Жигули Барное'
     id : str = 'HPPotion'
     price : int = 50
     description : str = 'Хиляет перса'
+    duration : int = 0
 
-    def Effect(self, user_id_from : int, user_id_to : int = 0) -> bool:
-        player = Player.GetPlayer(user_id_from)
+    def buff(self, player : Player.Player):
         player.hp += 50
-        return True
 
 
-class LuckPotion(Good):
+class LuckPotion(Item):
 
     name : str = 'Немного удачи'
     id : str = 'LuckPotion'
     price : int = 200
     description : str = 'Увеличивает удачу'
 
-    def Effect(self, user_id_from : int, user_id_to : int = 0) -> bool:
-        if not scheduler.get_job(f'{self.id}_{user_id_from}') is None:
-            return False
-        player = Player.GetPlayer(user_id_from)
+    def buff(self, player : Player.Player):
         player.luckMultiply *= 1.5
-        player.AddStatus(self)
-        item_id = f'item_{self.id}_{user_id_from}'
-        scheduler.add_job(self.endEffect, trigger='interval', seconds=10, args=[user_id_from, item_id], id=item_id)
-        return True
-    
-    def endEffect(self, player_id : int, item_id : int):
-        player = Player.GetPlayer(player_id)
+
+    def debuff(self, player: Player.Player):
         player.luckMultiply /= 1.5
-        player.RemoveStatus(self)
-        scheduler.remove_job(item_id)
     
 
-class DamagePotion(Good):
+class DamagePotion(Item):
 
     name : str = 'Немного дамага'
     id : str = 'DamagePotion'
     price : int = 200
     description : str = 'Увеличивает силу'
 
-    def Effect(self, user_id_from : int, user_id_to : int = 0) -> bool:
-        if not scheduler.get_job(f'{self.id}_{user_id_from}') is None:
-            return False
-        player = Player.GetPlayer(user_id_from)
-        player.damageMultiply *= 1.5
-        player.AddStatus(self)
-        item_id = f'item_{self.id}_{user_id_from}'
-        scheduler.add_job(self.endEffect, trigger='interval', seconds=10, args=[user_id_from, item_id], id=item_id)
-        return True
+    def buff(self, player : Player.Player):
+        player.luckMultiply *= 1.5
 
-    def endEffect(self ,player_id : int, item_id : int):
-        player = Player.GetPlayer(player_id)
-        player.damageMultiply /= 1.5
-        player.RemoveStatus(self)
-        scheduler.remove_job(item_id)
+    def debuff(self, player: Player.Player):
+        player.luckMultiply /= 1.5
     
 
 Items : dict[str, Good] = {
