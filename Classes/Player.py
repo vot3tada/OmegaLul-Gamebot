@@ -4,7 +4,8 @@ from typing import Union
 class Player():
 
     def __init__(self, 
-                 userId : str,
+                 chatId : int,
+                 userId : int,
                  name: str, 
                  photo : str,
                  exp : int  = 0,
@@ -16,6 +17,7 @@ class Player():
                  damage : int = 20,
                  damageMultyply : int = 1,
                  status : list[Good] = []):
+        self._chatId = chatId
         self._userId = userId
         self._name = name
         self._exp = exp
@@ -28,6 +30,10 @@ class Player():
         self._damage = damage
         self._damageMultiply = damageMultyply
         self._status = status
+
+    @property
+    def chatId(self):
+        return self._chatId
 
     @property
     def userId(self):
@@ -163,12 +169,15 @@ class Player():
 
 Players :list[Player] = None
 
-def FindPlayer(id: str) -> bool:
-    return id in [player.userId for player in Players]
-
-def GetPlayer(id : str) -> Union[Player, None]:
+def FindPlayer(chat_id: int, user_id: int) -> bool:
     for player in Players:
-        if player.userId == id:
+        if player._userId == user_id and player._chatId == chat_id:
+            return True
+    return False
+
+def GetPlayer(chat_id: int, user_id: int) -> Union[Player, None]:
+    for player in Players:
+        if player._userId == user_id and player._chatId == chat_id:
             return player
     return None 
 

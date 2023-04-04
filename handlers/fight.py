@@ -67,9 +67,9 @@ async def InitAttackStep(message: types.CallbackQuery):
                               (st1d.get('damage') * 0.2 * st1d.get('rageFactor')))))
         )
         replyText = random.choice(fight_texts) 
-        player1 = Player.GetPlayer(f'{message.message.chat.id}_{fights[message.message.chat.id][index][0]}')
+        player1 = Player.GetPlayer(message.message.chat.id, fights[message.message.chat.id][index][0])
         name1 = player1.name
-        player2 = Player.GetPlayer(f'{message.message.chat.id}_{fights[message.message.chat.id][index][1]}')
+        player2 = Player.GetPlayer(message.message.chat.id, fights[message.message.chat.id][index][1])
         name2 = player2.name
         if lk1 == 0: 
             replyText += f'{name1} словил(а) удачу и уворачивается от урона!\n'
@@ -122,10 +122,10 @@ async def fight_call(message : types.Message):
     if not message.chat.id in fights.keys():
         fights[message.chat.id] = []
 
-    if not Player.FindPlayer(f'{message.chat.id}_{message.from_user.id}'):
+    if not Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Ты не зареган, боец')
         return
-    playerTo = Player.GetPlayer(f'{message.chat.id}_{message.from_user.id}')
+    playerTo = Player.GetPlayer(message.chat.id, message.from_user.id)
 
     if not playerTo.hp:
         await message.reply('Твое здоровье на нуле, боец')
@@ -135,10 +135,10 @@ async def fight_call(message : types.Message):
         if message.reply_to_message.from_user.id == (await bot.get_me()).id:
             await message.answer('Омегалюль вам не по зубам, салага')
             return
-        if not Player.GetPlayer(f'{message.chat.id}_{message.reply_to_message.from_user.id}'):
+        if not Player.FindPlayer(message.chat.id, message.reply_to_message.from_user.id):
             await message.reply('Этот боец не зареган')
             return
-        playerFrom = Player.GetPlayer(f'{message.chat.id}_{message.reply_to_message.from_user.id}')
+        playerFrom = Player.GetPlayer(message.chat.id, message.reply_to_message.from_user.id)
         index = fightsFind(message.chat.id, message.from_user.id) 
         if index != -1:
             if fights[message.chat.id][index][0] == message.from_user.id:
@@ -161,7 +161,7 @@ async def fight_refuse(message: types.Message, state :FSMContext):
     if index == -1:
         await message.answer("Нечего отменять")
     else:
-        user = Player.GetPlayer(f'{message.chat.id}_{message.from_user.id}')
+        user = Player.GetPlayer(message.chat.id, message.from_user.id)
         if await state.get_state() == 'Fight:Ready' or await state.get_state() == 'Fight:Attack':
             st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][0])
             await st.finish()
@@ -183,7 +183,7 @@ async def fight_accept(message: types.Message):
     else:
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][0])
         await st.set_state(Fight.Ready)
-        user1 = Player.GetPlayer(f'{message.chat.id}_{fights[message.chat.id][index][0]}')
+        user1 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][0])
         fighterData = fighter.copy()
         fighterData['health'] = user1.hp
         fighterData['damage'] = user1.damage * user1.damageMultiply
@@ -191,7 +191,7 @@ async def fight_accept(message: types.Message):
         await st.set_data(fighterData)
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][1])
         await st.set_state(Fight.Ready)
-        user2 = Player.GetPlayer(f'{message.chat.id}_{fights[message.chat.id][index][1]}')
+        user2 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][1])
         fighterData = fighter.copy()
         fighterData['health'] = user2.hp
         fighterData['damage'] = user2.damage * user2.damageMultiply

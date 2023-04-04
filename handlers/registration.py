@@ -13,7 +13,7 @@ class FSMRegistation(StatesGroup):
     photo = State()
 
 async def reg_start(message : types.Message):
-    if Player.FindPlayer(f'{message.chat.id}_{message.from_user.id}'):
+    if Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Ты уже зареган(а)')
         return
     await FSMRegistation.name.set()
@@ -25,7 +25,7 @@ async def change_name_start(message : types.Message):
     await message.reply('Напиши имя')
 
 async def change_name_end(message : types.Message, state: FSMContext):
-    Player.GetPlayer(f'{message.chat.id}_{message.from_user.id}').name = message.text
+    Player.GetPlayer(message.chat.id, message.from_user.id).name = message.text
     await state.finish()
 
 async def get_name(message : types.Message, state: FSMContext):
@@ -66,7 +66,8 @@ async def end_registation(message : types.Message, state: FSMContext):
         await message.reply('Плохое фото, попробуй ещё раз')
         return
     newPlayer = Player.Player(
-        f'{message.chat.id}_{message.from_user.id}',
+        message.chat.id,
+        message.from_user.id,
         (await state.get_data())['name'],
         orig
     )
@@ -76,7 +77,7 @@ async def end_registation(message : types.Message, state: FSMContext):
     await message.answer_photo(photo, caption='Ещё один красавчик/одна чикуля с нами: ' + newPlayer.name + '!!')
 
 
-async def cancel_registration(message: types, state: FSMContext):
+async def cancel_registration(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply('Регистрация отменена')
     

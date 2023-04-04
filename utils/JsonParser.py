@@ -19,6 +19,7 @@ class Decoder(json.JSONDecoder):
     def object_hook(self, o):
         if not o.get('_userId') is None:
             decoded = Player.Player(
+                o.get('_chatId'),
                 o.get('_userId'), 
                 o.get('_name'), 
                 o.get('_photo'),

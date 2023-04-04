@@ -14,7 +14,7 @@ class FSMShop(StatesGroup):
     isShopping = State()
 
 async def shop_start(message : types.Message):
-    if not Player.FindPlayer(f'{message.chat.id}_{message.from_user.id}'):
+    if not Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Нужно зарегаться для такого')
         return
     #await FSMShop.isShopping.set()
@@ -26,7 +26,7 @@ async def shop_start(message : types.Message):
     await message.reply(text, reply_markup=keyboard)
 
 async def shopping(call: types.CallbackQuery, state : FSMContext):
-    if not Player.FindPlayer(f'{call.message.chat.id}_{call.from_user.id}'):
+    if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
         await call.answer('Нужно зарегаться для такого')
         return
     """try:"""
@@ -36,7 +36,7 @@ async def shopping(call: types.CallbackQuery, state : FSMContext):
     #    await call.message.answer('Вы вышли из магазина')
     #    return
     good = Items[buy]
-    player = Player.GetPlayer(f'{call.message.chat.id}_{call.from_user.id}')
+    player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
     if player.money < good.price:
         await call.answer('У вас не хватает денег')
         return
