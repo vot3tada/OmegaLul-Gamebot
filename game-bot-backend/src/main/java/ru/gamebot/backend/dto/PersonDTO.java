@@ -1,10 +1,14 @@
 package ru.gamebot.backend.dto;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 public class PersonDTO {
+    @NotNull(groups = CreatePerson.class)
     private int chatId;
+    @NotNull(groups = CreatePerson.class)
     private int userId;
+    @NotEmpty(groups = CreatePerson.class)
     private String name;
 
     private int experience;
