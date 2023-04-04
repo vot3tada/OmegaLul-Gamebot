@@ -169,6 +169,9 @@ class Player():
 
 Players :list[Player] = None
 
+def GetAllPlayers():
+    return Players.copy()
+
 def FindPlayer(chat_id: int, user_id: int) -> bool:
     for player in Players:
         if player._userId == user_id and player._chatId == chat_id:
