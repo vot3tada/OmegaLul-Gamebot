@@ -2,38 +2,23 @@ package ru.gamebot.backend.models;
 
 
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
 @Embeddable
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PersonPK implements Serializable {
 
     private int userId;
 
     private int chatId;
-
-    public PersonPK(){
-
-    }
-    public PersonPK(int chatId, int userId){
-        this.chatId = chatId;
-        this.userId = userId;
-    }
-    public void setChatId(int chatId) {
-        this.chatId = chatId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public int getChatId() {
-        return chatId;
-    }
 
     @Override
     public boolean equals(Object o) {

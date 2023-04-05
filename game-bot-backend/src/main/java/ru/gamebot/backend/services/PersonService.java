@@ -1,6 +1,6 @@
 package ru.gamebot.backend.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import ru.gamebot.backend.models.Person;
@@ -13,12 +13,9 @@ import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class PersonService {
     private final PersonRepository personRepository;
-    @Autowired
-    public PersonService(PersonRepository personRepository){
-        this.personRepository = personRepository;
-    }
 
     public Person getPerson(int chatId, int userId){
         PersonPK personPK = new PersonPK(chatId, userId);
@@ -27,8 +24,7 @@ public class PersonService {
     }
 
     public List<Person>  getAllPersons (){
-        List<Person> allFoundPersons = personRepository.findAll();
-        return allFoundPersons;
+        return personRepository.findAll();
     }
 
     @Transactional

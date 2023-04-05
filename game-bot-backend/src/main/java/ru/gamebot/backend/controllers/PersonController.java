@@ -1,7 +1,7 @@
 package ru.gamebot.backend.controllers;
 
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -22,14 +22,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/person")
+@RequiredArgsConstructor
 public class PersonController {
 
     private final PersonService personService;
 
-    @Autowired
-    public PersonController(PersonService personService){
-        this.personService = personService;
-    }
+
     @GetMapping("/id")
     public Person getPersonByID(@RequestParam(defaultValue = "empty") int chatId,
                                 @RequestParam(defaultValue = "empty") int userId){
