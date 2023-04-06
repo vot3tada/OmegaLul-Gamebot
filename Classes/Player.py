@@ -1,5 +1,6 @@
 from Classes.Good import Good
 from typing import Union
+from utils.scheduler import scheduler
 
 class Player():
 
@@ -167,10 +168,35 @@ class Player():
             raise ValueError('Попытка удалить несуществующий статус')
         self._status.remove(self.GetStatus(item))
 
+    def BuffByItem(self, item: Good):
+        if not scheduler.get_job(f'{item.id}_{self._chatId}_{self._userId}') is None:
+            raise ValueError('Попытка применения двойного эффекта')
+        
+        for key in item.effects.keys():
+            setattr(self, key, getattr(self, key) + item.effects[key])
+
+        if item.duration:
+            self.AddStatus(item)
+            buff_id = f'{item.id}_{self._chatId}_{self._userId}'
+            scheduler.add_job(self._debuffByItem, trigger='interval', seconds=item.duration, args=[item], id=buff_id)
+
+    def _debuffByItem(self, item: Good):
+        buff_id = f'{item.id}_{self._chatId}_{self._userId}'
+
+        for key in item.effects.keys():
+            setattr(self, key, getattr(self, key) - item.effects[key])
+
+        self.RemoveStatus(item)
+        scheduler.remove_job(buff_id)
+
 Players :list[Player] = None
 
 def GetAllPlayers(chat_id : int) -> list[Player]:
-    return Players.copy()
+    players : list[Player] = []
+    for player in Players:
+        if player.chatId == chat_id:
+            players.append(player)
+    return players
 
 def FindPlayer(chat_id: int, user_id: int) -> bool:
     for player in Players:

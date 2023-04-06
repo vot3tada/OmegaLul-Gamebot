@@ -20,7 +20,7 @@ async def reg_start(message : types.Message):
     await message.reply('Напиши имя')
 
 async def change_name_start(message : types.Message):
-    if f'{message.chat.id}_{message.from_user.id}' not in Players.keys():
+    if Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Ты ещё не зареган(а)')
         return
     await FSMRegistation.change_name.set()
