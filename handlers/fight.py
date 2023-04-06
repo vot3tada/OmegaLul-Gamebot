@@ -249,8 +249,8 @@ async def DexAttack(call: types.CallbackQuery, state : FSMContext):
 #################################################
 def register_fight_handlers(dp : Dispatcher):
     dp.register_message_handler(fight_call, state=None, commands='duel')
-    dp.register_message_handler(fight_refuse, state=[None,Fight.Ready,Fight.Attack], commands='refuse_duel')
-    dp.register_message_handler(fight_accept, state=None ,commands='accept_duel')
+    dp.register_message_handler(fight_refuse, state=[None,Fight.Ready,Fight.Attack], commands='duel_refuse')
+    dp.register_message_handler(fight_accept, state=None ,commands='duel_accept')
     dp.register_callback_query_handler(RageAttack, state=Fight.Ready, regexp='^fightR:*')
     dp.register_callback_query_handler(DexAttack, state=Fight.Ready, regexp='^fightD:*')
 
