@@ -1,35 +1,58 @@
 package ru.gamebot.backend.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import ru.gamebot.backend.models.PersonPK;
 
-@Setter
-@Getter
+@Data
 public class PersonDTO {
-    @NotNull(groups = CreatePerson.class)
-    private int chatId;
-    @NotNull(groups = CreatePerson.class)
-    private int userId;
+    @NotNull
+    private PersonDTO.PersonPKDTO personPKDTO;
+
+
     @NotEmpty(groups = CreatePerson.class)
     private String name;
 
-    private int experience;
+    private Integer experience;
 
 
-    private int experienceMultiply;
+    private Integer experienceMultiply;
 
-    private int money;
+    private Integer money;
 
+    @NotEmpty(groups = CreatePerson.class)
     private String photo;
+    @Nullable
+    private Float luck;
+    @Nullable
+    private Integer luckMultiply;
+    @Nullable
+    private Integer hp;
+    @Nullable
+    private Integer damage;
+    @Nullable
+    private Integer damageMultiply;
 
-    private float luck;
-    private int luckMultiply;
+    @Data
+    public static class PersonPKDTO {
+        @NotNull(groups = CreatePerson.class)
+        private int chatId;
+        @NotNull(groups = CreatePerson.class)
+        private int userId;
 
-    private int hp;
+        public PersonPKDTO() {
+        }
 
-    private int damage;
-    private int damageMultiply;
+        public PersonPKDTO(int chatId, int userId) {
+            this.chatId = chatId;
+            this.userId = userId;
+        }
+    }
+
+    public PersonPK toPersonPK() {
+        return new PersonPK(personPKDTO.userId, personPKDTO.chatId);
+    }
 
 }

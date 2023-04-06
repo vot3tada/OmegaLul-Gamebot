@@ -1,7 +1,7 @@
 package ru.gamebot.backend.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -11,32 +11,31 @@ import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.CreatePerson;
 import ru.gamebot.backend.dto.PersonDTO;
 import ru.gamebot.backend.models.Person;
-import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.services.PersonService;
-import ru.gamebot.backend.util.PersonErrorResponse;
-import ru.gamebot.backend.util.PersonNotCreateException;
-import ru.gamebot.backend.util.PersonNotFoundException;
-import ru.gamebot.backend.util.PersonNotUpdateException;
+import ru.gamebot.backend.util.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/person")
 @RequiredArgsConstructor
+@Slf4j
 public class PersonController {
 
     private final PersonService personService;
+    private final PersonMapper personMapper;
 
 
     @GetMapping("/id")
-    public Person getPersonByID(@RequestParam(defaultValue = "empty") int chatId,
+    public PersonDTO getPersonByID(@RequestParam(defaultValue = "empty") int chatId,
                                 @RequestParam(defaultValue = "empty") int userId){
-        return personService.getPerson(chatId,userId);
+        return convertToPersonDTO(personService.getPerson(chatId,userId));
     }
 
     @GetMapping("/all")
-    public List<Person> getAllPersons(){
-        return personService.getAllPersons();
+    public List<PersonDTO> getAllPersonsFromChat(){
+        return convertToListPersonDTO(personService.getAllPersons());
     }
 
     @PutMapping("/update")
@@ -45,17 +44,20 @@ public class PersonController {
                                                    @RequestBody PersonDTO personDTO){
 
         Person person = personService.getPerson(chatId,userId);
-        if (person.getExperience() > personDTO.getExperience()){
+        if (person.getExperience()!=null && person.getExperience() > personDTO.getExperience()){
             throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
         }
-        Person convertedPerson = convertToPerson(personDTO, person);
+
+        personDTO.setPersonPKDTO(new PersonDTO.PersonPKDTO(chatId, userId));
+
+        Person convertedPerson = convertToPerson(personDTO);
         personService.updatePerson(convertedPerson);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/create")
     public ResponseEntity<HttpStatus> createPerson(@RequestBody @Validated(CreatePerson.class)
-                                                       PersonDTO personDTO, BindingResult bindingResult){
+                                                   PersonDTO personDTO, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
             StringBuilder errorMsg = new StringBuilder();
@@ -91,19 +93,19 @@ public class PersonController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    private Person convertToPerson(PersonDTO personDTO, Person person){
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration().setSkipNullEnabled(true);
-        modelMapper.map(personDTO,person);
-        return person;
-    }
-
     private Person convertToPerson(PersonDTO personDTO){
-        ModelMapper modelMapper = new ModelMapper();
-        PersonPK personPK = new PersonPK(personDTO.getChatId(), personDTO.getUserId());
-        Person person = modelMapper.map(personDTO, Person.class);
-        person.setPersonPk(personPK);
-        return person;
+        return personMapper.personDtoToPerson(personDTO);
     }
 
+    private List<PersonDTO> convertToListPersonDTO(List<Person> persons){
+        List<PersonDTO> personDTOS = new ArrayList<>();
+        for(Person person: persons){
+            personDTOS.add(personMapper.personToPersonDTO(person));
+        }
+        return  personDTOS;
+    }
+
+    private PersonDTO convertToPersonDTO(Person person){
+        return personMapper.personToPersonDTO(person);
+    }
 }

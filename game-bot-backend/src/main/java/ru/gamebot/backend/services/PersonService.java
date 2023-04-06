@@ -29,7 +29,6 @@ public class PersonService {
 
     @Transactional
     public void createPerson(Person person){
-
         personRepository.save(person);
     }
     @Transactional
