@@ -162,11 +162,13 @@ class Player():
             if _item.id == item.id:
                 return _item
         return None 
+    
 
     def RemoveStatus(self, item : Good):
         if not self.FindStatus(item):
             raise ValueError('Попытка удалить несуществующий статус')
-        self._status.remove(self.GetStatus(item))
+        status = self.GetStatus(item)
+        self._status.remove(status)
 
     def BuffByItem(self, item: Good):
         if not scheduler.get_job(f'{item.id}_{self._chatId}_{self._userId}') is None:
@@ -178,16 +180,15 @@ class Player():
         if item.duration:
             self.AddStatus(item)
             buff_id = f'{item.id}_{self._chatId}_{self._userId}'
-            scheduler.add_job(self._debuffByItem, trigger='interval', seconds=item.duration, args=[item], id=buff_id)
+            scheduler.add_job(_debuffByItem, trigger='interval', seconds=item.duration, args=[self.chatId, self.userId, item], id=buff_id)
 
-    def _debuffByItem(self, item: Good):
-        buff_id = f'{item.id}_{self._chatId}_{self._userId}'
-
-        for key in item.effects.keys():
-            setattr(self, key, getattr(self, key) - item.effects[key])
-
-        self.RemoveStatus(item)
-        scheduler.remove_job(buff_id)
+def _debuffByItem(chatId: int, userId: int, item: Good):
+    player = GetPlayer(chatId, userId)
+    buff_id = f'{item.id}_{chatId}_{userId}'
+    for key in item.effects.keys():
+        setattr(player, key, getattr(player, key) - item.effects[key])
+    player.RemoveStatus(item)
+    scheduler.remove_job(buff_id)
 
 Players :list[Player] = None
 

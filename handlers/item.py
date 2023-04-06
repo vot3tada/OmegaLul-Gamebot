@@ -19,7 +19,7 @@ async def useItem(call : types.CallbackQuery):
     await call.answer('Предмет использован')
     keyboard = types.InlineKeyboardMarkup()
     for i in player.inventory:
-        keyboard.add(types.InlineKeyboardButton(text = f'{i[0].name}: {player.inventory.count(i)}', callback_data=f"item:{i[0].id}"))
+        keyboard.add(types.InlineKeyboardButton(text = f'{i[0].name}: {i[1]}', callback_data=f"item:{i[0].id}"))
     await call.message.edit_reply_markup(keyboard)
     return
 
