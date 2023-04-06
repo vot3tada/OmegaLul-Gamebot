@@ -84,8 +84,8 @@ async def cancel_registration(message: types.Message, state: FSMContext):
     await message.reply('Регистрация отменена')
     
 def register_handlers_registration(dp: Dispatcher):
-    dp.register_message_handler(reg_start, regexp='^Регистрация$', state=None)
-    dp.register_message_handler(cancel_registration, regexp='^Отмена$', state=[FSMRegistation.name, FSMRegistation.photo])
+    dp.register_message_handler(reg_start, commands='registration', state=None)
+    dp.register_message_handler(cancel_registration, commands='cancel', state=[FSMRegistation.name, FSMRegistation.photo])
     dp.register_message_handler(get_name, state=FSMRegistation.name)
     dp.register_callback_query_handler(get_photoclass, state=FSMRegistation.photoclass, regexp='^class:*')
     dp.register_message_handler(end_registation, content_types=['photo'], state=FSMRegistation.photo)

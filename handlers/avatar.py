@@ -33,5 +33,5 @@ async def get_inventory(message : types.Message):
     await message.reply(text, reply_markup=keyboard)
 
 def register_handlers_user(dp: Dispatcher):
-    dp.register_message_handler(get_inventory, regexp='^Инвентарь$', state=None)
-    dp.register_message_handler(get_avatar, regexp='^Аватар$', state=None)
+    dp.register_message_handler(get_inventory, commands='inventory', state=None)
+    dp.register_message_handler(get_avatar, commands='avatar', state=None)

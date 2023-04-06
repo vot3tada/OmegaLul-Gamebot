@@ -49,6 +49,6 @@ async def shopping(call: types.CallbackQuery, state : FSMContext):
     
 
 def register_handlers_shop(dp: Dispatcher):
-    dp.register_message_handler(shop_start, regexp='^Магазин$', state=None)
+    dp.register_message_handler(shop_start, commands='shop', state=None)
     dp.register_callback_query_handler(shopping, regexp='^buy:*')
 
