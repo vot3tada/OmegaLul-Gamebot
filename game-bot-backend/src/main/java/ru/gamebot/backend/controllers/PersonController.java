@@ -92,6 +92,12 @@ public class PersonController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler
+    private ResponseEntity<PersonErrorResponse> handleException (PersonAlreadyExistsException e){
+        PersonErrorResponse response = new PersonErrorResponse("Person already exists");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     private Person convertToPerson(PersonDTO personDTO){
         return personMapper.personDtoToPerson(personDTO);
     }

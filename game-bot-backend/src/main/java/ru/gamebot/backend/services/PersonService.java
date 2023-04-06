@@ -1,11 +1,13 @@
 package ru.gamebot.backend.services;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.repository.PersonRepository;
+import ru.gamebot.backend.util.PersonAlreadyExistsException;
 import ru.gamebot.backend.util.PersonNotFoundException;
 
 import java.util.List;
@@ -31,7 +33,10 @@ public class PersonService {
     }
 
     @Transactional
-    public void createPerson(Person person){
+    public void createPerson(Person person) throws PersonAlreadyExistsException{
+        if(personRepository.existsById(person.getPersonPk())){
+            throw new PersonAlreadyExistsException();
+        }
         personRepository.save(person);
     }
     @Transactional
