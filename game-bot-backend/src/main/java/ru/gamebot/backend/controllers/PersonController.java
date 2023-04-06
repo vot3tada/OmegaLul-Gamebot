@@ -27,10 +27,9 @@ public class PersonController {
     private final PersonMapper personMapper;
 
 
-    @GetMapping("/id")
-    public PersonDTO getPersonByID(@RequestParam(defaultValue = "empty") int chatId,
-                                @RequestParam(defaultValue = "empty") int userId){
-        return convertToPersonDTO(personService.getPerson(chatId,userId));
+    @GetMapping("/id/{chatId}")
+    public List<PersonDTO> getPersonByChatId(@PathVariable("chatId") int chatId){
+        return convertToListPersonDTO(personService.getPersonsByChatId(chatId));
     }
 
     @GetMapping("/all")
@@ -105,7 +104,4 @@ public class PersonController {
         return  personDTOS;
     }
 
-    private PersonDTO convertToPersonDTO(Person person){
-        return personMapper.personToPersonDTO(person);
-    }
 }

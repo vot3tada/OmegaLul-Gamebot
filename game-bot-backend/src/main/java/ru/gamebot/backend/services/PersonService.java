@@ -23,6 +23,9 @@ public class PersonService {
         return foundPerson.orElseThrow(PersonNotFoundException::new);
     }
 
+    public List<Person> getPersonsByChatId(int userId){
+         return personRepository.findByPersonPkChatId(userId);
+    }
     public List<Person>  getAllPersons (){
         return personRepository.findAll();
     }

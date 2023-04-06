@@ -5,7 +5,10 @@ import org.springframework.stereotype.Repository;
 import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonPK;
 
+import java.util.List;
+
 @Repository
 public interface PersonRepository  extends JpaRepository<Person, PersonPK> {
+    List<Person> findByPersonPkChatId(int userId);
 
 }
