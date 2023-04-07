@@ -1,0 +1,35 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:15.2
+    container_name: gamebot-db
+    volumes:
+      - gamebot-db:/var/lib/postgresql/data
+
+    logging:
+      driver: json-file
+      options:
+        max-size: '100m'
+        max-file: '5'
+
+    environment:
+      - 'POSTGRES_USER=postgres'
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+      - 'POSTGRES_DB=game-bot'
+
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U postgres' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gamebot-back:
+    build: ./
+
+    container_name: 'gamebot-backend'
+
+    ports:
+      - 8080:8080
+
+volumes:
+  gamebot-db:
