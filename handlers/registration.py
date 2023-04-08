@@ -68,8 +68,10 @@ async def end_registation(message : types.Message, state: FSMContext):
         await message.reply('Плохое фото, попробуй ещё раз')
         return
     newPlayer = Player.Player(
-        message.chat.id,
-        message.from_user.id,
+        {
+            'chatId':message.chat.id,
+            'userId':message.from_user.id,
+        },
         (await state.get_data())['name'],
         orig
     )

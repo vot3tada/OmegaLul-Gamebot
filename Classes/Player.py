@@ -1,27 +1,30 @@
 from Classes.Good import Good
-from typing import Union
+from typing import Any, Union
 from utils.scheduler import scheduler
+import requests
+import json
 
 class Player():
 
     def __init__(self, 
-                 chatId : int,
-                 userId : int,
+                 personPk: dict[str, int],
                  name: str, 
                  photo : str,
-                 exp : int  = 0,
+                 experience : int  = 0,
+                 experienceMultiply: int = 1,
                  money: int  = 1000,
                  inventory : list[list[Good,int]] = [],
                  luck : float = 0.2,
                  luckMultiply : int = 1,
                  hp : int = 100,
                  damage : int = 20,
-                 damageMultyply : int = 1,
+                 damageMultiply : int = 1,
                  status : list[Good] = []):
-        self._chatId = chatId
-        self._userId = userId
+        self._chatId = personPk['chatId']
+        self._userId = personPk['userId']
         self._name = name
-        self._exp = exp
+        self._exp = experience
+        self._experienceMultiply = experienceMultiply
         self._money = money
         self._photo = photo
         self._inventory = inventory
@@ -29,8 +32,30 @@ class Player():
         self._luckMultiply = luckMultiply
         self._hp = hp
         self._damage = damage
-        self._damageMultiply = damageMultyply
+        self._damageMultiply = damageMultiply
         self._status = status
+
+    def to_json(self, withIds = True) -> dict[str, Any]:
+        json = {
+            'name': self._name,
+            "experience": self._exp,
+            "experienceMultiply": 1,
+            "money": self._money,
+            "photo": self._photo,
+            "luck": self._luck,
+            "luckMultiply": self._luckMultiply,
+            "hp": self._hp,
+            "damage": self._damage,
+            "damageMultiply": self._damageMultiply,
+            
+        }
+        if withIds:
+            json['personPk'] = {
+                "chatId": self.chatId,
+                "userId": self.userId
+            }
+        return json
+
 
     @property
     def chatId(self):
@@ -56,6 +81,8 @@ class Player():
             self._hp = 100
         else:
             self._hp = x
+        self._updatePlayer()
+    
 
     @property
     def exp(self):
@@ -66,6 +93,7 @@ class Player():
         if self._exp >= x:
             raise ValueError('Опыт не может не увеличиваться')
         self._exp = x
+        self._updatePlayer()
 
     @property
     def money(self):
@@ -76,6 +104,7 @@ class Player():
         if x < 0:
             raise ValueError('Баланс ушел в минус')
         self._money = x
+        self._updatePlayer()
 
     @property
     def level(self):
@@ -99,6 +128,7 @@ class Player():
         if x < 0:
             raise ValueError('Множитель не может быть отрицательным')
         self._damageMultiply = x
+        self._updatePlayer()
 
     @property 
     def luck(self):
@@ -113,6 +143,7 @@ class Player():
         if x < 0:
             raise ValueError('Множитель не может быть отрицательным')
         self._luckMultiply = x
+        self._updatePlayer()
 
     @property 
     def photo(self):
@@ -140,6 +171,7 @@ class Player():
             self.GetItem(item)[1] += 1
         else:
             self._inventory.append([item, 1])
+        self._updatePlayer()
     
     def RemoveItem(self, item: Good):
         if not self.FindItem(item):
@@ -148,6 +180,7 @@ class Player():
         _item[1] -= 1
         if not _item[1]:
             self._inventory.remove(_item)
+        self._updatePlayer()
     
     def FindStatus(self, item : Good) -> bool:
         return item.id in [good.id for good in self._status]
@@ -156,19 +189,20 @@ class Player():
         if self.FindStatus(item):
             raise ValueError('Двойной статус запрещен')
         self._status.append(item)
+        self._updatePlayer()
 
     def GetStatus(self, item : Good) -> Union[Good, None]:
         for _item in self._status:
             if _item.id == item.id:
                 return _item
         return None 
-    
 
     def RemoveStatus(self, item : Good):
         if not self.FindStatus(item):
             raise ValueError('Попытка удалить несуществующий статус')
         status = self.GetStatus(item)
         self._status.remove(status)
+        self._updatePlayer()
 
     def BuffByItem(self, item: Good):
         if not scheduler.get_job(f'{item.id}_{self._chatId}_{self._userId}') is None:
@@ -182,6 +216,16 @@ class Player():
             buff_id = f'{item.id}_{self._chatId}_{self._userId}'
             scheduler.add_job(_debuffByItem, trigger='interval', seconds=item.duration, args=[self.chatId, self.userId, item], id=buff_id)
 
+    def _updatePlayer(self):
+
+        response = requests.put(
+            url=f'http://localhost:8080/api/person/update?userId={self._userId}&chatId={self._chatId}',
+            headers={"Content-Type": "application/json"},
+            json=self.to_json(False)
+            )
+        if response.status_code != 204:
+            raise RuntimeError(f'Измененеие пользователя пользователя: {response.status_code}')
+
 def _debuffByItem(chatId: int, userId: int, item: Good):
     player = GetPlayer(chatId, userId)
     buff_id = f'{item.id}_{chatId}_{userId}'
@@ -190,26 +234,62 @@ def _debuffByItem(chatId: int, userId: int, item: Good):
     player.RemoveStatus(item)
     scheduler.remove_job(buff_id)
 
-Players :list[Player] = None
+def GetAllPlayers(chatId : int) -> list[Player]:
 
-def GetAllPlayers(chat_id : int) -> list[Player]:
-    players : list[Player] = []
-    for player in Players:
-        if player.chatId == chat_id:
-            players.append(player)
-    return players
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/person/id/{chatId}',
+        headers={"Content-Type": "application/json"})
 
-def FindPlayer(chat_id: int, user_id: int) -> bool:
+    if responce.status_code == 404:
+        return False
+    
+    data: list[dict[str, Any]] = responce.json()
+    Players = [Player(**person) for person in data]
+
+    return Players
+
+def FindPlayer(chatId: int, userId: int) -> bool:
+
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/person/id/{chatId}',
+        headers={"Content-Type": "application/json"})
+
+    if responce.status_code == 404:
+        return False
+    
+    data: list[dict[str, Any]] = responce.json()
+    Players = [Player(**person) for person in data]
+
     for player in Players:
-        if player._userId == user_id and player._chatId == chat_id:
+        if player._userId == userId:
             return True
     return False
 
-def GetPlayer(chat_id: int, user_id: int) -> Union[Player, None]:
+def GetPlayer(chatId: int, userId: int) -> Union[Player, None]:
+
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/person/id/{chatId}',
+        headers={"Content-Type": "application/json"})
+
+    if responce.status_code == 404:
+        return False
+    
+    data: list[dict[str, Any]] = responce.json()
+    Players = [Player(**person) for person in data]
+
     for player in Players:
-        if player._userId == user_id and player._chatId == chat_id:
+        if player._userId == userId and player._chatId == chatId:
             return player
     return None 
 
 def AddPlayer(player : Player):
-    Players.append(player)
+
+    response: requests.Response = requests.post(
+        url=f'http://localhost:8080/api/person/create',
+        json = player.to_json(),
+        headers={"Content-Type": "application/json"})
+    
+    if response.status_code != 201:
+        raise RuntimeError(f'Добавление пользователя: {response.status_code}')
+
+    
