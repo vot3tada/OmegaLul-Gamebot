@@ -224,7 +224,7 @@ class Player():
             json=self.to_json(False)
             )
         if response.status_code != 204:
-            raise RuntimeError(f'Измененеие пользователя пользователя: {response.status_code}')
+            raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
 
 def _debuffByItem(chatId: int, userId: int, item: Good):
     player = GetPlayer(chatId, userId)

@@ -86,7 +86,6 @@ async def InitAttackStep(message: types.CallbackQuery):
         
         if st1d.get('ulta'):
             replyText += f'{name1} ультует и'
-            fights[message.message.chat.id][index][2] = 1
         elif not st1d.get('defence'):
             replyText += f'{name1} защищается и'
         elif lk1 == 0: 
@@ -97,7 +96,6 @@ async def InitAttackStep(message: types.CallbackQuery):
 
         if st2d.get('ulta'):
             replyText += f'{name2} ультует и'
-            fights[message.message.chat.id][index][2] = 1
         elif not st2d.get('defence'):
             replyText += f'{name2} защищается и'
         elif lk2 == 0: 
@@ -112,8 +110,8 @@ async def InitAttackStep(message: types.CallbackQuery):
         st1d = await st1.get_data()
         st2d = await st2.get_data()
         
-        replyText += f'Здоровье бойцов:\n{name1}: {st1d.get("health")}\n{name2}: {st2d.get("health")}\n'
-        replyText += f'Заряд бойцов:\n{name1}: {st1d.get("charge")}\\{UltaCharge}\n{name2}: {st2d.get("charge")}\\{UltaCharge}\n'
+        replyText += f'<b>Здоровье бойцов</b>:\n{name1}: {st1d.get("health")}\n{name2}: {st2d.get("health")}\n'
+        replyText += f'<b>Заряд бойцов</b>:\n{name1}: {st1d.get("charge")}\\{UltaCharge}\n{name2}: {st2d.get("charge")}\\{UltaCharge}\n'
 
         photo = open(f'./static/fight/{random.choice(fight_images)}',"rb")
         if st1d.get("health") > 0 and st2d.get("health") > 0:
@@ -126,7 +124,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"ulta:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"defence:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             
-            await message.message.answer_photo(photo, caption=replyText, reply_markup=keyboard)
+            await message.message.answer_photo(photo, caption=replyText, reply_markup=keyboard, parse_mode='HTML')
         else:
             scheduler.remove_job(f'fight_{message.message.chat.id}_{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}')
             await st1.finish()
@@ -137,20 +135,20 @@ async def InitAttackStep(message: types.CallbackQuery):
                 money = MoneyReward(player1.hp)
                 player1.exp += exp
                 player1.money += money
-                replyText += f'Получено:\nОпыт: {exp}\nДеньги: {money}'
+                replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
             elif st2d.get("health") > 0 and  st1d.get("health") <= 0:
                 replyText += f'Победитель: {name2}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player2.hp)
                 money = MoneyReward(player2.hp)
                 player2.exp += exp
                 player2.money += money
-                replyText += f'Получено:\nОпыт: {exp}\nДеньги: {money}'
+                replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
             else:
                 replyText += f'Победителя нет! Оба бойца ушатали друг друга!\nНикогда такого не было и вот опять...'
             player1.hp -= HPCut
             player2.hp -= HPCut
             fights[message.message.chat.id].pop(index)
-            await message.message.answer_photo(photo, caption=replyText)
+            await message.message.answer_photo(photo, caption=replyText, parse_mode='HTML')
 
 async def fight_call(message : types.Message):
     if not message.chat.id in fights.keys():
@@ -185,7 +183,7 @@ async def fight_call(message : types.Message):
             return
         fights[message.chat.id].append([message.from_user.id, message.reply_to_message.from_user.id])
         index = fightsFind(message.chat.id, message.from_user.id) 
-        scheduler.add_job(OutOfTimeFight, 'interval', minutes=1.5, args=[message.chat.id, index] ,id=f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
+        scheduler.add_job(OutOfTimeFight,'interval', minutes=1.5, args=[message.chat.id, index], jobstore='local' ,id=f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
         await message.answer(f'{playerTo.name} бросил вызов {playerFrom.name}!')
     else:
         await message.answer(f'С кем дуэль то, {playerTo.name} ?')
@@ -197,18 +195,27 @@ async def fight_refuse(message: types.Message, state :FSMContext):
     if index == -1:
         await message.answer("Нечего отменять")
     else:
-        user = Player.GetPlayer(message.chat.id, message.from_user.id)
+        user1 = Player.GetPlayer(message.chat.id, message.from_user.id)
         if await state.get_state() == 'Fight:Ready' or await state.get_state() == 'Fight:Attack':
             st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][0])
             await st.finish()
             st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][1])
+            user2 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][1])
             await st.finish()
-            reply_text = f'{user.name} позорно бежит с поля боя!\n'
-            user.hp -= HPCut
+            
+            user1.hp -= HPCut
+            user2.hp -= HPCut
+            exp = ExpReward(user2.hp)
+            money = MoneyReward(user2.hp)
+            user2.exp += exp
+            user2.money += money
+
+            reply_text = f'{user1.name} позорно бежит с поля боя!\n{user2.name} победил!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}'
+            scheduler.remove_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
         else:
-            reply_text = f'{user.name} отказался от дуэли!\n'
+            reply_text = f'{user1.name} отказался от дуэли!\n'
         fights[message.chat.id].pop(index)
-        await message.answer(reply_text)
+        await message.answer(reply_text, parse_mode='HTML')
 
 async def fight_accept(message: types.Message):
     if not message.chat.id in fights.keys():
@@ -248,7 +255,7 @@ async def fight_accept(message: types.Message):
         media.attach_photo(types.InputFile(user2.photo))
 
         await message.answer_media_group(media)
-        await message.answer("!!FIGHT!!",reply_markup=keyboard)
+        await message.answer("<b>!!FIGHT!!</b>",reply_markup=keyboard, parse_mode='HTML')
 
 async def RageAttack(call: types.CallbackQuery, state : FSMContext):
 

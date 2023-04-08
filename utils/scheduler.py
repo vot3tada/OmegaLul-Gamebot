@@ -1,5 +1,6 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.jobstores.memory import MemoryJobStore
 import configparser
 
 config = configparser.ConfigParser()
@@ -15,7 +16,8 @@ scheduler = AsyncIOScheduler(
     jobstores={
         'default': SQLAlchemyJobStore(
             url=f'postgresql://{dbuser}:{dbpassword}@{dbhost}:{dbport}/{dbname}',
-            )
+            ),
+        'local': MemoryJobStore()
     })
 
 scheduler.start()

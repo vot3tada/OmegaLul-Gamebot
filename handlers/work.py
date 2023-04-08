@@ -52,8 +52,9 @@ async def work_complete(chatId: int, userId: int, workId: int, username: str):
     await state.finish()
     scheduler.remove_job(f'work_{user.chatId}_{user.userId}')
     await bot.send_photo(chat_id=chatId,  
-                        caption=f"@{username}\n{user.name} вернулся с работенки и получил:\n{work.expReward} опыта\n{work.moneyReward} денег", 
-                        photo=open(user.photo,'rb'),)
+                        caption=f"@{username}\n{user.name} вернулся с работенки!\n<b>Получено</b>:\n{work.expReward} опыта\n{work.moneyReward} денег", 
+                        photo=open(user.photo,'rb'),
+                        parse_mode='HTML')
 
 async def work_end(message: types.Message, state : FSMContext):
     user = Player.GetPlayer(message.chat.id, message.from_user.id)
