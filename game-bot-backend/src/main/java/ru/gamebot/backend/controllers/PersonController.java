@@ -38,8 +38,8 @@ public class PersonController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<HttpStatus> updatePerson(@RequestParam(defaultValue = "empty") int chatId,
-                                                   @RequestParam(defaultValue = "empty") int userId,
+    public ResponseEntity<HttpStatus> updatePerson(@RequestParam("chatId") int chatId,
+                                                   @RequestParam("userId") int userId,
                                                    @RequestBody PersonDTO personDTO){
 
         Person person = personService.getPerson(chatId,userId);
