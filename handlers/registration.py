@@ -38,8 +38,6 @@ async def get_name(message : types.Message, state: FSMContext):
     for i in ac.classes.keys():
         keyboard.add(types.InlineKeyboardButton(text = i, callback_data=f"class:{i}"))
     await message.reply('Выбери класс фото:', reply_markup=keyboard)
-
-
     
 async def change_photo(message : types.Message):
     await FSMRegistation.photoclass.set()
