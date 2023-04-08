@@ -43,7 +43,7 @@ public class PersonController {
                                                    @RequestBody PersonDTO personDTO){
 
         Person person = personService.getPerson(chatId,userId);
-        if (person.getExperience()!=null && person.getExperience() > personDTO.getExperience()){
+        if (personDTO.getExperience()!=null && person.getExperience()!=null && person.getExperience() > personDTO.getExperience()){
             throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
         }
 

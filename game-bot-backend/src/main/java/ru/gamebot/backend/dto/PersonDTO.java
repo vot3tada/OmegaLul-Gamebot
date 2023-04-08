@@ -1,6 +1,7 @@
 package ru.gamebot.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ import ru.gamebot.backend.models.PersonPK;
 public class PersonDTO {
     @NotNull
     @JsonAlias({"personPk"})
+    @JsonProperty("personPk")
     private PersonDTO.PersonPKDTO personPKDTO;
 
 
