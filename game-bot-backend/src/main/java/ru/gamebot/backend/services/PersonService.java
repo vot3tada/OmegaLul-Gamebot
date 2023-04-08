@@ -10,6 +10,7 @@ import ru.gamebot.backend.repository.PersonRepository;
 import ru.gamebot.backend.util.PersonAlreadyExistsException;
 import ru.gamebot.backend.util.PersonNotFoundException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,9 +21,8 @@ public class PersonService {
     private final PersonRepository personRepository;
 
     public Person getPerson(int chatId, int userId){
-        PersonPK personPK = new PersonPK(chatId, userId);
-        Optional<Person> foundPerson = personRepository.findById(personPK);
-        return foundPerson.orElseThrow(PersonNotFoundException::new);
+        PersonPK personPK = new PersonPK(userId, chatId);
+        return personRepository.findById(personPK).orElseThrow(PersonNotFoundException::new);
     }
 
     public List<Person> getPersonsByChatId(int userId){
