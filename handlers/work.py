@@ -1,3 +1,5 @@
+import os
+import random
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -17,7 +19,8 @@ async def work_info(message : types.Message):
         work_text += f'{i}) {Work.Works[i].name} (нужен уровень: {Work.Works[i].levelRequired})\nОпыт: {Work.Works[i].expReward} Деньги: {Work.Works[i].moneyReward}\n\n'
         keyboard.add(types.InlineKeyboardButton(text=Work.Works[i].name, callback_data=f"work:{Work.Works[i].id}"))
     work_text += 'Время работы: 2 часика'
-    await message.answer(work_text, reply_markup=keyboard)
+    photo = open('./static/worklist/' + random.choice(os.listdir('./static/worklist')) ,'rb')
+    await message.answer_photo(photo=photo,caption=work_text, reply_markup=keyboard)
 
 
 async def work_start(call: types.CallbackQuery):
@@ -60,7 +63,8 @@ async def work_end(message: types.Message, state : FSMContext):
     user = Player.GetPlayer(message.chat.id, message.from_user.id)
     await state.finish()
     scheduler.remove_job(f'work_{user.chatId}_{user.userId}')
-    await message.reply(f'{user.name} в страхе сбежал(а) с работы')
+    photo = open('./static/runForWork/' + random.choice(os.listdir('./static/runForWork')) ,'rb')
+    await message.reply_photo(photo=photo ,caption=f'{user.name} в страхе сбежал(а) с работы')
 
 def register_handlers_work(dp: Dispatcher):
     dp.register_message_handler(work_info, state=None, commands='work')

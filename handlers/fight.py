@@ -113,10 +113,12 @@ async def InitAttackStep(message: types.CallbackQuery):
         replyText += f'<b>Здоровье бойцов</b>:\n{name1}: {st1d.get("health")}\n{name2}: {st2d.get("health")}\n'
         replyText += f'<b>Заряд бойцов</b>:\n{name1}: {st1d.get("charge")}\\{UltaCharge}\n{name2}: {st2d.get("charge")}\\{UltaCharge}\n'
 
-        photo = open(f'./static/fight/{random.choice(fight_images)}',"rb")
+        
         if st1d.get("health") > 0 and st2d.get("health") > 0:
             await st1.set_state(Fight.Ready)
             await st2.set_state(Fight.Ready)
+
+            photo = open('./static/fight/' + random.choice(os.listdir('./static/fight')) ,'rb')
 
             keyboard = types.InlineKeyboardMarkup()
             keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
@@ -130,6 +132,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             await st1.finish()
             await st2.finish()
             if st1d.get("health") > 0 and  st2d.get("health") <= 0:
+                photo = open('./static/win/' + random.choice(os.listdir('./static/win')) ,'rb')
                 replyText += f'Победитель: {name1}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player1.hp)
                 money = MoneyReward(player1.hp)
@@ -137,6 +140,7 @@ async def InitAttackStep(message: types.CallbackQuery):
                 player1.money += money
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
             elif st2d.get("health") > 0 and  st1d.get("health") <= 0:
+                photo = open('./static/win/' + random.choice(os.listdir('./static/win')) ,'rb')
                 replyText += f'Победитель: {name2}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player2.hp)
                 money = MoneyReward(player2.hp)
@@ -144,6 +148,7 @@ async def InitAttackStep(message: types.CallbackQuery):
                 player2.money += money
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
             else:
+                photo = open('./static/lose/' + random.choice(os.listdir('./static/lose')) ,'rb')
                 replyText += f'Победителя нет! Оба бойца ушатали друг друга!\nНикогда такого не было и вот опять...'
             player1.hp -= HPCut
             player2.hp -= HPCut
