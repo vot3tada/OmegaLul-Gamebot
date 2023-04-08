@@ -26,8 +26,6 @@ services:
   gamebot-back:
     build: ./
 
-    container_name: 'gamebot-backend'
-
     ports:
       - 8080:8080
 

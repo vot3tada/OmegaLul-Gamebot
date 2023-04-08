@@ -1,4 +1,5 @@
 FROM openjdk:17-jdk-alpine as build
+RUN apk add maven
 
 WORKDIR /app
 
@@ -7,11 +8,11 @@ COPY .mvn .mvn
 
 COPY pom.xml .
 
-RUN ./mvnw dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 COPY src src
 
-RUN ./mvnw package -DskipTests
+RUN mvn package -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
 FROM openjdk:17-jdk-alpine
