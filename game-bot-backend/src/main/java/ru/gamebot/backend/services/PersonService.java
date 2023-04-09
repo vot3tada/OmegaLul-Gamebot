@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.repository.PersonRepository;
-import ru.gamebot.backend.util.PersonAlreadyExistsException;
-import ru.gamebot.backend.util.PersonChatIdNotFound;
-import ru.gamebot.backend.util.PersonNotFoundException;
+import ru.gamebot.backend.util.PersonExceptions.PersonAlreadyExistsException;
+import ru.gamebot.backend.util.PersonExceptions.PersonChatIdNotFound;
+import ru.gamebot.backend.util.PersonExceptions.PersonNotFoundException;
 
 import java.util.List;
 

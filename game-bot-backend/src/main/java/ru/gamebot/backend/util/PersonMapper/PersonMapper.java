@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util;
+package ru.gamebot.backend.util.PersonMapper;
 
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
