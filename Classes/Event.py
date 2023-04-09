@@ -8,7 +8,6 @@ class Event():
     players = []
     creator = ''
     
-    
     def __init__(self):
         self.id = datetime.today()
         self.datetime = datetime.today()
