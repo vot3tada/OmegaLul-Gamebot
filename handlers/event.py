@@ -15,6 +15,9 @@ class FSMEvent(StatesGroup):
     admin = State()
 
 async def event_start(message : types.message):
+    if not Player.FindPlayer(message.chat.id, message.from_user.id):
+        await message.message.reply('Нужно зарегаться для такого')
+        return
     await FSMEvent.name.set()
     await message.reply('Напишите название мероприятия')
 
