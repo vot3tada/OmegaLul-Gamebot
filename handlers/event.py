@@ -24,6 +24,10 @@ async def event_set_date(message : types.message, state: FSMContext):
     await FSMEvent.date.set()
     await message.reply('Напишите дату и время мероприятия в формате: ГГГГ/ММ/ДД/ЧЧ/ММ')
 
+async def event_cancel(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer('Создание отменено')
+
 async def event_end(message : types.message, state: FSMContext):
     from dateutil import tz
     event = Event.Event()
@@ -111,11 +115,12 @@ async def admin_kick(message : types.Message, state: FSMContext):
 
 
 def register_handlers_registration(dp: Dispatcher):
-    dp.register_message_handler(event_start, regexp='^Создать эвент$')
+    dp.register_message_handler(event_start, commands='create_event')
+    dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name], commands='cancel')
     dp.register_message_handler(event_set_date, state=FSMEvent.name)
     dp.register_message_handler(event_end, state=FSMEvent.date)
     dp.register_message_handler(event_add_players, state=FSMEvent.addplayers, regexp='\+')
-    dp.register_message_handler(admin_end, state=FSMEvent.admin, regexp='^Закончить$')
-    dp.register_message_handler(admin_kick, state=FSMEvent.admin, regexp='^Кик$')
+    dp.register_message_handler(admin_end, state=FSMEvent.admin, commands='end_event')
+    dp.register_message_handler(admin_kick, state=FSMEvent.admin, commands='kick')
     
     
