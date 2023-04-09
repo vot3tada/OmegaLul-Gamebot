@@ -4,7 +4,8 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import Classes.Player as Player
 from Classes.Item import Items
-
+import random
+import os
 
 #keyboard = types.InlineKeyboardMarkup()
 #keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
@@ -23,7 +24,10 @@ async def shop_start(message : types.Message):
     for i in Items.values():
         keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.id}"))
     #keyboard.add(types.InlineKeyboardButton(text = 'Выйти', callback_data=f"buy:Exit"))
-    await message.reply(text, reply_markup=keyboard)
+    await message.reply_photo(
+        photo= open('./static/shop/' + random.choice(os.listdir('./static/shop')) ,'rb'),
+        caption=text, 
+        reply_markup=keyboard)
 
 async def shopping(call: types.CallbackQuery, state : FSMContext):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
