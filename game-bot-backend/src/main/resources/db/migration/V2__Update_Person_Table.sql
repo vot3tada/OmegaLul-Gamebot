@@ -1,0 +1,5 @@
+ALTER TABLE person
+ALTER experience SET DEFAULT 0;
+
+ALTER TABLE person
+ALTER money SET DEFAULT 0;
