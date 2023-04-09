@@ -6,4 +6,4 @@ class Good():
     description : str
     duration : int = 10
 
-    
+    effects: dict[str, float]

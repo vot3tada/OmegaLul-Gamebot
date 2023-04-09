@@ -2,6 +2,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram import types
 import Classes.Player as Player
 import Classes.Item as Item
+from Classes.Good import Good
 
 async def useItem(call : types.CallbackQuery):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
@@ -9,13 +10,17 @@ async def useItem(call : types.CallbackQuery):
         return
     player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
     itemId: str = call.data.replace("item:",'')
-    good : Item.Item = Item.Items[itemId]
+    good : Good  = Item.GetItem(itemId)
     if not player.FindItem(good):
         await call.answer('Нет такого предмета')
         return
-    good.Effect(f'{call.message.chat.id}_{call.from_user.id}')
+    player.BuffByItem(good)
     player.RemoveItem(good)
     await call.answer('Предмет использован')
+    keyboard = types.InlineKeyboardMarkup()
+    for i in player.inventory:
+        keyboard.add(types.InlineKeyboardButton(text = f'{i[0].name}: {i[1]}', callback_data=f"item:{i[0].id}"))
+    await call.message.edit_reply_markup(keyboard)
     return
 
 def register_handlers_item(dp: Dispatcher):

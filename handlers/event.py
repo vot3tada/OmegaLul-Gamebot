@@ -68,7 +68,7 @@ async def trigger_event(event: Event, message : types.message, state : FSMContex
 async def event_add_players(message : types.Message, state: FSMContext):
     eventId = await state.get_data()
     event = Event.GetEvent(eventId)
-    player = Player.GetPlayer(message.chat.id, message.from_user.id)
+    player: Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     event.players.append(player)
     await message.reply(f'{player.name} подключился')
     await state.finish()

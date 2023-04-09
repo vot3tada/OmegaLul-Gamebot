@@ -3,17 +3,11 @@ import dlib
 import numpy as np
 from matplotlib import pyplot as plt
 import random
+import os
 
-classes : dict[str, list[str]] = {
-    'knight':[
-        "knight.png"
-    ],
-    'thief':[
-        "thief.jpg"
-    ],
-    'engineer':[
-        'eng1.png'
-    ]
+classes : dict[str, tuple[str, list[str]]] = {
+    'мужчина': ("man", os.listdir("./static/man")),
+    'женщина': ("woman", os.listdir("./static/woman"))
 }
 
 def getClasses() -> list:
@@ -22,13 +16,14 @@ def getClasses() -> list:
     """
     return list(classes.keys())
 
-def getAvatar(original :str, avatar_class :str = 'knight') -> str: 
+def getAvatar(chatId: int, userId: int, avatarClass :str = 'мужчина') -> str: 
     """
-    Возвращает аватар с подставленным лицом указанного класса
+    Создает аватар на основе оригинала из user и отправляет в папку player
     """
+    #Я СПИЗДИЛ НО ПОЖАЛУЙСТА НЕ ПИЗДИТЕ МЕНЯ
     # Loading base images and coverting them to grayscale
-    face = cv2.imread(original)
-    body = cv2.imread(f'./static/classes/{ random.choice(classes[str.lower(avatar_class)]) }')
+    face = cv2.imread(f'./static/user/{chatId}_{userId}.jpg')
+    body = cv2.imread(f'./static/{classes[avatarClass][0]}/{random.choice(classes[avatarClass][1])}')
 
     face_gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
     body_gray = cv2.cvtColor(body, cv2.COLOR_BGR2GRAY)
@@ -59,7 +54,6 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     convexhull = cv2.convexHull(points) 
 
     face_cp = face.copy()
-    plt.imshow(cv2.cvtColor((cv2.polylines(face_cp, [convexhull], True, (255,255,255), 3)), cv2.COLOR_BGR2RGB))
 
     rect = cv2.boundingRect(convexhull)
 
@@ -101,9 +95,6 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
             vertices = [index_pt1, index_pt2, index_pt3]
             indexes_triangles.append(vertices)
 
-    # Draw delaunay triangles
-    plt.imshow(cv2.cvtColor(face_cp, cv2.COLOR_BGR2RGB))  
-
     # Getting landmarks for the face that will have the first one swapped into
     rect2 = detector(body_gray)[0]
 
@@ -117,9 +108,6 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     # Generates a convex hull for the second person
     points2 = np.array(landmarks_points2, np.int32)
     convexhull2 = cv2.convexHull(points2)
-
-    body_cp = body.copy()
-    plt.imshow(cv2.cvtColor((cv2.polylines(body_cp, [convexhull2], True, (255,255,255), 3)), cv2.COLOR_BGR2RGB))
 
     body_new_face = np.zeros((height, width, channels), np.uint8)
 
@@ -182,7 +170,6 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
         body_new_face_rect_area = cv2.add(body_new_face_rect_area, dist_triangle)
         body_new_face[y: y+height, x: x+widht] = body_new_face_rect_area
     
-    plt.imshow(cv2.cvtColor(body_new_face, cv2.COLOR_BGR2RGB))
 
     body_face_mask = np.zeros_like(body_gray)
     body_head_mask = cv2.fillConvexPoly(body_face_mask, convexhull2, 255)
@@ -191,15 +178,10 @@ def getAvatar(original :str, avatar_class :str = 'knight') -> str:
     body_maskless = cv2.bitwise_and(body, body, mask=body_face_mask)
     result = cv2.add(body_maskless, body_new_face)
 
-    plt.imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
-
     # Gets the center of the face for the body
     (x, y, widht, height) = cv2.boundingRect(convexhull2)
     center_face2 = (int((x+x+widht)/2), int((y+y+height)/2))
 
     seamlessclone = cv2.seamlessClone(result, body, body_head_mask, center_face2, cv2.NORMAL_CLONE)
 
-    plt.imshow(cv2.cvtColor(seamlessclone, cv2.COLOR_BGR2RGB))
-
-    cv2.imwrite(original, seamlessclone)
-    return original
+    cv2.imwrite(f'./static/player/{chatId}_{userId}.jpg', seamlessclone)
