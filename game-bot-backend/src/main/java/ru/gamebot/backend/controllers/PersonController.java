@@ -54,6 +54,11 @@ public class PersonController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @DeleteMapping("/delete/{chatId}")
+    public ResponseEntity<HttpStatus> deleteAllPersonsByChatId(@PathVariable("chatId") int chatId){
+        personService.deletePersonsByChatId(chatId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
     @PostMapping("/create")
     public ResponseEntity<HttpStatus> createPerson(@RequestBody @Validated(CreatePerson.class)
                                                    PersonDTO personDTO, BindingResult bindingResult){
@@ -77,6 +82,12 @@ public class PersonController {
     @ExceptionHandler
     private ResponseEntity<PersonErrorResponse> handleException (PersonNotFoundException e){
         PersonErrorResponse response = new PersonErrorResponse("Person with this id wasn`t found!");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<PersonErrorResponse> handleException (PersonChatIdNotFound e){
+        PersonErrorResponse response = new PersonErrorResponse("Person with this chatId wasn`t found!");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
