@@ -14,11 +14,15 @@ public class Item{
     private Integer id;
 
 
-    @OneToMany(mappedBy = "item")
+    @ManyToMany
+    @JoinTable(
+            name = "item_effects",
+            joinColumns = @JoinColumn(name = "item_id"),
+            inverseJoinColumns = @JoinColumn(name = "effect_id")
+    )
     private Set<Effect> effects;
     private String name;
     private Integer price;
     private String description;
     private Integer duration;
-
 }

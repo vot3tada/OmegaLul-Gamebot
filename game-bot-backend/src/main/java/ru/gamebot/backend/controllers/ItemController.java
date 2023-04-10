@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.ItemDTO;
 import ru.gamebot.backend.services.ItemService;
 import ru.gamebot.backend.util.ItemErrorResponse;
-import ru.gamebot.backend.util.ItemMapper;
 import ru.gamebot.backend.util.ItemNotFoundException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/item")
@@ -18,11 +19,20 @@ import ru.gamebot.backend.util.ItemNotFoundException;
 public class ItemController {
 
     private final ItemService itemService;
-    private final ItemMapper itemMapper;
+
+    @GetMapping("/all")
+    public List<ItemDTO> getAllItems(){
+        return itemService.getAllItems();
+    }
+
+    @GetMapping("/id/{id}")
+    public ItemDTO getItem(@PathVariable Integer id){
+        return itemService.getItemById(id);
+    }
 
     @PostMapping("/create")
     public ResponseEntity<HttpStatus> createItem(@RequestBody ItemDTO itemDTO){
-        itemService.addItemAndEffect(itemMapper.itemDTOToItem(itemDTO));
+        itemService.addItemAndEffect(itemDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

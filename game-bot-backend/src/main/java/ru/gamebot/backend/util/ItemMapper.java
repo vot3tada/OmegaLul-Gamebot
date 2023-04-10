@@ -13,5 +13,5 @@ import ru.gamebot.backend.models.Item;
     public interface ItemMapper {
         Item itemDTOToItem(ItemDTO source);
 
-//        ItemDTO itemToItemDTO(Item source);
+        ItemDTO itemToItemDTO(Item source);
     }
