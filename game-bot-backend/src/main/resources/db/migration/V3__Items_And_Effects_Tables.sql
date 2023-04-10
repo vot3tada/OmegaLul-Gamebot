@@ -1,9 +1,3 @@
-CREATE TABLE effect(
-    id integer PRIMARY KEY,
-    property varchar(20),
-    value integer
-);
-
 CREATE TABLE item(
     id integer PRIMARY KEY,
     name varchar(30),
@@ -12,7 +6,9 @@ CREATE TABLE item(
     duration  integer
 );
 
-CREATE TABLE item_effect(
-    item_id integer REFERENCES item(id),
-    effect_id integer REFERENCES effect(id)
+CREATE TABLE effect(
+    id integer PRIMARY KEY,
+    property varchar(20),
+    value integer,
+    item_id integer REFERENCES item(id) ON DELETE CASCADE
 );

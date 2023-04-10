@@ -13,18 +13,12 @@ public class Item{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name="item_effect", joinColumns = @JoinColumn(name="item_id"),
-            inverseJoinColumns = @JoinColumn(name="effect_id")
-    )
-    private Set<Effect> itemEffects;
+
+    @OneToMany(mappedBy = "item")
+    private Set<Effect> effects;
     private String name;
     private Integer price;
     private String description;
     private Integer duration;
 
-    private void addEffect(Effect effect) {
-        this.itemEffects.add(effect);
-    }
 }

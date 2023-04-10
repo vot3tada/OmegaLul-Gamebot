@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Data
 public class ItemDTO {
-    private Set<Effect> itemEffects;
+    private Set<Effect> effects;
     private String name;
     private Integer price;
     private String description;
