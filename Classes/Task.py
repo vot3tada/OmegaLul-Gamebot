@@ -1,6 +1,7 @@
 import datetime
 from dateutil import tz
 import Classes.Player as Player
+from utils.scheduler import scheduler
 
 class Task():
 
@@ -23,7 +24,7 @@ Tasks: list[Task] = [
     Task( 'Водочка6', -884518885, 546270371, 5, 200, 7200),
     Task( 'Водочка7', -884518885, 546270371, 6, 200, 7200),
     Task( 'Водочка8', -884518885, 546270371, 7, 200, 7200),
-    Task( 'Водочка9', -884518885, 546270371, 8, 200, 60)
+    Task( 'Водочка9', -884518885, 546270371, 8, 200, 5)
 ]
 
 def FindTask(taskId: int) -> bool:
@@ -59,17 +60,20 @@ def GetTask(taskId: int) -> Task:
             return task
     return None
 
-def TakeTask(player: Player.Player, task: Task):
+def TakeTask(player: Player.Player, task: Task, punish_job):
     task.workerUserId = player.userId
     task.deadline =  datetime.datetime.now(tz.gettz("Europe/Moscow")) + datetime.timedelta(seconds=task.duration)
+    scheduler.add_job(punish_job, trigger='interval', seconds=task.duration, id=f'punish_{task.chatId}_{task.workerUserId}_{task.id}', args=[task.chatId, task.workerUserId, task.id])
 
 def RefuseTask(player: Player.Player, task: Task) -> bool:
-    task.workerUserId = -1
     punished = False
-    date1 = (task.deadline - datetime.datetime.now(tz.gettz("Europe/Moscow")))
-    if  date1 / datetime.timedelta(seconds=task.duration) < 0.7:
+    if (task.deadline - datetime.datetime.now(tz.gettz("Europe/Moscow"))) / datetime.timedelta(seconds=task.duration) < 0.7:
+        scheduler.modify_job(id=f'punish_{task.chatId}_{task.workerUserId}_{task.id}', trigger='interval', seconds=1)
         punished = True 
+    else:
+        scheduler.remove_job(f'punish_{task.chatId}_{task.workerUserId}_{task.id}')
     task.deadline = None
+    task.workerUserId = -1
     return punished
 
 def AddTask(task: Task):
@@ -80,3 +84,7 @@ def DeleteTask(task: Task):
         if _task.id == task.id:
             Tasks.remove(_task)
             return
+
+def AcceptTask(task: Task):
+    scheduler.remove_job(f'punish_{task.chatId}_{task.workerUserId}_{task.id}')
+    DeleteTask(task)

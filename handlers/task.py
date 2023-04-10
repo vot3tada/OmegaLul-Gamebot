@@ -1,19 +1,20 @@
-from datetime import datetime
 from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 import Classes.Player as Player
+from utils.create_bot import dp, bot
 import Classes.Task as Task
-from dateutil import tz
+from utils.scheduler import scheduler
 import random
 import os
-import re
+
 
 class TaskState(StatesGroup):
     name = State()
     money = State()
     deadline = State()
+    punished = State()
 
 async def taskList(message: types.Message):
 
@@ -230,7 +231,7 @@ async def acceptTask(call: types.CallbackQuery):
     worker.money += task.money
     worker.exp += 40 + (task.money * 0.7)
     owner: Player.Player = Player.GetPlayer(task.chatId, task.ownerUserId)
-    Task.DeleteTask(task)
+    Task.AcceptTask(task)
     await call.message.answer_photo(
         photo=open('./static/taskcomplete/' + random.choice(os.listdir('./static/taskcomplete')) ,'rb'),
         caption=f'{worker.name} успешно выполнил задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',
@@ -283,13 +284,13 @@ async def takeTask(message: types.Message):
     task: Task.Task = Task.GetTask(id)
 
     if task.workerUserId != -1:
-        message.reply('Задание уже взято')
+        await message.reply('Задание уже взято')
         return
     if task.ownerUserId == worker.userId:
-        message.reply('Нельзя взять свое задание')
+        await message.reply('Нельзя взять свое задание')
         return
     
-    Task.TakeTask(worker, task)
+    Task.TakeTask(worker, task, punish)
     owner = Player.GetPlayer(task.chatId, task.ownerUserId)
     await message.answer(f'{worker.name} успешно берет задание от {owner.name}')
 
@@ -413,7 +414,6 @@ async def refuseTask(call: types.CallbackQuery):
     
     player: Player.Player = Player.GetPlayer(task.chatId, task.workerUserId)
     if Task.RefuseTask(player, task):
-        #TODO: наказать
         await call.message.answer(f'{player.name} будет наказан за столь позднюю отмену задания...')
     call.data = f'myTakenTaskPage:{player.chatId}_{player.userId}_0'
     await pageMyTakenTaskList(call)
@@ -477,9 +477,43 @@ async def setTaskDeadline(message: types.Message, state: FSMContext):
         photo=open('./static/taskadd/' + random.choice(os.listdir('./static/taskadd')) ,'rb'),
         caption=f'Задание от {player.name} успешно добавлено на доску')
     
-def cancelAddingTask(message: types.Message, state: FSMContext):
-    state.finish()
-    message.reply('Создание задания отменено')
+async def cancelAddingTask(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.reply('Создание задания отменено')
+
+
+async def punish(chatId: int, userId: int, taskId: int):
+    
+    st : FSMContext = dp.current_state(chat=chatId, user=userId)
+    task = Task.GetTask(taskId)
+    if (await st.get_state()):
+        return
+    scheduler.remove_job(f'punish_{task.chatId}_{userId}_{task.id}')
+    await st.set_state(TaskState.punished)
+    player: Player.Player = Player.GetPlayer(chatId, userId)
+    keyboard = types.InlineKeyboardMarkup()
+    if player.money >= (task.money // 2):
+        keyboard.add(
+            types.InlineKeyboardButton(text='Заплатить', callback_data=f'collectorPay:{player.chatId}_{player.userId}_{task.money // 2}')
+        )
+    else:
+        keyboard.add(
+            types.InlineKeyboardButton(text='Не хватает денег...', callback_data=f'@$^')
+        )
+    keyboard.add(
+        types.InlineKeyboardButton(text='Сразиться', callback_data=f'collectorFight:{player.chatId}_{player.userId}_{task.money // 2}')
+    )
+    username: str = (await bot.get_chat_member(chatId, userId)).user.username
+    await bot.send_message(chat_id=chatId,
+                     parse_mode='HTML',
+                     reply_markup=keyboard,
+                     text=f'''<i>Он пришел...</i>
+                     
+Коллектор пришел по твою душу, {player.name}, и взял тебя в заложники!
+@{username} У тебя есть выбор:\n
+<b>Заплатить</b> сумму {task.money // 2} и мирно разойтись
+<b>Драться</b> за свою свободу''',
+                     )
 
 def register_handlers_task(dp: Dispatcher):
     dp.register_message_handler(taskList, commands='task', state=None)
