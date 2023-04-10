@@ -7,12 +7,15 @@ from datetime import datetime, date, time
 from utils.scheduler import scheduler
 import Classes.Player as Player
 from utils.create_bot import bot, dp
+import random
+import os
 
 class FSMEvent(StatesGroup):
     name = State()
     date = State()
     addplayers = State()
     admin = State()
+    delete = State()
 
 async def event_start(message : types.message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
@@ -31,7 +34,29 @@ async def event_cancel(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer('Создание отменено')
 
-async def event_end(message : types.message, state: FSMContext):
+async def event_delete_start(message : types.Message, state: FSMContext):
+    if not Player.FindPlayer(message.chat.id, message.from_user.id):
+        await message.message.reply('Нужно зарегаться для такого')
+        return
+    await FSMEvent.delete.set()
+    await message.answer('Напишите номер эвента')
+
+async def event_delete_end(message : types.Message, state: FSMContext):
+    event = Event.GetEvent(message.text)
+    if (event == None):
+        await message.answer('Такого эвента не существует')
+        return
+    player : Player = Player.GetPlayer(message.chat.id, message.from_user.id)
+    if (event.creator.chatId != player.chatId and event.creator.userId != player.userId):
+        await message.answer('Вы не являетесь создателем этого эвента')
+        return
+    scheduler.remove_job('e'+event.id+'-')
+    scheduler.remove_job('e'+event.id+'--')
+    state.finish()
+    await message.answer('Эвент отменен')
+    
+
+async def event_end(message : types.Message, state: FSMContext):
     from dateutil import tz
     event = Event.Event()
     async with state.proxy() as data:
@@ -42,34 +67,45 @@ async def event_end(message : types.message, state: FSMContext):
         event.datetime = datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]), int(date[4]), tzinfo=tz.gettz("Europe/Moscow"))
     except:
         await message.reply('Неправильный формат даты: ГГГГ/ММ/ДД/ЧЧ/ММ')
+        return
     event.creator = Player.GetPlayer(message.chat.id, message.from_user.id)
+    event.id = str(Event.GetCount())
     Event.AddEvent(event)
-    await message.reply('Мероприятие создано')
-    await message.answer(f'ВСЕ! ВСЕ! ВСЕ!\nУслышьте! Этого числа {event.datetime:%d.%m.%Y} ' +
-                        f'в {event.datetime:%H:%M} состоится эвент: {event.name}! ' +
-                        'Не опаздывайте! Награда ждет посетителей!')
-    scheduler.add_job(trigger_before_event, 'date', run_date= datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]) - 1, int(date[4]), 
-                                                                        tzinfo=tz.gettz("Europe/Moscow")), args=[event, message], id=(message.text + str(message.from_user.id)+'0'))
+    await message.reply(f'Мероприятие с #{event.id} создано')
+    photo = open('./static/anonce/' + random.choice(os.listdir('./static/anonce')) ,'rb')
+
+    await bot.send_photo(chat_id=message.chat.id,  
+                        caption=f'<b>ВСЕ! ВСЕ! ВСЕ!</b>\nУслышьте! Этого числа <b>{event.datetime:%d.%m.%Y}</b> ' +
+                        f'в <b>{event.datetime:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
+                        'Не опаздывайте! Награда ждет посетителей!', 
+                        photo=photo,
+                        parse_mode='HTML')
+    scheduler.add_job(trigger_before_event, 'date', run_date= 
+                      datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]) - 1, int(date[4]), 
+                                                                        tzinfo=tz.gettz("Europe/Moscow")), args=[message.chat.id, event.name], id=('e'+str(event.id)+'-'))
     scheduler.add_job(trigger_event, 'date', run_date= datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]), int(date[4]), 
-                                                                        tzinfo=tz.gettz("Europe/Moscow")), args=[event, message, state], id=(message.text + str(message.from_user.id)+'1'))
+                                                                        tzinfo=tz.gettz("Europe/Moscow")), args=[message.chat.id, event.id], id=('e'+str(event.id)+'--'))
 
-async def trigger_before_event(event: Event, message : types.message):
-    await message.answer(f'Через час пройдет эвент: {event.name}. Будет награда.')
+async def trigger_before_event(chatId: int, eventName: str):
+    await bot.send_message(chat_id=chatId, text=f'Через час пройдет эвент: \n<b>{eventName}</b>.\n Будет награда.', parse_mode='HTML')
 
-async def trigger_event(event: Event, message : types.message, state : FSMContext):
-    await message.answer(f'Сейчас проходит эвент: {event.name}. У вас есть минута проставить плюсики. Всем посетителям награда!')
-    async with state.proxy() as data:
-        data['addplayers'] = event
-    for i in Player.GetAllPlayers(message.chat.id):
+async def trigger_event(chatId: int, eventId: int):
+    event = Event.GetEvent(eventId)
+    photo = open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb')
+    await bot.send_photo(chat_id=chatId,  
+                            caption=f'Сейчас проходит эвент:\n<b>{event.name}</b>.\nУ вас есть минута проставить плюсики. Всем посетителям награда!', 
+                            photo=photo,
+                            parse_mode='HTML')
+    for i in Player.GetAllPlayers(chatId):
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
         if statePlayer == None:
             await st.set_state(FSMEvent.addplayers)
             await st.set_data(event.id)
-    st : FSMContext = dp.current_state( chat = event.creator.chatId, user = event.creator.userId)
+    st : FSMContext = dp.current_state(chat = event.creator.chatId, user = event.creator.userId)
     await st.set_state(FSMEvent.admin)
     await st.set_data(event.id)
-    print()
+
     
 
 async def event_add_players(message : types.Message, state: FSMContext):
@@ -121,6 +157,8 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_message_handler(event_start, commands='create_event')
     dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name], commands='cancel')
     dp.register_message_handler(event_set_date, state=FSMEvent.name)
+    dp.register_message_handler(event_delete_start, commands='delete_event')
+    dp.register_message_handler(event_delete_end, state=FSMEvent.delete)
     dp.register_message_handler(event_end, state=FSMEvent.date)
     dp.register_message_handler(event_add_players, state=FSMEvent.addplayers, regexp='\+')
     dp.register_message_handler(admin_end, state=FSMEvent.admin, commands='end_event')
