@@ -1,9 +1,10 @@
 from aiogram.dispatcher import Dispatcher
 from aiogram import types
+import os, random
 
 async def getCommands(message: types.Message):
-    await message.reply(
-        text =
+    await message.reply_photo(
+        caption =
         """<b>Команды игрового Омехалюля</b>:
 
         <i>Персонаж</i>:
@@ -28,7 +29,8 @@ async def getCommands(message: types.Message):
 
         <i>Другие</i>:
         /shop - вызвать магазинчик для закупа""",
-        parse_mode='HTMl'
+        parse_mode='HTMl',
+        photo=open('./static/info/' + random.choice(os.listdir('./static/info')) ,'rb')
     )
 
 def register_handlers_info(dp: Dispatcher):
