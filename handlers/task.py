@@ -27,7 +27,6 @@ async def taskList(message: types.Message):
     for task in tasks[:4]:
         player = Player.GetPlayer(task.chatId, task.ownerUserId)
         time = ''
-        #time: int = 86400 * timetext[0] + 3600 * time[1] + 60 * time[2]
         if task.duration // 86400:
             time += f'{task.duration // 86400} д. '
         if  (task.duration % 86400)// 3600:
@@ -70,11 +69,19 @@ async def pageTaskList(call: types.CallbackQuery):
     keyboard = None
     for task in tasks[page*4:page*4+4]:
         player = Player.GetPlayer(task.chatId, task.ownerUserId)
+        time = ''
+        if task.duration // 86400:
+            time += f'{task.duration // 86400} д. '
+        if  (task.duration % 86400)// 3600:
+            time += f'{(task.duration % 86400)// 3600} ч. '
+        if (task.duration % 3600)// 60:
+            time += f'{(task.duration % 3600)// 60} м. '
+        
         replytext += f"""
         Задание:  <i>{task.name}</i>
         Заказчик:  {player.name}
+        Время на выполнение: {time}
         Награда:  {task.money} монет
-        ID: {task.id}
         """
     if len(tasks) > 4:
         keyboard = types.InlineKeyboardMarkup()
@@ -407,7 +414,7 @@ async def refuseTask(call: types.CallbackQuery):
     player: Player.Player = Player.GetPlayer(task.chatId, task.workerUserId)
     if Task.RefuseTask(player, task):
         #TODO: наказать
-        call.message.answer(f'{player.name} будет наказан за столь позднюю отмену задания...')
+        await call.message.answer(f'{player.name} будет наказан за столь позднюю отмену задания...')
     call.data = f'myTakenTaskPage:{player.chatId}_{player.userId}_0'
     await pageMyTakenTaskList(call)
 
@@ -446,7 +453,7 @@ async def setTaskMoney(message: types.Message, state: FSMContext):
 async def setTaskDeadline(message: types.Message, state: FSMContext):
     timetext = message.text.split('/')
     try:
-        time: int = 86400 * timetext[0] + 3600 * time[1] + 60 * time[2]
+        time: int = 86400 * int(timetext[0]) + 3600 * int(timetext[1]) + 60 * int(timetext[2])
     except:
         await message.reply('Неправильный формат даты: ДД/ЧЧ/ММ')
         return
