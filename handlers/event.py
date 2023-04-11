@@ -14,17 +14,18 @@ class FSMEvent(StatesGroup):
     name = State()
     date = State()
     addplayers = State()
+    inEvent = State()
     admin = State()
     delete = State()
 
-async def event_start(message : types.message):
+async def event_start(message : types.Message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
-        await message.message.reply('Нужно зарегаться для такого')
+        await message.reply('Нужно зарегаться для такого')
         return
     await FSMEvent.name.set()
     await message.reply('Напишите название мероприятия')
 
-async def event_set_date(message : types.message, state: FSMContext):
+async def event_set_date(message : types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['name'] = message.text
     await FSMEvent.date.set()
@@ -36,7 +37,7 @@ async def event_cancel(message: types.Message, state: FSMContext):
 
 async def event_delete_start(message : types.Message, state: FSMContext):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
-        await message.message.reply('Нужно зарегаться для такого')
+        await message.reply('Нужно зарегаться для такого')
         return
     await FSMEvent.delete.set()
     await message.answer('Напишите номер эвента')
@@ -46,8 +47,8 @@ async def event_delete_end(message : types.Message, state: FSMContext):
     if (event == None):
         await message.answer('Такого эвента не существует')
         return
-    player : Player = Player.GetPlayer(message.chat.id, message.from_user.id)
-    if (event.creator.chatId != player.chatId and event.creator.userId != player.userId):
+    player : Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
+    if (event.creator.chatId != player.chatId or event.creator.userId != player.userId):
         await message.answer('Вы не являетесь создателем этого эвента')
         return
     scheduler.remove_job('e'+event.id+'-')
@@ -114,21 +115,20 @@ async def event_add_players(message : types.Message, state: FSMContext):
     player: Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     event.players.append(player)
     await message.reply(f'{player.name} подключился')
-    await state.finish()
+    await FSMEvent.inEvent.set()
 
-async def admin_end(message : types.message, state: FSMContext):
+async def admin_end(message : types.Message, state: FSMContext):
     for i in Player.GetAllPlayers(message.chat.id):
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
-        if statePlayer == FSMEvent.addplayers:
+        if statePlayer == FSMEvent.addplayers or statePlayer == FSMEvent.inEvent:
             await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
     eventId = await state.get_data()
     event = Event.GetEvent(eventId)
     text = 'Посетители эвента:'
     for i in event.players:
-        player : Player = Player.GetPlayer(i.chatId, i.userId)
-        player.money += 50
-        player.exp += 50
+        i.money += 50
+        i.exp += 50
         text += f'\n {i.name}'
     await message.answer('Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
     await state.finish()
@@ -154,14 +154,14 @@ async def admin_kick(message : types.Message, state: FSMContext):
 
 
 def register_handlers_registration(dp: Dispatcher):
-    dp.register_message_handler(event_start, commands='create_event')
-    dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name], commands='cancel')
+    dp.register_message_handler(event_start, commands='event_create')
+    dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name, FSMEvent.delete], commands='event_cancel')
     dp.register_message_handler(event_set_date, state=FSMEvent.name)
-    dp.register_message_handler(event_delete_start, commands='delete_event')
+    dp.register_message_handler(event_delete_start, commands='event_delete')
     dp.register_message_handler(event_delete_end, state=FSMEvent.delete)
     dp.register_message_handler(event_end, state=FSMEvent.date)
     dp.register_message_handler(event_add_players, state=FSMEvent.addplayers, regexp='\+')
-    dp.register_message_handler(admin_end, state=FSMEvent.admin, commands='end_event')
-    dp.register_message_handler(admin_kick, state=FSMEvent.admin, commands='kick')
+    dp.register_message_handler(admin_end, state=FSMEvent.admin, commands='event_end')
+    dp.register_message_handler(admin_kick, state=FSMEvent.admin, commands='event_kick')
     
     
