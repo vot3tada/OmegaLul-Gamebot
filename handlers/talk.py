@@ -16,5 +16,5 @@ async def talk_end(message : types.Message, state: FSMContext):
     await message.reply(gpt.talk_to_bot2(message.text))
 
 def register_handlers_talk(dp: Dispatcher):
-    dp.register_message_handler(talk_start, regexp='^Поговорить$', state=None)
+    dp.register_message_handler(talk_start, commands='chatgpt', state=None)
     dp.register_message_handler(talk_end, state=FSMTalk.talk)

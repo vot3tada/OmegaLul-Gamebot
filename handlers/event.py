@@ -157,10 +157,10 @@ async def admin_kick(message : types.Message, state: FSMContext):
     eventId = await state.get_data()
     event = Event.GetEvent(eventId)
     if not message.reply_to_message is None:
-        player = Player.GetPlayer(message.reply_to_message.chat.id, message.reply_to_message.from_user.id)
-        if player in event.players:
-            event.players.remove(player)
-            await message.reply(f'{player.name} выписан из движа')
+        eventUserId = [i.userId for i in event.players]
+        if message.reply_to_message.from_user.id in eventUserId:
+            event.players.pop(eventUserId.index(message.reply_to_message.from_user.id))
+            await message.reply(f'Выписан из движа')
         else:
             await message.reply('Такой чел не в эвенте')
     else:
