@@ -62,16 +62,19 @@ async def event_end(message : types.Message, state: FSMContext):
     event = Event.Event()
     async with state.proxy() as data:
         event.name = data['name']
-    await state.finish()
     date = message.text.split('/')
     try:
         event.datetime = datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]), int(date[4]), tzinfo=tz.gettz("Europe/Moscow"))
     except:
         await message.reply('Неправильный формат даты: ГГГГ/ММ/ДД/ЧЧ/ММ')
         return
+    if len([i for i in Event.GetAllEvents() if abs((event.datetime-i.datetime).total_seconds()) < 600]) > 0:
+        await message.reply('В это время уже существует эвент')
+        return
     event.creator = Player.GetPlayer(message.chat.id, message.from_user.id)
     event.id = str(Event.GetCount())
     Event.AddEvent(event)
+    await state.finish()
     await message.reply(f'Мероприятие с #{event.id} создано')
     photo = open('./static/anonce/' + random.choice(os.listdir('./static/anonce')) ,'rb')
 
@@ -106,8 +109,8 @@ async def trigger_event(chatId: int, eventId: int):
     st : FSMContext = dp.current_state(chat = event.creator.chatId, user = event.creator.userId)
     await st.set_state(FSMEvent.admin)
     await st.set_data(event.id)
-    scheduler.add_job(event_set_state, trigger='interval', seconds=10, args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
-    scheduler.add_job(admin_end, trigger='interval', seconds=300, args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
+    scheduler.add_job(event_set_state, trigger='interval', seconds=2, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
+    scheduler.add_job(scheduler_end, trigger='interval', seconds=300, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
 
     
 
@@ -116,7 +119,7 @@ async def event_add_players(message : types.Message, state: FSMContext):
     event = Event.GetEvent(eventId)
     player: Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     event.players.append(player)
-    await message.reply(f'{player.name}подключился')
+    await message.reply(f'{player.name} подключился')
     await FSMEvent.inEvent.set()
 
 async def admin_end(message : types.Message, state: FSMContext):
