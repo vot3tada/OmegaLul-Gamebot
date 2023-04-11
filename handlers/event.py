@@ -116,7 +116,7 @@ async def event_add_players(message : types.Message, state: FSMContext):
     event = Event.GetEvent(eventId)
     player: Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     event.players.append(player)
-    await message.reply(f'{player.name} подключился')
+    await message.reply(f'{player.name}подключился')
     await FSMEvent.inEvent.set()
 
 async def admin_end(message : types.Message, state: FSMContext):
