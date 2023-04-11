@@ -1,19 +1,17 @@
 from ctypes import Union
 from datetime import datetime, date, time
 from utils.scheduler import scheduler
+from Classes.Player import Player
 
 class Event():
-    id = 0
-    name = ''
-    datetime = datetime.today()
-    players = []
-    creator = ''
-    
-    
+
+ 
     def __init__(self):
         self.id = datetime.today()
         self.datetime = datetime.today()
-        self.players = []
+        self.players: list[Player] = []
+        self.creator: Player = None
+        self.name: str = ''
 
 Events: list[Event] = []
 

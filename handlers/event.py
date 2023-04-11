@@ -97,7 +97,7 @@ async def trigger_event(chatId: int, eventId: int):
     event = Event.GetEvent(eventId)
     photo = open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb')
     await bot.send_photo(chat_id=chatId,  
-                            caption=f'Сейчас проходит эвент:\n<b>{event.name}</b>.\nУ вас есть минута проставить плюсики. Всем посетителям награда!', 
+                            caption=f'Сейчас проходит эвент:\n<b>{event.name}</b>.\nУ вас есть пять минут проставить плюсики. Всем посетителям награда!', 
                             photo=photo,
                             parse_mode='HTML')
     for i in Player.GetAllPlayers(chatId):
@@ -112,12 +112,10 @@ async def trigger_event(chatId: int, eventId: int):
     scheduler.add_job(event_set_state, trigger='interval', seconds=2, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
     scheduler.add_job(scheduler_end, trigger='interval', seconds=300, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
 
-    
-
 async def event_add_players(message : types.Message, state: FSMContext):
     eventId = await state.get_data()
     event = Event.GetEvent(eventId)
-    player: Player = Player.GetPlayer(message.chat.id, message.from_user.id)
+    player: Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     event.players.append(player)
     await message.reply(f'{player.name} подключился')
     await FSMEvent.inEvent.set()
