@@ -106,6 +106,8 @@ async def trigger_event(chatId: int, eventId: int):
     st : FSMContext = dp.current_state(chat = event.creator.chatId, user = event.creator.userId)
     await st.set_state(FSMEvent.admin)
     await st.set_data(event.id)
+    scheduler.add_job(event_set_state, trigger='interval', seconds=10, args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
+    scheduler.add_job(admin_end, trigger='interval', seconds=300, args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
 
     
 
@@ -131,7 +133,25 @@ async def admin_end(message : types.Message, state: FSMContext):
         i.exp += 50
         text += f'\n {i.name}'
     await message.answer('Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
+    scheduler.remove_job(f'event:{eventId}end')
+    scheduler.remove_job(f'event:{eventId}reload')
     await state.finish()
+
+async def scheduler_end(chatId: int, eventId):
+    for i in Player.GetAllPlayers(chatId):
+        st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
+        statePlayer = await st.get_state()
+        if statePlayer == FSMEvent.addplayers or statePlayer == FSMEvent.inEvent or FSMEvent.admin:
+            await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
+    event = Event.GetEvent(eventId)
+    text = 'Посетители эвента:'
+    for i in event.players:
+        i.money += 50
+        i.exp += 50
+        text += f'\n {i.name}'
+    await bot.send_message(chat_id=chatId, text='Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
+    scheduler.remove_job(f'event:{eventId}end')
+    scheduler.remove_job(f'event:{eventId}reload')
 
 async def admin_kick(message : types.Message, state: FSMContext):
     eventId = await state.get_data()
@@ -145,6 +165,15 @@ async def admin_kick(message : types.Message, state: FSMContext):
             await message.reply('Такой чел не в эвенте')
     else:
         await message.reply('Вы не выделили человечка')
+
+
+async def event_set_state(chatId: int, eventId):
+    for i in Player.GetAllPlayers(chatId):
+        st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
+        statePlayer = await st.get_state()
+        if statePlayer == None:
+            await st.set_state(FSMEvent.addplayers)
+            await st.set_data(eventId)
 
 
      
