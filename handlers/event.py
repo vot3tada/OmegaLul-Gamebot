@@ -3,7 +3,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import Classes.Event as Event
-from datetime import datetime, date, time
+from datetime import datetime
 from utils.scheduler import scheduler
 import Classes.Player as Player
 from utils.create_bot import bot, dp

@@ -5,7 +5,6 @@ import requests
 import json
 
 class Player():
-
     def __init__(self, 
                  personPk: dict[str, int],
                  name: str, 
