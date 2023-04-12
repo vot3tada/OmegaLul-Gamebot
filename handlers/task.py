@@ -8,13 +8,13 @@ import Classes.Task as Task
 from utils.scheduler import scheduler
 import random
 import os
+from handlers.collector import CollectorState
 
 
 class TaskState(StatesGroup):
     name = State()
     money = State()
     deadline = State()
-    punished = State()
 
 async def taskList(message: types.Message):
 
@@ -40,6 +40,7 @@ async def taskList(message: types.Message):
         Заказчик:  {player.name}
         Время на выполнение: {time}
         Награда:  {task.money} монет
+        ID: {task.id}
         """
     if len(tasks) > 4:
         keyboard = types.InlineKeyboardMarkup()
@@ -83,6 +84,7 @@ async def pageTaskList(call: types.CallbackQuery):
         Заказчик:  {player.name}
         Время на выполнение: {time}
         Награда:  {task.money} монет
+        ID: {task.id}
         """
     if len(tasks) > 4:
         keyboard = types.InlineKeyboardMarkup()
@@ -489,31 +491,36 @@ async def punish(chatId: int, userId: int, taskId: int):
     if (await st.get_state()):
         return
     scheduler.remove_job(f'punish_{task.chatId}_{userId}_{task.id}')
-    await st.set_state(TaskState.punished)
+    await st.set_state(CollectorState.Punished)
+    
     player: Player.Player = Player.GetPlayer(chatId, userId)
     keyboard = types.InlineKeyboardMarkup()
+    
     if player.money >= (task.money // 2):
-        keyboard.add(
-            types.InlineKeyboardButton(text='Заплатить', callback_data=f'collectorPay:{player.chatId}_{player.userId}_{task.money // 2}')
-        )
+        payText =  'Заплатить'  
     else:
-        keyboard.add(
-            types.InlineKeyboardButton(text='Не хватает денег...', callback_data=f'@$^')
-        )
+        payText = 'Заплатить что есть'
+    keyboard.add(
+        types.InlineKeyboardButton(text=payText, callback_data=f'collectorPay:{player.chatId}_{player.userId}_{task.money // 2}')
+    )
     keyboard.add(
         types.InlineKeyboardButton(text='Сразиться', callback_data=f'collectorFight:{player.chatId}_{player.userId}_{task.money // 2}')
     )
     username: str = (await bot.get_chat_member(chatId, userId)).user.username
-    await bot.send_message(chat_id=chatId,
+    message = await bot.send_photo(chat_id=chatId,
                      parse_mode='HTML',
                      reply_markup=keyboard,
-                     text=f'''<i>Он пришел...</i>
+                     photo = open('./static/collector/T801.jpg','rb'),
+                     caption=f'''<i>Он пришел...</i>
                      
 Коллектор пришел по твою душу, {player.name}, и взял тебя в заложники!
 @{username} У тебя есть выбор:\n
 <b>Заплатить</b> сумму {task.money // 2} и мирно разойтись
 <b>Драться</b> за свою свободу''',
                      )
+    await st.set_data(
+        {'messageId':  message.message_id}
+    )
 
 def register_handlers_task(dp: Dispatcher):
     dp.register_message_handler(taskList, commands='task', state=None)

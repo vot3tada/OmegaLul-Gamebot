@@ -41,7 +41,7 @@ async def work_start(call: types.CallbackQuery):
     if user.level < work.levelRequired:
         await call.answer('Это не ваш уровень')
         return
-    scheduler.add_job(work_complete, trigger='interval', seconds=10, args=[user.chatId, user.userId, work.id, call.from_user.username], coalesce=True, id=f'work_{user.chatId}_{user.userId}')
+    scheduler.add_job(work_complete,jobstore='local', trigger='interval', seconds=10, args=[user.chatId, user.userId, work.id, call.from_user.username], coalesce=True, id=f'work_{user.chatId}_{user.userId}')
     await FSMWork.work.set()
     photo = open(user.photo, 'rb')
     await call.message.reply_photo(photo=photo,caption=f'{user.name} отправился {work.name}')
