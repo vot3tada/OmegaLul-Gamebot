@@ -19,6 +19,7 @@ public interface PersonMapper {
     @Mapping(target = "hp", source = "hp", defaultValue = "100")
     @Mapping(target = "damage", source = "damage", defaultValue = "20")
     @Mapping(target = "damageMultiply", source = "damageMultiply", defaultValue = "1")
+    @Mapping(target = "inventory", ignore = true)
     Person personDtoToPerson(PersonDTO source);
 
     @Mapping(target = "personPKDTO", expression = "java(source.toPersonDTOPK())")

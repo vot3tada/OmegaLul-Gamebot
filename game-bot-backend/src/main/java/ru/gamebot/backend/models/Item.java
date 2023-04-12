@@ -21,6 +21,8 @@ public class Item{
             inverseJoinColumns = @JoinColumn(name = "effect_id")
     )
     private Set<Effect> effects;
+    @OneToMany(mappedBy = "item")
+    private Set<Inventory> inventory;
     private String name;
     private Integer price;
     private String description;

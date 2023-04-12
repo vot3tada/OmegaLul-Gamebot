@@ -10,12 +10,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.CreatePerson;
 import ru.gamebot.backend.dto.PersonDTO;
-import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.services.PersonService;
+import ru.gamebot.backend.util.ItemNotFoundException;
 import ru.gamebot.backend.util.PersonExceptions.*;
-import ru.gamebot.backend.util.PersonMapper.PersonMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,17 +23,15 @@ import java.util.List;
 public class PersonController {
 
     private final PersonService personService;
-    private final PersonMapper personMapper;
-
 
     @GetMapping("/id/{chatId}")
-    public List<PersonDTO> getPersonByChatId(@PathVariable("chatId") int chatId){
-        return convertToListPersonDTO(personService.getPersonsByChatId(chatId));
+    public List<PersonDTO> getAllPersonsFromChat(@PathVariable("chatId") int chatId){
+        return personService.getPersonsByChatId(chatId);
     }
 
     @GetMapping("/all")
-    public List<PersonDTO> getAllPersonsFromChat(){
-        return convertToListPersonDTO(personService.getAllPersons());
+    public List<PersonDTO> getAllPersons (){
+        return personService.getAllPersons();
     }
 
     @PutMapping("/update")
@@ -43,15 +39,7 @@ public class PersonController {
                                                    @RequestParam(name = "userId") int userId,
                                                    @RequestBody PersonDTO personDTO){
 
-        Person person = personService.getPerson(chatId,userId);
-        if (personDTO.getExperience()!=null && person.getExperience()!=null && person.getExperience() > personDTO.getExperience()){
-            throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
-        }
-
-        personDTO.setPersonPKDTO(new PersonDTO.PersonPKDTO(chatId, userId));
-
-        Person convertedPerson = convertToPerson(personDTO);
-        personService.updatePerson(convertedPerson);
+        personService.updatePerson(personDTO, chatId, userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -75,8 +63,7 @@ public class PersonController {
             throw new PersonNotCreateException(errorMsg.toString());
         }
 
-        Person convertedPerson = convertToPerson(personDTO);
-        personService.createPerson(convertedPerson);
+        personService.createPerson(personDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -110,16 +97,12 @@ public class PersonController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    private Person convertToPerson(PersonDTO personDTO){
-        return personMapper.personDtoToPerson(personDTO);
+    @ExceptionHandler
+    private ResponseEntity<PersonErrorResponse> handleException (ItemNotFoundException e){
+        PersonErrorResponse response = new PersonErrorResponse("Item not found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-    private List<PersonDTO> convertToListPersonDTO(List<Person> persons){
-        List<PersonDTO> personDTOS = new ArrayList<>();
-        for(Person person: persons){
-            personDTOS.add(personMapper.personToPersonDTO(person));
-        }
-        return  personDTOS;
-    }
+
 
 }
