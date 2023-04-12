@@ -124,7 +124,7 @@ async def admin_end(message : types.Message, state: FSMContext):
     for i in Player.GetAllPlayers(message.chat.id):
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
-        if statePlayer == FSMEvent.addplayers or statePlayer == FSMEvent.inEvent:
+        if statePlayer == FSMEvent.addplayers.state or statePlayer == FSMEvent.inEvent.state:
             await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
     eventId = await state.get_data()
     event = Event.GetEvent(eventId)
@@ -142,7 +142,7 @@ async def scheduler_end(chatId: int, eventId):
     for i in Player.GetAllPlayers(chatId):
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
-        if statePlayer == FSMEvent.addplayers or statePlayer == FSMEvent.inEvent or FSMEvent.admin:
+        if statePlayer == FSMEvent.addplayers.state or statePlayer == FSMEvent.admin.state:
             await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
     event = Event.GetEvent(eventId)
     text = 'Посетители эвента:'
