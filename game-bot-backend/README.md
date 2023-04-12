@@ -22,7 +22,7 @@
 
    >Fail: Status 400,404,500
    
-5. Удаление всех пользователей в определенном чате: **localhost:8080/api/person/delete/{chatId}**
+5. Удаление всех пользователей в определенном чате: DELETE: **localhost:8080/api/person/delete/{chatId}**
    >Success: Status 204
 
    >Fail: Status 400,404,500
@@ -47,25 +47,25 @@ Body выглядит следующим образом, обратите вни
 
 # Items and effects
 
-1. Получение всех итемов и их эфектов: GET: localhost:8080/api/item/all
+1. Получение всех итемов и их эфектов: GET: **localhost:8080/api/item/all**
 
    >Success: Status 200
 
    >Fail: Status 500 (но это врятли)
 
-2. Получение предмета и его свойств по id: GET: localhost:8080/api/item/id/{id}
+2. Получение предмета и его свойств по id: GET: **localhost:8080/api/item/id/{id}**
 
    >Success: Status 200
 
    >Fail: Status 404,500
 
-3. Добавление предмета и его свойств: POST: localhost:8080/api/item/create
+3. Добавление предмета и его свойств: POST: **localhost:8080/api/item/create**
 
    >Success: Status 201
 
    >Fail: Status 400,500
 
-4. Удаление предмета и всех его свойств по id: DELETE: localhost:8080/api/item/delete/{id}
+4. Удаление предмета и всех его свойств по id: DELETE: **localhost:8080/api/item/delete/{id}**
 
    >Success: Status 204
 
@@ -84,6 +84,36 @@ Body выглядит следующим образом, обратите вни
             "value":443
         }]
     }
+
+# Inventory
+
+1. Получение всего инвентаря: GET: **localhost:8080/api/inventory/all**
+
+   >Success: Status 200
+
+   >Fail: Status 500 (но это врятли)
+
+2. Добавление предмета в инвентарь(поставил метод UPDATE вроде подходит): UPDATE:**localhost:8080/api/inventory/update** (см. пример ввода body)
+
+   >Success: Status 204
+
+   >Fail: Status 400,404,500
+
+3. Удаление предмета из инвентаря по айдишнику предмета: DELETE: **localhost:8080/api/inventory/delete/{id}**
+
+   >Success: Status 204
+
+   >Fail: Status 400,404,500
+
+### Пример
+Body вводится только для апдейта, в остальных случаях он не нужен:
+
+        {
+            "itemId":2,
+            "count":3,
+            "chatId":4,
+            "userId":3
+        }
 
 
 ## !!!ВАЖНО!!!
