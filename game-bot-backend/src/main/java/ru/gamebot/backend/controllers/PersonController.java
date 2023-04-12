@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.CreatePerson;
 import ru.gamebot.backend.dto.PersonDTO;
 import ru.gamebot.backend.services.PersonService;
-import ru.gamebot.backend.util.ItemNotFoundException;
 import ru.gamebot.backend.util.PersonExceptions.*;
 
 import java.util.List;
@@ -97,11 +96,7 @@ public class PersonController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (ItemNotFoundException e){
-        PersonErrorResponse response = new PersonErrorResponse("Item not found");
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
+
 
 
 

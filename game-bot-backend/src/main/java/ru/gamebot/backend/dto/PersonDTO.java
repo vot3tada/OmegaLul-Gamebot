@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.gamebot.backend.models.PersonPK;
 
-import java.util.Set;
 
 @Data
 public class PersonDTO {
@@ -56,8 +55,6 @@ public class PersonDTO {
             this.userId = userId;
         }
     }
-    @JsonAlias({"inventory"})
-    private Set<InventoryDTO> inventoryDTO;
 
     public PersonPK toPersonPK() {
         return new PersonPK(personPKDTO.chatId, personPKDTO.userId);

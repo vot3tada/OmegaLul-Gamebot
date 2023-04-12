@@ -5,4 +5,5 @@ import ru.gamebot.backend.models.Inventory;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
     Inventory findInventoryByItem_Id(Integer itemId);
+    void deleteByItemId(Integer id);
 }

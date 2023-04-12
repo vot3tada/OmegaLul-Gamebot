@@ -21,7 +21,7 @@ public class Item{
             inverseJoinColumns = @JoinColumn(name = "effect_id")
     )
     private Set<Effect> effects;
-    @OneToMany(mappedBy = "item")
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private Set<Inventory> inventory;
     private String name;
     private Integer price;
