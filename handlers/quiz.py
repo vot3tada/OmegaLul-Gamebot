@@ -6,14 +6,17 @@ from utils.scheduler import scheduler
 import Classes.Player as Player
 from utils.create_bot import bot, dp
 import Classes.Quiz as Quiz
-import os
+import random
+from aiogram.types import InputFile, InputMediaPhoto
 
 class FSMQuiz(StatesGroup):
     inQuiz = State()
-    numberOfQuestion = State()
-    createQuiz = State()
-    addPhoto = State()
-    players = State()
+    createQuizName = State()
+    createQuizPhoto = State()
+    questionText = State()
+    questionAnswer = State()
+    questionPhoto = State()
+    questionContinue = State()
 
 
 async def QuizMenuStart(message : types.Message):
@@ -79,6 +82,9 @@ async def QuizPages(call: types.CallbackQuery):
     await call.answer()
 
 async def ChoiceQuiz(call: types.CallbackQuery):
+    if (Quiz.FindQuizInChat(call.message.chat.id)):
+        await call.answer('Квиз уже проходит в чате')
+        return
     id = call.data.replace("quiz:",'')
     try:
         id = int(id)
@@ -93,8 +99,8 @@ async def ChoiceQuiz(call: types.CallbackQuery):
     replyText = f'<b>{quiz.name}</b>'
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text='Начать', callback_data=f'quizStart:{id}'))
-    if (quiz.photo != ''):
-        photo = open('./static/quizes/'+quiz.photo, 'rb')
+    if (quiz.image != ''):
+        photo = open('./static/quizes/'+quiz.image, 'rb')
         await call.message.answer_photo(
             caption=replyText,
             photo=photo,
@@ -109,61 +115,123 @@ async def ChoiceQuiz(call: types.CallbackQuery):
         )
     await call.answer()
 
+async def NextQuestion(ChatId: int):
+    quiz: Quiz.QuizInChat = Quiz.GetQuizInChat(ChatId)
+    await bot.send_message(chat_id=ChatId, text='Никто не ответил на вопрос.')
+    quiz.number += 1
+    if (quiz.number < len(quiz.questions)):
+        question: Quiz.Question = quiz.questions[quiz.number]
+        if (question.image != ''):
+            photo = open('./static/quizes/' + question.image, 'rb')
+            await bot.send_photo(chat_id=ChatId, caption=f'Минута на вопрос: {question.text}',photo=photo)
+        else:
+            await bot.send_message(chat_id=ChatId, text=f'Минута на вопрос: {question.text}')
+        return
+    
+    text = 'Квиз закончен!\nТоп игроков по количеству ответов:'
+    top = []
+    for i in Player.GetAllPlayers(ChatId):
+        st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
+        score = await st.get_data()
+        top.append([i.name, score])
+        statePlayer = await st.get_state()
+        if statePlayer == FSMQuiz.inQuiz.state:
+            await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
+    Quiz.RemoveQuizInChat(quiz)
+    top.sort(key=lambda x:x[1])
+    for i in top[::-1]:
+        text += f'\n{i[0]} - {i[1]}'
+    await bot.send_message(chat_id=ChatId, text=text)
+    scheduler.remove_job(f'quiz:{ChatId}')
+
 async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
         await call.message.reply('Нужно зарегаться для такого')
         return
     if (Quiz.FindQuizInChat(call.message.chat.id)):
-        await call.message.answer('Квиз уже проходит в чате')
+        await call.answer('Квиз уже проходит в чате')
         return
     try:
         id = int(call.data.replace("quizStart:",''))
     except:
         await call.answer()
         return
-    await FSMQuiz.inQuiz.set()
-    async with state.proxy() as data:
-        data['inQuiz'] = 0
+    
     quiz: Quiz.QuizInChat = Quiz.QuizInChat
     quiz.chatId = call.message.chat.id
     quiz.number = 0
     quiz.players = [Player.GetPlayer(call.message.chat.id, call.from_user.id)]
-    quiz.questions = Quiz.getQuestions(id)
+    quiz.questions = Quiz.GetQuestions(id)
+    random.shuffle(quiz.questions)
+    quiz.questions = quiz.questions[:10]
+    if len(quiz.questions) == 0:
+        await call.answer('Этот квиз ещё не готов')
+        return
+    await FSMQuiz.inQuiz.set()
+    async with state.proxy() as data:
+        data['inQuiz'] = 0
     Quiz.AddQuizInChat(quiz)
     question: Quiz.Question = quiz.questions[0]
+    scheduler.add_job(NextQuestion, trigger='interval', seconds=60, jobstore='local', args=[call.message.chat.id], coalesce=True, id=f'quiz:{call.message.chat.id}')         
+    for i in Player.GetAllPlayers(call.message.chat.id):
+        await bot.send_message(chat_id=i.userId, 
+                                text=f'Сейчас проходит квиз:\n <b>{Quiz.GetQuiz(id).name}</b>!\n Присоединяйтесь', 
+                                parse_mode='HTML')
     if (question.image != ''):
-        photo = open('./static/quizes/' + question.image, 'rb')
-        await call.message.answer_photo(caption=f'Вопрос: {question.text}',photo=photo)
-    else:
-        await call.message.answer(text=f'Вопрос: {question.text}')
+        photo = InputFile('./static/quizes/' + question.image)
+        await call.message.answer_photo(caption=f'Минута на вопрос: {question.text}',photo=photo)
+    else:   
+        await call.message.answer(text=f'Минута на вопрос: {question.text}')
+    
+    
+    
     await call.answer()
-
+    
 async def AnswerQuestion(message: types.Message, state: FSMContext):
     quiz: Quiz.QuizInChat = Quiz.GetQuizInChat(message.chat.id)
     if (message.text.lower() == quiz.questions[quiz.number].answer.lower()):
-        await message.reply('Ответ правильный!')
+        scheduler.remove_job(f'quiz:{message.chat.id}')
+        scheduler.add_job(NextQuestion, trigger='interval', seconds=60, jobstore='local', args=[message.chat.id], coalesce=True, id=f'quiz:{message.chat.id}')
+        await message.reply('Ответ правильный! \n<b>Заработано:</b>\n10 монет\n10 опыта', parse_mode='HTML')
         async with state.proxy() as data:
             data['inQuiz'] = data['inQuiz'] + 1
-        #Можно уже здесь добавлять деньги/опыт
         quiz.number += 1
+        player = Player.GetPlayer(message.chat.id, message.from_user.id)
+        player.money += 10
+        player.exp += 10
         if (quiz.number < len(quiz.questions)):
             question: Quiz.Question = quiz.questions[quiz.number]
             if (question.image != ''):
                 photo = open('./static/quizes/' + question.image, 'rb')
-                await message.answer_photo(caption=f'Вопрос: {question.text}',photo=photo)
+                await message.answer_photo(caption=f'Минута на вопрос: {question.text}',photo=photo)
             else:
-                await message.answer(text=f'Вопрос: {question.text}')
+                await message.answer(text=f'Минута на вопрос: {question.text}')
             return
         
-        await message.answer('Квиз закончен!')
+        text = 'Квиз закончен!\nТоп игроков по ответам:'
+        top = []
         for i in Player.GetAllPlayers(message.chat.id):
             st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
+            score = await st.get_data()
             statePlayer = await st.get_state()
             if statePlayer == FSMQuiz.inQuiz.state:
+                top.append([i.name, score['inQuiz']])
+                await st.set_data(None)
                 await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
         Quiz.RemoveQuizInChat(quiz)
+        top.sort(key=lambda x:x[1])
+        for i in top[::-1]:
+            text += f'\n{i[0]} - {i[1]}'
+        await message.answer(text)
+        scheduler.remove_job(f'quiz:{message.chat.id}')
     else:
-        await message.reply('Ответ неправильный😥')
+        question: Quiz.Question = quiz.questions[quiz.number]
+        if (question.image != ''):
+                photo = open('./static/quizes/' + question.image, 'rb')
+                await message.reply_photo(caption=f'Ответ неправильный😥\nВопрос: {question.text}', photo=photo)
+        else:
+            await message.reply(f'Ответ неправильный😥\nВопрос: {question.text}')
+        
 
 async def TakePartQuiz(message: types.Message, state: FSMContext):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
@@ -183,13 +251,104 @@ async def LeaveQuiz(message: types.Message, state: FSMContext):
     quiz: Quiz.QuizInChat = Quiz.GetQuizInChat(message.chat.id)
     eventUserId = [i.userId for i in quiz.players]
     quiz.players.pop(eventUserId.index(message.from_user.id))
-    #а можно и здесь выдавать награду
     await state.finish()
     await message.reply('Вы вышли из квиза')
-
     if len(quiz.players) == 0:
         Quiz.RemoveQuizInChat(quiz)
+        scheduler.remove_job(f'quiz:{message.chat.id}')
         await message.answer('Квиз закончен! Все игроки вышли🥱')
+
+async def CreateQuizName(message: types.Message, state: FSMContext):
+    if not Player.FindPlayer(message.chat.id, message.from_user.id):
+        await message.reply('Нужно зарегаться для такого')
+        return
+    await FSMQuiz.createQuizName.set()
+    await message.answer('Вы начали создание квиза! Напишите название квиза')
+
+async def CreateQuizPhoto(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['createQuizName'] = message.text
+    await FSMQuiz.createQuizPhoto.set()
+    await message.answer('Отправь фото, если не хочешь фото, просто ответь что-нибудь')
+
+async def CreateQuizCreateWithoutPhoto(message: types.Message, state: FSMContext):
+    id = len(Quiz.GetAllQuizes())
+    quiz = Quiz.Quiz()
+    quiz.id = id
+    async with state.proxy() as data:
+        quiz.name = data['createQuizName']
+        data['createQuizName'] = quiz
+    Quiz.AddQuiz(quiz)
+    await FSMQuiz.questionText.set()
+    await message.answer('Напиши текст первого вопроса')
+
+async def CreateQuizCreateWithPhoto(message: types.Message, state: FSMContext):
+    id = len(Quiz.GetAllQuizes())
+    orig = f'./static/quizes/{id}_.png'
+    await message.photo[-1].download(orig)
+    quiz = Quiz.Quiz()
+    quiz.id = id
+    quiz.image = f'{id}_.png'
+    async with state.proxy() as data:
+        quiz.name = data['createQuizName']
+        data['createQuizName'] = quiz
+    Quiz.AddQuiz(quiz)
+    await FSMQuiz.questionText.set()
+    await message.answer('Напиши текст первого вопроса')
+
+async def QuestionText(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['questionText'] = message.text
+    await FSMQuiz.questionAnswer.set()
+    await message.answer('Напиши ответ на вопрос')
+
+async def QuestionAnswer(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['questionAnswer'] = message.text
+    await FSMQuiz.questionPhoto.set()
+    await message.answer('Отправь фото. Если не хочешь фото, просто ответь что-нибудь')
+
+async def QuestionCreateWithoutPhoto(message: types.Message, state: FSMContext):
+    question = Quiz.Question()
+    async with state.proxy() as data:
+        question.quizId = data['createQuizName'].id
+        question.id = len(Quiz.GetQuestions(question.quizId))
+        question.text = data['questionText']
+        question.answer = data['questionAnswer']
+    Quiz.addQuestion(question)
+    await FSMQuiz.questionContinue.set()
+    await message.answer('Напиши + если хочешь ещё вопрос. Если нет, просто ответь что-нибудь')
+
+async def QuestionCreateWithPhoto(message: types.Message, state: FSMContext):
+    question = Quiz.Question()
+    async with state.proxy() as data:
+        question.quizId = data['createQuizName'].id
+        question.id = len(Quiz.GetQuestions(question.quizId))
+        question.text = data['questionText']
+        question.answer = data['questionAnswer']
+    orig = f'./static/quizes/{question.quizId}_{question.id}.png'
+    await message.photo[-1].download(orig)
+    question.image = f'{question.quizId}_{question.id}.png'
+    Quiz.addQuestion(question)
+    await FSMQuiz.questionContinue.set()
+    await message.answer('Напиши + если хочешь ещё вопрос. Если нет, просто ответь что-нибудь')
+
+async def QuestionContinue(message: types.Message, state: FSMContext):
+    if (message.text != '+'):
+        await state.finish()
+        await message.answer('Вы закончили создание квиза')
+        return
+    await FSMQuiz.questionText.set()
+    await message.answer('Напиши текст вопроса')
+
+async def CancelQuizCreate(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        quiz = Quiz.GetQuiz(data['createQuizName'].id)
+    if quiz != None:
+        Quiz.RemoveQuiz(quiz)
+    await state.finish()
+    await message.answer('Вы закончили создание квиза')
+
 
 def register_handlers_quiz(dp: Dispatcher):
     dp.register_message_handler(QuizMenuStart, commands='quiz_list')
@@ -199,6 +358,18 @@ def register_handlers_quiz(dp: Dispatcher):
     dp.register_message_handler(LeaveQuiz, state=FSMQuiz.inQuiz, commands='quiz_leave')
     dp.register_message_handler(AnswerQuestion, state=FSMQuiz.inQuiz)
     dp.register_message_handler(TakePartQuiz, commands='quiz_enter')
+    dp.register_message_handler(CreateQuizName, commands='quiz_create')
+    dp.register_message_handler(CancelQuizCreate, commands='quiz_create_cancel', state=[FSMQuiz.createQuizName, FSMQuiz.createQuizPhoto, FSMQuiz.questionAnswer, FSMQuiz.questionPhoto, FSMQuiz.questionText,FSMQuiz.questionContinue])
+    dp.register_message_handler(CreateQuizPhoto, state=FSMQuiz.createQuizName)
+    dp.register_message_handler(CreateQuizCreateWithPhoto, content_types=['photo'], state=FSMQuiz.createQuizPhoto)
+    dp.register_message_handler(CreateQuizCreateWithoutPhoto, state=FSMQuiz.createQuizPhoto)
+    dp.register_message_handler(QuestionText, state=FSMQuiz.questionText)
+    dp.register_message_handler(QuestionAnswer, state=FSMQuiz.questionAnswer)
+    dp.register_message_handler(QuestionCreateWithPhoto, content_types=['photo'], state=FSMQuiz.questionPhoto)
+    dp.register_message_handler(QuestionCreateWithoutPhoto, state=FSMQuiz.questionPhoto)
+    dp.register_message_handler(QuestionContinue, state=FSMQuiz.questionContinue)
+    
+
     
 
             

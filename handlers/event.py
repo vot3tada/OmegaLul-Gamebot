@@ -91,7 +91,15 @@ async def event_end(message : types.Message, state: FSMContext):
                                                                         tzinfo=tz.gettz("Europe/Moscow")), args=[message.chat.id, event.id], id=('e'+str(event.id)+'--'))
 
 async def trigger_before_event(chatId: int, eventName: str):
-    await bot.send_message(chat_id=chatId, text=f'Через час пройдет эвент: \n<b>{eventName}</b>.\n Будет награда.', parse_mode='HTML')
+    photo = open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb')
+    await bot.send_photo(chat_id=chatId, 
+                               caption=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
+                               parse_mode='HTML',
+                               photo=photo)
+    for i in Player.GetAllPlayers(chatId):
+        await bot.send_message(chat_id=i.userId, 
+                               text=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
+                               parse_mode='HTML')
 
 async def trigger_event(chatId: int, eventId: int):
     event = Event.GetEvent(eventId)
@@ -100,7 +108,11 @@ async def trigger_event(chatId: int, eventId: int):
                             caption=f'Сейчас проходит эвент:\n<b>{event.name}</b>.\nУ вас есть пять минут проставить плюсики. Всем посетителям награда!', 
                             photo=photo,
                             parse_mode='HTML')
+      
     for i in Player.GetAllPlayers(chatId):
+        await bot.send_message(chat_id=i.userId, 
+                             text=f'Сейчас проходит эвент:\n <b>{event.name}</b>!\n Присоединяйтесь', 
+                             parse_mode='HTML')
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
         if statePlayer == None:
@@ -125,6 +137,7 @@ async def admin_end(message : types.Message, state: FSMContext):
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
         if statePlayer == FSMEvent.addplayers.state or statePlayer == FSMEvent.inEvent.state:
+            await st.set_data(None)
             await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
     eventId = await state.get_data()
     event = Event.GetEvent(eventId)
@@ -142,7 +155,8 @@ async def scheduler_end(chatId: int, eventId):
     for i in Player.GetAllPlayers(chatId):
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
-        if statePlayer == FSMEvent.addplayers.state or statePlayer == FSMEvent.admin.state:
+        if statePlayer == FSMEvent.addplayers.state or statePlayer == FSMEvent.admin.state or statePlayer == FSMEvent.inEvent.state:
+            await st.set_data(None)
             await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
     event = Event.GetEvent(eventId)
     text = 'Посетители эвента:'

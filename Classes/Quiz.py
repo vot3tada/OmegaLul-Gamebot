@@ -24,7 +24,7 @@ class QuizInChat():#этот класс в бд не надо
         
 quiz = Quiz()
 quiz.name = 'Евагелион еее'
-quiz.photo = '1.png'
+quiz.image = '1.png'
 quiz.id = 1
 
 question1 = Question()
@@ -39,7 +39,7 @@ question2.quizId = 1
 
 
 Chats: list[QuizInChat] = []#Это тоже в бд не надо
-Quizes: list[Quiz] = [quiz]
+Quizes: list[Quiz] = [quiz,quiz,quiz,quiz,quiz,quiz,quiz,quiz]
 Questions: list[Question] = [question1, question2]
 
 def AddQuizInChat(quiz: QuizInChat):
@@ -52,7 +52,7 @@ def GetQuizInChat(chatId: int):
     return None
 
 def FindQuizInChat(chatId: int):
-    return chatId in [i.id for i in Chats]
+    return chatId in [i.chatId for i in Chats]
 
 def RemoveQuizInChat(quiz: QuizInChat):
     Chats.remove(quiz)
@@ -70,5 +70,8 @@ def addQuestion(question: Question):
 def GetAllQuizes() -> list[Quiz]:
     return Quizes.copy()
 
-def getQuestions(quizId: int):
+def GetQuestions(quizId: int):
     return [i for i in Questions if i.quizId == quizId]
+
+def RemoveQuiz(quiz):
+    Quizes.remove(quiz)
