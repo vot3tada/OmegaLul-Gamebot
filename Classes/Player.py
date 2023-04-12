@@ -2,7 +2,6 @@ from Classes.Good import Good
 from typing import Any, Union
 from utils.scheduler import scheduler
 import requests
-import json
 
 class Player():
     def __init__(self, 
@@ -38,7 +37,7 @@ class Player():
         json = {
             'name': self._name,
             "experience": self._exp,
-            "experienceMultiply": 1,
+            "experienceMultiply": self._experienceMultiply,
             "money": self._money,
             "photo": self._photo,
             "luck": self._luck,
@@ -46,7 +45,6 @@ class Player():
             "hp": self._hp,
             "damage": self._damage,
             "damageMultiply": self._damageMultiply,
-            
         }
         if withIds:
             json['personPk'] = {
@@ -139,6 +137,17 @@ class Player():
     
     @luckMultiply.setter
     def luckMultiply(self, x: int):
+        if x < 0:
+            raise ValueError('Множитель не может быть отрицательным')
+        self._luckMultiply = x
+        self._updatePlayer()
+
+    @property
+    def expMultiply(self):
+        return self._experienceMultiply
+    
+    @expMultiply.setter
+    def expMultiply(self, x: int):
         if x < 0:
             raise ValueError('Множитель не может быть отрицательным')
         self._luckMultiply = x

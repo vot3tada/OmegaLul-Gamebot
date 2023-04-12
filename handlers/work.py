@@ -13,14 +13,17 @@ class FSMWork(StatesGroup):
     work=State()
 
 async def work_info(message : types.Message):
-    work_text = 'Хотите отправить вашего работягу по вашим стопам ?\nГде будем батрачить ?\n'
+    work_text = 'Хотите отправить работягу по вашим стопам ?\nГде будем батрачить ?\n'
     keyboard = types.InlineKeyboardMarkup()
     for i in range(len(Work.Works)):
-        work_text += f'{i}) {Work.Works[i].name} (нужен уровень: {Work.Works[i].levelRequired})\nОпыт: {Work.Works[i].expReward} Деньги: {Work.Works[i].moneyReward}\n\n'
+        work_text += f'''
+        <b>{Work.Works[i].name}</b>
+        <i>(нужен уровень: {Work.Works[i].levelRequired})</i>
+        Опыт:  {Work.Works[i].expReward}    Деньги:  {Work.Works[i].moneyReward}\n\n'''
         keyboard.add(types.InlineKeyboardButton(text=Work.Works[i].name, callback_data=f"work:{Work.Works[i].id}"))
     work_text += 'Время работы: 2 часика'
     photo = open('./static/worklist/' + random.choice(os.listdir('./static/worklist')) ,'rb')
-    await message.answer_photo(photo=photo,caption=work_text, reply_markup=keyboard)
+    await message.answer_photo(photo=photo,caption=work_text, reply_markup=keyboard, parse_mode='HTML')
 
 
 async def work_start(call: types.CallbackQuery):
@@ -55,7 +58,7 @@ async def work_complete(chatId: int, userId: int, workId: int, username: str):
     await state.finish()
     scheduler.remove_job(f'work_{user.chatId}_{user.userId}')
     await bot.send_photo(chat_id=chatId,  
-                        caption=f"@{username}\n{user.name} вернулся с работенки!\n<b>Получено</b>:\n{work.expReward} опыта\n{work.moneyReward} денег", 
+                        caption=f"@{username}\n{user.name} вернулся с работенки!\n<b>Получено</b>:\nОпыт: {work.expReward}\nДеньги: {work.moneyReward}", 
                         photo=open(user.photo,'rb'),
                         parse_mode='HTML')
 
