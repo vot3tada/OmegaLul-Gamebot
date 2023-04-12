@@ -9,8 +9,11 @@ import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.repository.InventoryRepository;
 import ru.gamebot.backend.repository.ItemRepository;
 import ru.gamebot.backend.repository.PersonRepository;
-import ru.gamebot.backend.util.ItemNotFoundException;
+import ru.gamebot.backend.util.ItemExceptions.ItemNotFoundException;
 import ru.gamebot.backend.util.PersonExceptions.PersonNotFoundException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,6 +23,15 @@ public class InventoryService {
     private final PersonRepository personRepository;
     private final ItemRepository itemRepository;
     private final InventoryRepository inventoryRepository;
+
+    public List<InventoryDTO> getAllItemsInInventory(){
+        var inventory = inventoryRepository.findAll();
+        List<InventoryDTO> inventoryDTO = new ArrayList<>();
+        for(Inventory inv: inventory){
+            inventoryDTO.add(new InventoryDTO(inv.getItem().getId(), inv.getCount()));
+        }
+        return inventoryDTO;
+    }
 
     @Transactional
     public void updateInventory(InventoryDTO inventoryDTO){

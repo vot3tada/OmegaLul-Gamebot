@@ -7,9 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.InventoryDTO;
 import ru.gamebot.backend.services.InventoryService;
-import ru.gamebot.backend.util.ItemNotFoundException;
+import ru.gamebot.backend.util.ItemExceptions.ItemNotFoundException;
 import ru.gamebot.backend.util.PersonExceptions.PersonErrorResponse;
 import ru.gamebot.backend.util.PersonExceptions.PersonNotFoundException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/inventory")
@@ -24,6 +26,13 @@ public class InventoryController {
         inventoryService.updateInventory(inventoryDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/all")
+    public List<InventoryDTO> getInventory(){
+
+        return inventoryService.getAllItemsInInventory();
+    }
+
 
     @DeleteMapping("/delete/{itemId}")
     public ResponseEntity<HttpStatus> deleteItemFromInventory(@PathVariable("itemId") Integer itemId){

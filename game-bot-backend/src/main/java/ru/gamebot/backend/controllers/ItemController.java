@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.ItemDTO;
 import ru.gamebot.backend.services.ItemService;
-import ru.gamebot.backend.util.ItemErrorResponse;
-import ru.gamebot.backend.util.ItemNotFoundException;
+import ru.gamebot.backend.util.ItemExceptions.ItemErrorResponse;
+import ru.gamebot.backend.util.ItemExceptions.ItemNotFoundException;
 
 import java.util.List;
 

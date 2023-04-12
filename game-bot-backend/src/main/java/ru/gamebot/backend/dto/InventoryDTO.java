@@ -8,4 +8,9 @@ public class InventoryDTO {
     private Integer count;
     private Integer chatId;
     private Integer userId;
+
+    public InventoryDTO(Integer itemId, Integer count){
+        this.count= count;
+        this.itemId = itemId;
+    }
 }
