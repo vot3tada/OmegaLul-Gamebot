@@ -74,6 +74,11 @@ class Player():
     @property
     def name(self):
         return self._name
+    
+    @name.setter
+    def name(self, x: str):
+        self._name = x
+        self._updatePlayer()
 
     @property
     def hp(self):
@@ -208,6 +213,9 @@ class Player():
         if not _item[1]:
             self._inventory.remove(_item)
         self._updatePlayer()
+
+    def FindStatus(self,item: Good.Good) -> bool:
+        return scheduler.get_job(f'buff:{item.id}_{self._chatId}_{self._userId}') != None
 
     def GetStatus(self) -> list[Good.Good]:
         goods:list[Good.Good] = [] 

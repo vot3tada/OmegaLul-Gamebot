@@ -431,6 +431,9 @@ async def setTaskName(message: types.Message, state: FSMContext):
     if message.text == '':
         await message.reply(text='Описание не может быть пустым')
         return
+    if len(message.text) > 150:
+        await message.reply(text='Описание слишком больше, формулируйте лаконичнее!')
+        return
     async with state.proxy() as data:
         data['name'] = message.text
     await message.reply(text='Введите награду, которую вы заплатите из своего кармана!\n(Админы платят половину от указанной суммы)')

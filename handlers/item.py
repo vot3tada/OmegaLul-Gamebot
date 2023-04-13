@@ -13,6 +13,9 @@ async def useItem(call : types.CallbackQuery):
     if not player.FindItem(good):
         await call.answer('Нет такого предмета')
         return
+    if player.FindStatus(good):
+        await call.answer('Предмет уже использован')
+        return
     player.BuffByItem(good)
     player.RemoveItem(good)
     await call.answer('Предмет использован')
