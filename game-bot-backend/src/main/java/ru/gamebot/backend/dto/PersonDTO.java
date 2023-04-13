@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.gamebot.backend.models.PersonPK;
 
+
 @Data
 public class PersonDTO {
     @NotNull
@@ -56,7 +57,7 @@ public class PersonDTO {
     }
 
     public PersonPK toPersonPK() {
-        return new PersonPK(personPKDTO.userId, personPKDTO.chatId);
+        return new PersonPK(personPKDTO.chatId, personPKDTO.userId);
     }
 
 }

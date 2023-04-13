@@ -4,52 +4,66 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.gamebot.backend.dto.PersonDTO;
 
+import java.util.Set;
+
 
 @Entity
-@Table(name = "person")
-@Setter
-@Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
 public class Person {
 
     @EmbeddedId
     private PersonPK personPk;
 
+    @OneToMany(mappedBy = "person",cascade = CascadeType.ALL)
+    private Set<Inventory> inventory;
 
-    @Column(name="name")
     private String name;
 
-    @Column(name="experience", nullable = false)
+
     private Integer experience;
 
-    @Column(name="experienceMultiply")
+
     private Integer experienceMultiply;
 
-    @Column(name="money", nullable = false)
     private Integer money;
 
-    @Column(name="photo")
+
     private String photo;
 
-    @Column(name="luck")
+
     private Float luck;
 
-    @Column(name="luckMultiply")
     private Integer luckMultiply;
 
-    @Column(name="hp")
+
     private Integer hp;
 
-    @Column(name="damage")
+
     private Integer damage;
 
-    @Column(name="damageMultiply")
+
     private Integer damageMultiply;
 
 
     public PersonDTO.PersonPKDTO toPersonDTOPK () {return new PersonDTO.PersonPKDTO(personPk.getChatId(),personPk.getUserId());}
 
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "personPk=" + personPk +
+                ", inventory=" + inventory +
+                ", name='" + name + '\'' +
+                ", experience=" + experience +
+                ", experienceMultiply=" + experienceMultiply +
+                ", money=" + money +
+                ", photo='" + photo + '\'' +
+                ", luck=" + luck +
+                ", luckMultiply=" + luckMultiply +
+                ", hp=" + hp +
+                ", damage=" + damage +
+                ", damageMultiply=" + damageMultiply +
+                '}';
+    }
 }
 

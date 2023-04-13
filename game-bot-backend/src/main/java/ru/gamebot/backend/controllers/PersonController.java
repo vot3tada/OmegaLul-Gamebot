@@ -10,11 +10,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.CreatePerson;
 import ru.gamebot.backend.dto.PersonDTO;
-import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.services.PersonService;
-import ru.gamebot.backend.util.*;
+import ru.gamebot.backend.util.PersonExceptions.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -24,17 +22,15 @@ import java.util.List;
 public class PersonController {
 
     private final PersonService personService;
-    private final PersonMapper personMapper;
-
 
     @GetMapping("/id/{chatId}")
-    public List<PersonDTO> getPersonByChatId(@PathVariable("chatId") int chatId){
-        return convertToListPersonDTO(personService.getPersonsByChatId(chatId));
+    public List<PersonDTO> getAllPersonsFromChat(@PathVariable("chatId") int chatId){
+        return personService.getPersonsByChatId(chatId);
     }
 
     @GetMapping("/all")
-    public List<PersonDTO> getAllPersonsFromChat(){
-        return convertToListPersonDTO(personService.getAllPersons());
+    public List<PersonDTO> getAllPersons (){
+        return personService.getAllPersons();
     }
 
     @PutMapping("/update")
@@ -42,18 +38,15 @@ public class PersonController {
                                                    @RequestParam(name = "userId") int userId,
                                                    @RequestBody PersonDTO personDTO){
 
-        Person person = personService.getPerson(chatId,userId);
-        if (personDTO.getExperience()!=null && person.getExperience()!=null && person.getExperience() > personDTO.getExperience()){
-            throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
-        }
-
-        personDTO.setPersonPKDTO(new PersonDTO.PersonPKDTO(chatId, userId));
-
-        Person convertedPerson = convertToPerson(personDTO);
-        personService.updatePerson(convertedPerson);
+        personService.updatePerson(personDTO, chatId, userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @DeleteMapping("/delete/{chatId}")
+    public ResponseEntity<HttpStatus> deleteAllPersonsByChatId(@PathVariable("chatId") int chatId){
+        personService.deletePersonsByChatId(chatId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
     @PostMapping("/create")
     public ResponseEntity<HttpStatus> createPerson(@RequestBody @Validated(CreatePerson.class)
                                                    PersonDTO personDTO, BindingResult bindingResult){
@@ -69,14 +62,19 @@ public class PersonController {
             throw new PersonNotCreateException(errorMsg.toString());
         }
 
-        Person convertedPerson = convertToPerson(personDTO);
-        personService.createPerson(convertedPerson);
+        personService.createPerson(personDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @ExceptionHandler
     private ResponseEntity<PersonErrorResponse> handleException (PersonNotFoundException e){
         PersonErrorResponse response = new PersonErrorResponse("Person with this id wasn`t found!");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<PersonErrorResponse> handleException (PersonChatIdNotFound e){
+        PersonErrorResponse response = new PersonErrorResponse("Person with this chatId wasn`t found!");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
@@ -98,16 +96,8 @@ public class PersonController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    private Person convertToPerson(PersonDTO personDTO){
-        return personMapper.personDtoToPerson(personDTO);
-    }
 
-    private List<PersonDTO> convertToListPersonDTO(List<Person> persons){
-        List<PersonDTO> personDTOS = new ArrayList<>();
-        for(Person person: persons){
-            personDTOS.add(personMapper.personToPersonDTO(person));
-        }
-        return  personDTOS;
-    }
+
+
 
 }

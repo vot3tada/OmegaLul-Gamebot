@@ -9,6 +9,7 @@ import java.util.List;
 
 @Repository
 public interface PersonRepository  extends JpaRepository<Person, PersonPK> {
-    List<Person> findByPersonPkChatId(int userId);
+    List<Person> findByPersonPkChatId(int chatId);
+    long deletePersonByPersonPkChatId(int chatId);
 
 }
