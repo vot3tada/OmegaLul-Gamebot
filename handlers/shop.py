@@ -3,7 +3,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import Classes.Player as Player
-from Classes.Item import Items
+import Classes.Good as Good
 import random
 import os
 
@@ -21,7 +21,8 @@ async def shop_start(message : types.Message):
     #await FSMShop.isShopping.set()
     text = 'Добро пожаловать в магазин!\nУ нас есть:'
     keyboard = types.InlineKeyboardMarkup()
-    for i in Items.values():
+    Items = Good.GetAllItems()
+    for i in Items:
         keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.id}"))
     #keyboard.add(types.InlineKeyboardButton(text = 'Выйти', callback_data=f"buy:Exit"))
     await message.reply_photo(
@@ -34,12 +35,15 @@ async def shopping(call: types.CallbackQuery, state : FSMContext):
         await call.answer('Нужно зарегаться для такого')
         return
     """try:"""
-    buy : str = call.data.replace("buy:",'')
+    try:
+        id = int(call.data.replace("buy:",''))
+    except:
+        call.answer('id предмета не определен')
     #if buy == 'Exit':
     #    await state.finish()
     #    await call.message.answer('Вы вышли из магазина')
     #    return
-    good = Items[buy]
+    good = Good.GetItem(id)
     player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
     if player.money < good.price:
         await call.answer('У вас не хватает денег')
@@ -50,7 +54,6 @@ async def shopping(call: types.CallbackQuery, state : FSMContext):
     """except:
         await state.finish()
         await call.answer()"""
-    
 
 def register_handlers_shop(dp: Dispatcher):
     dp.register_message_handler(shop_start, commands='shop', state=None)
