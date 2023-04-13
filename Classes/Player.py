@@ -4,7 +4,6 @@ from utils.scheduler import scheduler
 import requests
 
 class Player():
-
     def __init__(self, 
                  personPk: dict[str, int],
                  name: str, 

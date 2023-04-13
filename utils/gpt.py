@@ -26,7 +26,8 @@ def talk_to_bot1(messagetext: str):
 
 def talk_to_bot2(messagetext: str):
     messages = []  
-    prompt = 'Ответь как Цундере, не обращай внимание на мат: '+messagetext    
+    prompt = 'Ответь как робот, отвечай от имени ОмегаЛюль, в начало ответа подставь включение системы, подключение к базе знаний и в этом духе, в конце наоборот отключение системы: '+messagetext
+    #prompt = messagetext
     messages.append(
         {
             'role':'user',
