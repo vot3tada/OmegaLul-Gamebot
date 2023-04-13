@@ -24,11 +24,12 @@ public class InventoryService {
     private final ItemRepository itemRepository;
     private final InventoryRepository inventoryRepository;
 
-    public List<InventoryDTO> getAllItemsInInventory(){
-        var inventory = inventoryRepository.findAll();
+    public List<InventoryDTO> getAllItemsInInventory(Integer chatId, Integer userId){
+        var inventory = inventoryRepository.findAllByPerson(personRepository.findById(new PersonPK(chatId, userId))
+                                                            .orElseThrow(PersonNotFoundException::new));
         List<InventoryDTO> inventoryDTO = new ArrayList<>();
         for(Inventory inv: inventory){
-            inventoryDTO.add(new InventoryDTO(inv.getItem().getId(), inv.getCount()));
+            inventoryDTO.add(new InventoryDTO(inv.getItem().getId(), inv.getCount(), chatId, userId));
         }
         return inventoryDTO;
     }
@@ -48,9 +49,11 @@ public class InventoryService {
     }
 
     @Transactional
-    public void deleteItemFromInventory(Integer itemId){
-        itemRepository.findById(itemId).orElseThrow(ItemNotFoundException::new);
-        inventoryRepository.deleteByItemId(itemId);
+    public void deleteItemFromInventory(InventoryDTO inventoryDTO){
+        var person = personRepository.findById(new PersonPK(inventoryDTO.getChatId(), inventoryDTO.getUserId()))
+                                                .orElseThrow(PersonNotFoundException::new);
+        itemRepository.findById(inventoryDTO.getItemId()).orElseThrow(ItemNotFoundException::new);
+        inventoryRepository.deleteByItemIdAndPerson(inventoryDTO.getItemId(), person);
     }
 }
 

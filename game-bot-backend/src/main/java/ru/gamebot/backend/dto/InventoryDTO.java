@@ -9,8 +9,10 @@ public class InventoryDTO {
     private Integer chatId;
     private Integer userId;
 
-    public InventoryDTO(Integer itemId, Integer count){
+    public InventoryDTO(Integer itemId, Integer count, Integer chatId, Integer userId){
         this.count= count;
+        this.chatId = chatId;
+        this.userId = userId;
         this.itemId = itemId;
     }
 }

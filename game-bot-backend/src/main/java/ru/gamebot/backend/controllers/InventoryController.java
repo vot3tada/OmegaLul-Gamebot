@@ -27,16 +27,17 @@ public class InventoryController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/all")
-    public List<InventoryDTO> getInventory(){
+    @GetMapping("/id/{chatId}/{userId}")
+    public List<InventoryDTO> getInventory(@PathVariable("chatId") Integer chatId,
+                                           @PathVariable("userId") Integer userId){
 
-        return inventoryService.getAllItemsInInventory();
+        return inventoryService.getAllItemsInInventory(chatId, userId);
     }
 
 
-    @DeleteMapping("/delete/{itemId}")
-    public ResponseEntity<HttpStatus> deleteItemFromInventory(@PathVariable("itemId") Integer itemId){
-        inventoryService.deleteItemFromInventory(itemId);
+    @DeleteMapping("/delete")
+    public ResponseEntity<HttpStatus> deleteItemFromInventory(@RequestBody InventoryDTO inventoryDTO){
+        inventoryService.deleteItemFromInventory(inventoryDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

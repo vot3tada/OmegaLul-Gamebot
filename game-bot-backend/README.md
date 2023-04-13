@@ -87,11 +87,11 @@ Body выглядит следующим образом, обратите вни
 
 # Inventory
 
-1. Получение всего инвентаря: GET: **localhost:8080/api/inventory/all**
+1. Получение всего инвентаря пользователя: GET: **localhost:8080/api/inventory/id/{chatId}/{userId}**
 
    >Success: Status 200
 
-   >Fail: Status 500 (но это врятли)
+   >Fail: Status 400, 500 (но это врятли)
 
 2. Добавление предмета в инвентарь(поставил метод UPDATE вроде подходит): UPDATE:**localhost:8080/api/inventory/update** (см. пример ввода body)
 
@@ -99,14 +99,14 @@ Body выглядит следующим образом, обратите вни
 
    >Fail: Status 400,404,500
 
-3. Удаление предмета из инвентаря по айдишнику предмета: DELETE: **localhost:8080/api/inventory/delete/{id}**
+3. Удаление предмета из инвентаря по айдишнику предмета: DELETE: **localhost:8080/api/inventory/delete** (itemId, userId, chatId в body)
 
    >Success: Status 204
 
    >Fail: Status 400,404,500
 
 ### Пример
-Body вводится только для апдейта, в остальных случаях он не нужен:
+
 
         {
             "itemId":2,
