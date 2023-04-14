@@ -116,6 +116,35 @@ Body выглядит следующим образом, обратите вни
             "userId":3
         }
 
+# Work 
+
+1. Получение всего списка работ: GET: **localhost:8080/api/work/all**
+
+   >Success: Status 200
+
+   >Fail: Status 400, 500 (но это врятли)
+
+2. Добавление работы: POST: **localhost:8080/api/work/create** (см. пример ввода body)
+
+   >Success: Status 204
+
+   >Fail: Status 400,404,500
+
+3. Удаление работы по айдишнику: DELETE: **localhost:8080/api/work/delete**
+
+   >Success: Status 204
+
+   >Fail: Status 400,404,500
+
+### Пример
+
+
+      {
+         "name":"aboba",
+         "levelRequired":2,
+         "expReward":2,
+         "moneyReward":2
+      }
 
 ## !!!ВАЖНО!!!
 После каждого git pull репы, запуск контейнера будет таким: docker compose up -d --build
