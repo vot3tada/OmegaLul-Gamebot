@@ -6,14 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.gamebot.backend.dto.PersonDTO;
 import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonPK;
-import ru.gamebot.backend.repository.InventoryRepository;
-import ru.gamebot.backend.repository.ItemRepository;
 import ru.gamebot.backend.repository.PersonRepository;
-import ru.gamebot.backend.util.PersonExceptions.PersonAlreadyExistsException;
-import ru.gamebot.backend.util.PersonExceptions.PersonChatIdNotFound;
-import ru.gamebot.backend.util.PersonExceptions.PersonNotFoundException;
-import ru.gamebot.backend.util.PersonExceptions.PersonNotUpdateException;
-import ru.gamebot.backend.util.PersonMapper.PersonMapper;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonAlreadyExistsException;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonChatIdNotFound;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotUpdateException;
+import ru.gamebot.backend.util.mappers.PersonMapper.PersonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PersonService {
     private final PersonRepository personRepository;
-    private final ItemRepository itemRepository;
-    private final InventoryRepository inventoryRepository;
     private final PersonMapper personMapper;
 
     public List<PersonDTO> getPersonsByChatId(int chatId) throws PersonChatIdNotFound {

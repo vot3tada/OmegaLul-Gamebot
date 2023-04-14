@@ -8,13 +8,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.gamebot.backend.dto.CreateWork;
+import ru.gamebot.backend.dto.Create;
 import ru.gamebot.backend.dto.WorkDTO;
 import ru.gamebot.backend.services.WorkService;
-import ru.gamebot.backend.util.PersonExceptions.PersonErrorResponse;
-import ru.gamebot.backend.util.WorkAlreadyExistException;
-import ru.gamebot.backend.util.WorkNotCreatedException;
-import ru.gamebot.backend.util.WorkNotFoundException;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonErrorResponse;
+import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkAlreadyExistException;
+import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkNotCreatedException;
+import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkNotFoundException;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class WorkController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createWork(@RequestBody @Validated(CreateWork.class)
+    public ResponseEntity<HttpStatus> createWork(@RequestBody @Validated(Create.class)
                                                WorkDTO workDTO, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){

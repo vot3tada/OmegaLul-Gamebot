@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util;
+package ru.gamebot.backend.util.exceptions.WorkExceptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -7,9 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.InventoryDTO;
 import ru.gamebot.backend.services.InventoryService;
-import ru.gamebot.backend.util.ItemExceptions.ItemNotFoundException;
-import ru.gamebot.backend.util.PersonExceptions.PersonErrorResponse;
-import ru.gamebot.backend.util.PersonExceptions.PersonNotFoundException;
+import ru.gamebot.backend.util.exceptions.ItemExceptions.ItemNotFoundException;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonErrorResponse;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 
 import java.util.List;
 

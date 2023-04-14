@@ -7,8 +7,8 @@ import ru.gamebot.backend.dto.ItemDTO;
 import ru.gamebot.backend.models.Item;
 import ru.gamebot.backend.repository.EffectRepository;
 import ru.gamebot.backend.repository.ItemRepository;
-import ru.gamebot.backend.util.ItemMapper.ItemMapper;
-import ru.gamebot.backend.util.ItemExceptions.ItemNotFoundException;
+import ru.gamebot.backend.util.mappers.ItemMapper.ItemMapper;
+import ru.gamebot.backend.util.exceptions.ItemExceptions.ItemNotFoundException;
 
 import java.util.ArrayList;
 import java.util.HashSet;

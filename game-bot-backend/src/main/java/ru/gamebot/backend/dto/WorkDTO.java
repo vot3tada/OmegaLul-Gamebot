@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WorkDTO {
     private Integer id;
-    @NotEmpty(groups = CreateWork.class)
+    @NotEmpty(groups = Create.class)
     private String name;
-    @NotNull(groups = CreateWork.class)
+    @NotNull(groups = Create.class)
     private Integer levelRequired;
-    @NotNull(groups = CreateWork.class)
+    @NotNull(groups = Create.class)
     private Integer expReward;
-    @NotNull(groups = CreateWork.class)
+    @NotNull(groups = Create.class)
     private Integer moneyReward;
 }

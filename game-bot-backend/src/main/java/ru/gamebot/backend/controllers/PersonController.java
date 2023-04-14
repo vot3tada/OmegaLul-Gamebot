@@ -8,10 +8,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.gamebot.backend.dto.CreatePerson;
+import ru.gamebot.backend.dto.Create;
 import ru.gamebot.backend.dto.PersonDTO;
 import ru.gamebot.backend.services.PersonService;
-import ru.gamebot.backend.util.PersonExceptions.*;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.*;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class PersonController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createPerson(@RequestBody @Validated(CreatePerson.class)
+    public ResponseEntity<HttpStatus> createPerson(@RequestBody @Validated(Create.class)
                                                    PersonDTO personDTO, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){

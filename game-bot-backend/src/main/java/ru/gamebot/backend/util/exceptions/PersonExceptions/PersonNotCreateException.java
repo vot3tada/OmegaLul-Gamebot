@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util.PersonExceptions;
+package ru.gamebot.backend.util.exceptions.PersonExceptions;
 
 public class PersonNotCreateException extends  RuntimeException{
     public PersonNotCreateException(String msg){
