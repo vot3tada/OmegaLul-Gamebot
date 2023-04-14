@@ -44,6 +44,7 @@ Body выглядит следующим образом, обратите вни
             "chatId": 3,
             "userId": 3
         }
+      }
 
 # Items and effects
 
