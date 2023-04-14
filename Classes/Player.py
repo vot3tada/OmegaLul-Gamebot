@@ -207,12 +207,38 @@ class Player():
     
     def RemoveItem(self, item: Good):
         if not self.FindItem(item):
-            raise ValueError('Попытка удалить несуществующий статус')
+            raise ValueError('Попытка удалить несуществующий предмет')
         _item : list[Good.Good, int] = self.GetItem(item)
         _item[1] -= 1
         if not _item[1]:
-            self._inventory.remove(_item)
-        self._updatePlayer()
+
+            for __item in self._inventory:
+                if __item[0].id == item.id:
+                    self._inventory.remove(__item)
+                    break
+            
+            response: requests.Response = requests.delete(
+                url=f'http://localhost:8080/api/inventory/delete',
+                json = {
+                    "itemId":_item[0].id,
+                    "chatId": self._chatId,
+                    "userId": self._userId
+                },
+                headers={"Content-Type": "application/json"})
+            if not response.ok:
+                raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
+        else:
+            response: requests.Response = requests.put(
+                url=f'http://localhost:8080/api/inventory/update',
+                json = {
+                    "itemId":_item[0].id,
+                    "count": _item[1],
+                    "chatId": self._chatId,
+                    "userId": self._userId
+                },
+                headers={"Content-Type": "application/json"})
+            if response.status_code != 204:
+                raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
 
     def FindStatus(self,item: Good.Good) -> bool:
         return scheduler.get_job(f'buff:{item.id}_{self._chatId}_{self._userId}') != None
@@ -232,8 +258,8 @@ class Player():
         if not scheduler.get_job(f'buff:{item.id}_{self._chatId}_{self._userId}') is None:
             raise ValueError('Попытка применения двойного эффекта')
         
-        for key in item.effects.keys():
-            setattr(self, key, getattr(self, key) + item.effects[key])
+        for key in item.effects:
+            setattr(self, key['property'], getattr(self, key['property']) + key['value'])
 
         if item.duration:
             buff_id = f'buff:{item.id}_{self._chatId}_{self._userId}'

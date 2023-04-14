@@ -8,7 +8,7 @@ class Good():
                  id: int,
                  price: int,
                  description: str,
-                 effects: dict[str, Any],
+                 effects: list[dict[str, Any]],
                  duration: int = 10
                  ) -> None:
         self.name = name
