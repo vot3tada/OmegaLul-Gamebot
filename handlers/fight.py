@@ -215,7 +215,7 @@ async def fight_refuse(message: types.Message, state :FSMContext):
             user2.exp += exp
             user2.money += money
 
-            reply_text = f'{user1.name} позорно бежит с поля боя!\n{user2.name} победил!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}'
+            reply_text = f'{user1.name} позорно бежит с поля боя!\n{user2.name} - победитель!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}'
             scheduler.remove_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
         else:
             reply_text = f'{user1.name} отказался от дуэли!\n'
@@ -376,7 +376,7 @@ async def OutOfTimeFight(chatId: int, fightIndex: int):
         await bot.send_message(
                         chat_id=chatId,
                         parse_mode="HTML",
-                        text=f'{player1.name} думал, думал... и в суп попал!\n{player2.name} победил!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}')
+                        text=f'{player1.name} думал, думал... и в суп попал!\nПобедитель: {player2.name}!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}')
     else:
         exp = ExpReward(player1.hp)
         money = MoneyReward(player1.hp)
@@ -385,7 +385,7 @@ async def OutOfTimeFight(chatId: int, fightIndex: int):
         await bot.send_message(
                         chat_id=chatId,
                         parse_mode="HTML",
-                        text=f'{player2.name} думал, думал... и в суп попал!\n{player1.name} победил!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}')
+                        text=f'{player2.name} думал, думал... и в суп попал!\nПобедитель: {player1.name}!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}')
 
 #################################################
 def register_fight_handlers(dp : Dispatcher):

@@ -100,7 +100,7 @@ async def endRegistation(call: types.CallbackQuery, state: FSMContext):
         player:Player.Player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
         player.name = (await state.get_data())['name'] 
         await state.finish()
-        await call.message.answer_photo(photo, caption=f'{call.from_user.mention} поменял своего аватара, теперь это {player.name} !!')
+        await call.message.answer_photo(photo, caption=f'{call.from_user.mention} меняет своего аватара, теперь это {player.name} !!')
     else:
         newPlayer = Player.Player(
             {

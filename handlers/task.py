@@ -67,7 +67,7 @@ async def pageTaskList(call: types.CallbackQuery):
         return
 
     tasks: list[Task.Task] = Task.GetFreeTasks()
-    replytext = '<b>Список заданий</b>:\n<i>Выволните задание и покажите заказчику, он вам засчитает\n</i>'
+    replytext = '<b>Список заданий</b>:\n<i>Возьмите задание, выолните и попросите Заказчика зачесть\n</i>'
     keyboard = None
     for task in tasks[page*4:page*4+4]:
         player = Player.GetPlayer(task.chatId, task.ownerUserId)
@@ -236,7 +236,7 @@ async def acceptTask(call: types.CallbackQuery):
     Task.AcceptTask(task)
     await call.message.answer_photo(
         photo=open('./static/taskcomplete/' + random.choice(os.listdir('./static/taskcomplete')) ,'rb'),
-        caption=f'{worker.name} успешно выполнил задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',
+        caption=f'{worker.name} успешно выполняет задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',
         parse_mode='HTML'
     )
     await call.answer()
@@ -416,7 +416,7 @@ async def refuseTask(call: types.CallbackQuery):
     
     player: Player.Player = Player.GetPlayer(task.chatId, task.workerUserId)
     if Task.RefuseTask(player, task):
-        await call.message.answer(f'{player.name} будет наказан за столь позднюю отмену задания...')
+        await call.message.answer(f'{player.name} получает наказание за столь позднюю отмену задания...')
     call.data = f'myTakenTaskPage:{player.chatId}_{player.userId}_0'
     await pageMyTakenTaskList(call)
 
@@ -463,6 +463,10 @@ async def setTaskDeadline(message: types.Message, state: FSMContext):
         await message.reply('Неправильный формат даты: ДД/ЧЧ/ММ')
         return
     
+    if time > 60:
+        await message.reply('Слишком мало времени на задание, не будьте так жестоки!!')
+        return
+
     player: Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     sale = 1 if (await message.chat.get_member(player.userId)).is_chat_admin() else 0
     async with state.proxy() as data:

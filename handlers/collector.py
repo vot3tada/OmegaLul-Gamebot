@@ -181,12 +181,12 @@ async def payCollector(call: types.CallbackQuery, state: FSMContext):
     player: Player.Player = Player.GetPlayer(chatId, userId)
     if player.money < money:
         player.money = 0
-        await call.message.answer(f"{player.name} отдал коллектору что мог и ушел с миром...")
+        await call.message.answer(f"{player.name} отдает коллектору что было и уйти с миром...")
         await state.finish()
         return
     else:
         player.money -= money
-        await call.message.answer(f"{player.name} отдал коллектору налог разгильдяйства и ушел с миром...")
+        await call.message.answer(f"{player.name} отдает коллектору налог на разгильдяйство.")
         await state.finish()
         return
 
@@ -203,7 +203,7 @@ async def fightCollector(call: types.CallbackQuery, state: FSMContext):
     if not player.hp:
         await call.answer('Твое здоровье на нуле, боец')
         return
-    await call.message.answer(f"{player.name} решил отстоять свой сгоревший дедлайн боем, чтож...")
+    await call.message.answer(f"{player.name} остаивает свой сгоревший дедлайн, чтож...")
     await CollectorState.Ready.set()
     
     fighterData = dict(fighter, **collectorFighter)

@@ -58,7 +58,7 @@ async def work_complete(chatId: int, userId: int, workId: int, username: str):
     await state.finish()
     scheduler.remove_job(f'work_{user.chatId}_{user.userId}')
     await bot.send_photo(chat_id=chatId,  
-                        caption=f"@{username}\n{user.name} вернулся с работенки!\n<b>Получено</b>:\nОпыт: {work.expReward}\nДеньги: {work.moneyReward}", 
+                        caption=f"@{username}\n{user.name} возвращается с работенки!\n<b>Получено</b>:\nОпыт: {work.expReward}\nДеньги: {work.moneyReward}", 
                         photo=open(user.photo,'rb'),
                         parse_mode='HTML')
 
