@@ -33,6 +33,11 @@ async def getInventory(message : types.Message):
         keyboard.add(types.InlineKeyboardButton(text = f'{i[0].name}: {i[1]}', callback_data=f"item:{i[0].id}"))
     await message.reply_photo(photo=photo,caption=text, reply_markup=keyboard)
 
+async def getMoney(message: types.Message):
+    player = Player.GetPlayer(message.chat.id, message.from_user.id)
+    player.money+=2000
+
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(getInventory, commands='inventory', state=None)
     dp.register_message_handler(getAvatar, commands='avatar', state=None)
+    dp.register_message_handler(getMoney, commands='tyanki_and_grechka', state=None)
