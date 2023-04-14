@@ -63,6 +63,11 @@ async def getCommands(message: types.Message):
         /task_add - выставить задание
         /task_cancel - отменить выставление задания
 
+        <i>Викторины</i>
+        /quiz_list - список доступных викторин
+        /quiz_enter - войти в идущую викторину
+        /quiz_leave - выйти из идущей викторины
+
         <i>Другие</i>:
         /shop - вызвать магазинчик для закупа""",
         parse_mode='HTMl',
