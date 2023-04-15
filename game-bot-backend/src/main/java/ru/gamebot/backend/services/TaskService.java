@@ -77,4 +77,10 @@ public class TaskService {
         task.setWorkerUserId(updateTaskDTO.getWorkerUserId());
         taskRepository.save(task);
     }
+
+    @Transactional
+    public void taskDelete(Integer id){
+        var task = taskRepository.findById(id).orElseThrow(TaskNotFoundException::new);
+        taskRepository.delete(task);
+    }
 }
