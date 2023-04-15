@@ -20,7 +20,7 @@ public class Task {
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date deadline;
     @ManyToOne
-    @JoinColumns({@JoinColumn(name = "person_owner_user_id"), @JoinColumn( name = "person_chat_id")})
+    @JoinColumns({@JoinColumn(name = "person_owner_user_id", referencedColumnName = "user_id"), @JoinColumn( name = "person_chat_id", referencedColumnName = "chat_id")})
     private Person person;
 
 }
