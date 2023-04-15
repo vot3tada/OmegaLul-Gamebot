@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import ru.gamebot.backend.dto.PersonDTO;
+import ru.gamebot.backend.models.History;
+import ru.gamebot.backend.models.HistoryPK;
 import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.repository.PersonRepository;
@@ -50,6 +52,7 @@ public class PersonService {
         if (personRepository.existsById(person.getPersonPk())) {
             throw new PersonAlreadyExistsException();
         }
+        person.setHistory(new History(new HistoryPK(person.getPersonPk().getUserId(),person.getPersonPk().getChatId())));
         personRepository.save(person);
     }
 
