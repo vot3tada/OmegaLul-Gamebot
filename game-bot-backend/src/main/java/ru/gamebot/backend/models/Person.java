@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.gamebot.backend.dto.PersonDTO;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -17,6 +18,8 @@ public class Person {
     @OneToMany(mappedBy = "person",cascade = CascadeType.ALL)
     private Set<Inventory> inventory;
 
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
+    private List<Task> tasks;
     private String name;
 
 
