@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.TaskDTO;
+import ru.gamebot.backend.dto.UpdateTaskDTO;
 import ru.gamebot.backend.services.TaskService;
+import ru.gamebot.backend.util.exceptions.TaskExceptions.TaskNotUpdateException;
 
 import java.util.List;
 
@@ -45,5 +49,20 @@ public class TaskController {
     public ResponseEntity<HttpStatus> createTask(@RequestBody TaskDTO taskDTO){
         taskService.createTask(taskDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<HttpStatus> updateTask(@RequestBody @Validated UpdateTaskDTO updateTaskDTO
+                                                , BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            StringBuilder errorMsg = new StringBuilder();
+            var error =bindingResult.getFieldError();
+            errorMsg.append(error.getField())
+                    .append(" - ").append(error.getDefaultMessage())
+                    .append(";");
+            throw new TaskNotUpdateException(errorMsg.toString());
+        }
+        taskService.updateTask(updateTaskDTO);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

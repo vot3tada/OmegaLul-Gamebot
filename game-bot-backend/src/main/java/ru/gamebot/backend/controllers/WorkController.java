@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.Create;
 import ru.gamebot.backend.dto.WorkDTO;
 import ru.gamebot.backend.services.WorkService;
-import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonErrorResponse;
+import ru.gamebot.backend.util.exceptions.ErrorResponse;
 import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkAlreadyExistException;
 import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkNotCreatedException;
 import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkNotFoundException;
@@ -57,20 +57,20 @@ public class WorkController {
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (WorkNotFoundException e){
-        PersonErrorResponse response = new PersonErrorResponse("Work not found!");
+    private ResponseEntity<ErrorResponse> handleException (WorkNotFoundException e){
+        ErrorResponse response = new ErrorResponse("Work not found!");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (WorkAlreadyExistException e){
-        PersonErrorResponse response = new PersonErrorResponse("This work already exists!");
+    private ResponseEntity<ErrorResponse> handleException (WorkAlreadyExistException e){
+        ErrorResponse response = new ErrorResponse("This work already exists!");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (WorkNotCreatedException e){
-        PersonErrorResponse response = new PersonErrorResponse(e.getMessage());
+    private ResponseEntity<ErrorResponse> handleException (WorkNotCreatedException e){
+        ErrorResponse response = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

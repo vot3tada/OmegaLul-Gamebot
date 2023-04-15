@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.InventoryDTO;
 import ru.gamebot.backend.services.InventoryService;
+import ru.gamebot.backend.util.exceptions.ErrorResponse;
 import ru.gamebot.backend.util.exceptions.ItemExceptions.ItemNotFoundException;
-import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonErrorResponse;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 
 import java.util.List;
@@ -42,14 +42,14 @@ public class InventoryController {
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (ItemNotFoundException e){
-        PersonErrorResponse response = new PersonErrorResponse("Item not found");
+    private ResponseEntity<ErrorResponse> handleException (ItemNotFoundException e){
+        ErrorResponse response = new ErrorResponse("Item not found");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (PersonNotFoundException e){
-        PersonErrorResponse response = new PersonErrorResponse("Person with this id wasn`t found!");
+    private ResponseEntity<ErrorResponse> handleException (PersonNotFoundException e){
+        ErrorResponse response = new ErrorResponse("Person with this id wasn`t found!");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 

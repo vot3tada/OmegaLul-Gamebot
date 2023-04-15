@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.gamebot.backend.dto.TaskDTO;
+import ru.gamebot.backend.dto.UpdateTaskDTO;
 import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.models.Task;
 import ru.gamebot.backend.repository.PersonRepository;
 import ru.gamebot.backend.repository.TaskRepository;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
+import ru.gamebot.backend.util.exceptions.TaskExceptions.TaskNotFoundException;
 import ru.gamebot.backend.util.mappers.TaskMapper.TaskMapper;
 
 import java.util.ArrayList;
@@ -65,6 +67,14 @@ public class TaskService {
                                                 .orElseThrow(PersonNotFoundException::new);
         var task = taskMapper.taskDTOToTask(taskDTO);
         task.setPerson(person);
+        taskRepository.save(task);
+    }
+
+    @Transactional
+    public void updateTask(UpdateTaskDTO updateTaskDTO){
+        var task = taskRepository.findById(updateTaskDTO.getId()).orElseThrow(TaskNotFoundException::new);
+        task.setDeadline(updateTaskDTO.getDeadline());
+        task.setWorkerUserId(updateTaskDTO.getWorkerUserId());
         taskRepository.save(task);
     }
 }

@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util.exceptions.PersonExceptions;
+package ru.gamebot.backend.util.exceptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 @Getter
 @AllArgsConstructor
-public class PersonErrorResponse {
+public class ErrorResponse {
     private String message;
 }
