@@ -126,34 +126,36 @@ async def InitAttackStep(message: types.CallbackQuery):
             keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"ulta:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"defence:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             
-            await message.message.answer_photo(photo, caption=replyText, reply_markup=keyboard, parse_mode='HTML')
+            #await message.message.answer_photo(photo, caption=replyText, reply_markup=keyboard, parse_mode='HTML')
+            media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/fight/' + random.choice(os.listdir('./static/fight'))), caption=replyText, parse_mode='HTML')
+            await message.message.edit_media(media, reply_markup=keyboard)
         else:
             scheduler.remove_job(f'fight_{message.message.chat.id}_{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}')
             await st1.finish()
             await st2.finish()
             if st1d.get("health") > 0 and  st2d.get("health") <= 0:
-                photo = open('./static/win/' + random.choice(os.listdir('./static/win')) ,'rb')
                 replyText += f'Победитель: {name1}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player1.hp)
                 money = MoneyReward(player1.hp)
                 player1.exp += exp
                 player1.money += money
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
-            elif st2d.get("health") > 0 and  st1d.get("health") <= 0:
-                photo = open('./static/win/' + random.choice(os.listdir('./static/win')) ,'rb')
+                media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
+            elif st2d.get("health") > 0 and  st1d.get("health") <= 0:   
                 replyText += f'Победитель: {name2}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player2.hp)
                 money = MoneyReward(player2.hp)
                 player2.exp += exp
                 player2.money += money
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
-            else:
-                photo = open('./static/lose/' + random.choice(os.listdir('./static/lose')) ,'rb')
+                media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
+            else: 
                 replyText += f'Победителя нет! Оба бойца ушатали друг друга!\nНикогда такого не было и вот опять...'
+                media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/lose/' + random.choice(os.listdir('./static/lose'))), caption=replyText, parse_mode='HTML')
             player1.hp -= HPCut
             player2.hp -= HPCut
             fights[message.message.chat.id].pop(index)
-            await message.message.answer_photo(photo, caption=replyText, parse_mode='HTML')
+            await message.message.edit_media(media=media)
 
 async def fight_call(message : types.Message):
     if not message.chat.id in fights.keys():
@@ -258,9 +260,15 @@ async def fight_accept(message: types.Message):
         media = types.MediaGroup()
         media.attach_photo(types.InputFile(user1.photo), 'Битва этих двух ронинов начинается!!!')
         media.attach_photo(types.InputFile(user2.photo))
-
         await message.answer_media_group(media)
-        await message.answer("<b>!!FIGHT!!</b>",reply_markup=keyboard, parse_mode='HTML')
+
+        replyText = f'<b>Здоровье бойцов</b>:\n{user1.name}: {user1.hp}\n{user2.name}: {user2.hp}\n'
+        replyText += f'<b>Заряд бойцов</b>:\n{user1.name}: {0}\\{UltaCharge}\n{user2.name}: {0}\\{UltaCharge}\n'
+
+        await message.answer_photo(photo=open('./static/fight/' + random.choice(os.listdir('./static/fight')), 'rb'),
+                                    caption=replyText,
+                                    reply_markup=keyboard, 
+                                    parse_mode='HTML')
 
 async def RageAttack(call: types.CallbackQuery, state : FSMContext):
 
