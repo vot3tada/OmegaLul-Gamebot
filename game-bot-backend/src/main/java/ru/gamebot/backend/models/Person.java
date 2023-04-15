@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.gamebot.backend.dto.PersonDTO;
 
-import java.util.List;
-import java.util.Set;
 
 
 @Entity
@@ -15,11 +13,6 @@ public class Person {
     @EmbeddedId
     private PersonPK personPk;
 
-    @OneToMany(mappedBy = "person",cascade = CascadeType.ALL)
-    private Set<Inventory> inventory;
-
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
-    private List<Task> tasks;
     private String name;
 
 
@@ -51,22 +44,5 @@ public class Person {
     public PersonDTO.PersonPKDTO toPersonDTOPK () {return new PersonDTO.PersonPKDTO(personPk.getChatId(),personPk.getUserId());}
 
 
-    @Override
-    public String toString() {
-        return "Person{" +
-                "personPk=" + personPk +
-                ", inventory=" + inventory +
-                ", name='" + name + '\'' +
-                ", experience=" + experience +
-                ", experienceMultiply=" + experienceMultiply +
-                ", money=" + money +
-                ", photo='" + photo + '\'' +
-                ", luck=" + luck +
-                ", luckMultiply=" + luckMultiply +
-                ", hp=" + hp +
-                ", damage=" + damage +
-                ", damageMultiply=" + damageMultiply +
-                '}';
-    }
 }
 

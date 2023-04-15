@@ -37,15 +37,15 @@ public class InventoryService {
     @Transactional
     public void updateInventory(InventoryDTO inventoryDTO){
         var item = itemRepository.findById(inventoryDTO.getItemId()).orElseThrow(ItemNotFoundException::new);
-        var invetoryItem = inventoryRepository.findInventoryByItem_Id(item.getId());
-        var personPK = new PersonPK(inventoryDTO.getChatId(),inventoryDTO.getUserId());
-        var person = personRepository.findById(personPK).orElseThrow(PersonNotFoundException::new);
-        if (invetoryItem == null){
+        var inventoryItem = inventoryRepository.findInventoryByItem_Id(item.getId());
+        var person = personRepository.findById(new PersonPK(inventoryDTO.getChatId(),inventoryDTO.getUserId()))
+                                                .orElseThrow(PersonNotFoundException::new);
+        if (inventoryItem == null){
             inventoryRepository.save(new Inventory(item, inventoryDTO.getCount(), person));
             return;
         }
-        invetoryItem.setCount(inventoryDTO.getCount());
-        inventoryRepository.save(invetoryItem);
+        inventoryItem.setCount(inventoryDTO.getCount());
+        inventoryRepository.save(inventoryItem);
     }
 
     @Transactional

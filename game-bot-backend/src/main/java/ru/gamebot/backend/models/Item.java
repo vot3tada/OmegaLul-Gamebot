@@ -13,7 +13,6 @@ public class Item{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-
     @ManyToMany
     @JoinTable(
             name = "item_effects",
@@ -21,8 +20,6 @@ public class Item{
             inverseJoinColumns = @JoinColumn(name = "effect_id")
     )
     private Set<Effect> effects;
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
-    private Set<Inventory> inventory;
     private String name;
     private Integer price;
     private String description;
