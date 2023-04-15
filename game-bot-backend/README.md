@@ -130,7 +130,7 @@ Body выглядит следующим образом, обратите вни
 
    >Fail: Status 400,404,500
 
-3. Удаление работы по айдишнику: DELETE: **localhost:8080/api/work/delete**
+3. Удаление работы по айдишнику: DELETE: **localhost:8080/api/work/delete/{id}**
 
    >Success: Status 204
 
