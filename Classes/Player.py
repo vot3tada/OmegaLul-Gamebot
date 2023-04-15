@@ -1,8 +1,10 @@
 import Classes.Good as Good
 from typing import Any, Union
 from utils.scheduler import scheduler
+from datetime import timedelta, datetime
 import apscheduler.job
 import requests
+from dateutil import tz
 
 class Player():
     def __init__(self, 
@@ -275,13 +277,12 @@ class Player():
         if response.status_code != 204:
             raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
 
-def _debuffByItem(chatId: int, userId: int, item: Good):
-    player = GetPlayer(chatId, userId)
-    buff_id = f'{item.id}_{chatId}_{userId}'
-    for key in item.effects.keys():
-        setattr(player, key, getattr(player, key) - item.effects[key])
-    player.RemoveStatus(item)
+def _debuffByItem(chatId: int, userId: int, item: Good.Good):
+    buff_id = f'buff:{item.id}_{chatId}_{userId}'
     scheduler.remove_job(buff_id)
+    player = GetPlayer(chatId, userId)
+    for key in item.effects:
+        setattr(player, key['property'], getattr(player, key['property']) - key['value'])
 
 def GetAllPlayers(chatId : int) -> list[Player]:
 

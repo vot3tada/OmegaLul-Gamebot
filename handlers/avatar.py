@@ -10,7 +10,15 @@ async def getAvatar(message : types.Message):
         return
     player = Player.GetPlayer(message.chat.id, message.from_user.id)
     orig = player.photo
-    text = f'Имя: {player.name}\nХП: {player.hp}\nУровень: {player.level} (опыт: {player.exp})\nДеньги: {player.money}\nСтатус:\n'
+    text = f'''
+Имя: {player.name}
+ХП: {player.hp}
+Уровень: {player.level} 
+Опыт: {player.exp}   (x{player.expMultiply})
+Деньги: {player.money}
+Урон: {player.damage}   (x{player.damageMultiply})
+Удача: {player.luck}   (x{player.luckMultiply})
+Статус:\n'''
     for st in player.GetStatus():
         text += f'{st.name}: {st.description}\n'
     photo=open(orig, "rb")
