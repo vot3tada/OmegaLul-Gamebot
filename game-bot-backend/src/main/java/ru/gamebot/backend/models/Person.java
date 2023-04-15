@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.gamebot.backend.dto.PersonDTO;
 
-
-
 @Entity
 @Data
 public class Person {
