@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.TaskDTO;
 import ru.gamebot.backend.dto.UpdateTaskDTO;
 import ru.gamebot.backend.services.TaskService;
+import ru.gamebot.backend.util.exceptions.ErrorResponse;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
+import ru.gamebot.backend.util.exceptions.TaskExceptions.TaskNotFoundException;
 import ru.gamebot.backend.util.exceptions.TaskExceptions.TaskNotUpdateException;
 
 import java.util.List;
@@ -39,7 +42,7 @@ public class TaskController {
         return taskService.takenTasks(workerUserId, chatId);
     }
 
-    @GetMapping("/complete/{ownerUserId}/{chatId}")
+    @GetMapping("/person/{ownerUserId}/{chatId}")
     public List<TaskDTO> getPersonTasks(@PathVariable("chatId") Integer chatId
                                             ,@PathVariable("ownerUserId") Integer ownerUserId){
         return taskService.personTasks(ownerUserId, chatId);
@@ -71,4 +74,23 @@ public class TaskController {
         taskService.taskDelete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @ExceptionHandler
+    private ResponseEntity<ErrorResponse> handleException (PersonNotFoundException e){
+        ErrorResponse response = new ErrorResponse("Person not found!");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<ErrorResponse> handleException (TaskNotFoundException e){
+        ErrorResponse response = new ErrorResponse("Task not found!");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<ErrorResponse> handleException (TaskNotUpdateException e){
+        ErrorResponse response = new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 }

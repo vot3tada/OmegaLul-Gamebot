@@ -94,7 +94,7 @@ Body выглядит следующим образом, обратите вни
 
    >Fail: Status 400, 500 (но это врятли)
 
-2. Добавление предмета в инвентарь(поставил метод UPDATE вроде подходит): UPDATE:**localhost:8080/api/inventory/update** (см. пример ввода body)
+2. Добавление предмета в инвентарь(поставил метод PUT вроде подходит): PUT:**localhost:8080/api/inventory/update** (см. пример ввода body)
 
    >Success: Status 204
 
@@ -144,6 +144,65 @@ Body выглядит следующим образом, обратите вни
          "levelRequired":2,
          "expReward":2,
          "moneyReward":2
+      }
+
+# Task
+1. Получение всех тасков: GET: **localhost:8080/api/task/all** 
+   >Success: Status 200
+
+   >Fail: Status 400, 500 (но это врятли)
+2. Получение свободных тасков: GET: **localhost:8080/api/task/free**
+   >Success: Status 200
+
+   >Fail: Status 400, 500 (но это врятли)
+3. Получение тасков, взятых пользователем: GET: **localhost:8080/api/task/taken/{workerUserId}/{chatId}**
+   >Success: Status 200
+
+   >Fail: Status 400, 500 (но это врятли)
+4. Получение тасков, созданных пользователем: GET: **localhost:8080/api/task/person/{ownerUserId}/{chatId}**
+   >Success: Status 200
+
+   >Fail: Status 400, 500 (но это врятли)
+5. Обновление таска в обе стороны(см. пример): PUT: **localhost:8080/api/task/update**
+   >Success: Status 204
+
+   >Fail: Status 400, 404, 500 
+6. Добавление таска(см. пример): POST: **localhost:8080/api/task/create**
+   >Success: Status 201
+
+   >Fail: Status 400, 404, 500 
+7. Удаление таска по айдишнику: DELETE: **localhost:8080/api/task/delete/{id}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500 
+
+### Пример
+Обратите внимание на ввод дедлайна(yyyy-MM-dd HH:mm:ss)
+
+**Добавление таска**
+
+      {
+      "name":"aboba",
+      "money":2,
+      "duration":2,
+      "chatId":3,
+      "ownerUserId":3
+      }
+
+**Апдейта таска(принять таск)**
+
+      {
+      "id:2,
+      "workerUserId":2,
+      "deadline":"2023-12-12 20:20:20"
+      }
+
+**Апдейт таска(отказаться от таска)**
+
+      {
+      "id:2,
+      "workerUserId":null,
+      "deadline":null
       }
 
 ## !!!ВАЖНО!!!
