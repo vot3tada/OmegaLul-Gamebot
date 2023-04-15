@@ -26,7 +26,7 @@ async def getName(message : types.Message, state: FSMContext):
     if message.text == '':
         await message.reply(text='Имя не может быть пустым')
         return
-    if len(message.text) > 50:
+    if len(message.text) > 35:
         await message.reply(text='Длинновато имя, возьми псевдоним покороче')
         return
     async with state.proxy() as data:

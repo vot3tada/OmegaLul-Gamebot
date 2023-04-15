@@ -18,17 +18,31 @@ async def shop_start(message : types.Message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Нужно зарегаться для такого')
         return
-    #await FSMShop.isShopping.set()
-    text = 'Добро пожаловать в магазин!\nУ нас есть:'
+
+    text = 'Добро пожаловать в магазин!\nУ нас есть:\n'
     keyboard = types.InlineKeyboardMarkup()
     Items = Good.GetAllItems()
     for i in Items:
-        keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.id}"))
-    #keyboard.add(types.InlineKeyboardButton(text = 'Выйти', callback_data=f"buy:Exit"))
+        time = ''
+        if i.duration // 86400:
+            time += f'{i.duration // 86400} д. '
+        if  (i.duration % 86400)// 3600:
+            time += f'{(i.duration % 86400)// 3600} ч. '
+        if (i.duration % 3600)// 60:
+            time += f'{(i.duration % 3600)// 60} м. '
+        text+=f'''
+        <b>{i.name}</b>
+        {i.description}
+        Цена: {i.price} монет
+        Длительность: {time}
+        '''
+        keyboard.add(types.InlineKeyboardButton(text = f'Купить  {i.name}', callback_data=f"buy:{i.id}"))
+
     await message.reply_photo(
         photo= open('./static/shop/' + random.choice(os.listdir('./static/shop')) ,'rb'),
         caption=text, 
-        reply_markup=keyboard)
+        reply_markup=keyboard,
+        parse_mode='HTML')
 
 async def shopping(call: types.CallbackQuery, state : FSMContext):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
