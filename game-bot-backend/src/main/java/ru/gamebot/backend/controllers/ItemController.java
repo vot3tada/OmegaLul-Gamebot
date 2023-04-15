@@ -7,8 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.ItemDTO;
 import ru.gamebot.backend.services.ItemService;
-import ru.gamebot.backend.util.ItemExceptions.ItemErrorResponse;
-import ru.gamebot.backend.util.ItemExceptions.ItemNotFoundException;
+import ru.gamebot.backend.util.exceptions.ErrorResponse;
+import ru.gamebot.backend.util.exceptions.ItemExceptions.ItemNotFoundException;
 
 import java.util.List;
 
@@ -44,8 +44,8 @@ public class ItemController {
     }
 
     @ExceptionHandler
-    private ResponseEntity<ItemErrorResponse> handleException (ItemNotFoundException e){
-        ItemErrorResponse response = new ItemErrorResponse("Item with this id wasn`t found!");
+    private ResponseEntity<ErrorResponse> handleException (ItemNotFoundException e){
+        ErrorResponse response = new ErrorResponse("Item with this id wasn`t found!");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 }

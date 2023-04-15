@@ -9,8 +9,8 @@ import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.repository.InventoryRepository;
 import ru.gamebot.backend.repository.ItemRepository;
 import ru.gamebot.backend.repository.PersonRepository;
-import ru.gamebot.backend.util.ItemExceptions.ItemNotFoundException;
-import ru.gamebot.backend.util.PersonExceptions.PersonNotFoundException;
+import ru.gamebot.backend.util.exceptions.ItemExceptions.ItemNotFoundException;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;

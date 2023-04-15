@@ -17,7 +17,7 @@ public class PersonDTO {
     private PersonDTO.PersonPKDTO personPKDTO;
 
 
-    @NotEmpty(groups = CreatePerson.class)
+    @NotEmpty(groups = Create.class)
     private String name;
 
     private Integer experience;
@@ -27,7 +27,7 @@ public class PersonDTO {
 
     private Integer money;
 
-    @NotEmpty(groups = CreatePerson.class)
+    @NotEmpty(groups = Create.class)
     private String photo;
     @Nullable
     private Float luck;
@@ -42,15 +42,15 @@ public class PersonDTO {
 
     @Data
     public static class PersonPKDTO {
-        @NotNull(groups = CreatePerson.class)
-        private int chatId;
-        @NotNull(groups = CreatePerson.class)
-        private int userId;
+        @NotNull(groups = Create.class)
+        private Integer chatId;
+        @NotNull(groups = Create.class)
+        private Integer userId;
 
         public PersonPKDTO() {
         }
 
-        public PersonPKDTO(int chatId, int userId) {
+        public PersonPKDTO(Integer chatId, Integer userId) {
             this.chatId = chatId;
             this.userId = userId;
         }

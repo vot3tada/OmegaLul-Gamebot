@@ -8,10 +8,11 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.gamebot.backend.dto.CreatePerson;
+import ru.gamebot.backend.dto.Create;
 import ru.gamebot.backend.dto.PersonDTO;
 import ru.gamebot.backend.services.PersonService;
-import ru.gamebot.backend.util.PersonExceptions.*;
+import ru.gamebot.backend.util.exceptions.ErrorResponse;
+import ru.gamebot.backend.util.exceptions.PersonExceptions.*;
 
 import java.util.List;
 
@@ -48,7 +49,7 @@ public class PersonController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createPerson(@RequestBody @Validated(CreatePerson.class)
+    public ResponseEntity<HttpStatus> createPerson(@RequestBody @Validated(Create.class)
                                                    PersonDTO personDTO, BindingResult bindingResult){
 
         if(bindingResult.hasErrors()){
@@ -67,32 +68,32 @@ public class PersonController {
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (PersonNotFoundException e){
-        PersonErrorResponse response = new PersonErrorResponse("Person with this id wasn`t found!");
+    private ResponseEntity<ErrorResponse> handleException (PersonNotFoundException e){
+        ErrorResponse response = new ErrorResponse("Person with this id wasn`t found!");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (PersonChatIdNotFound e){
-        PersonErrorResponse response = new PersonErrorResponse("Person with this chatId wasn`t found!");
+    private ResponseEntity<ErrorResponse> handleException (PersonChatIdNotFound e){
+        ErrorResponse response = new ErrorResponse("Person with this chatId wasn`t found!");
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (PersonNotUpdateException e){
-        PersonErrorResponse response = new PersonErrorResponse(e.getMessage());
+    private ResponseEntity<ErrorResponse> handleException (PersonNotUpdateException e){
+        ErrorResponse response = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (PersonNotCreateException e){
-        PersonErrorResponse response = new PersonErrorResponse(e.getMessage());
+    private ResponseEntity<ErrorResponse> handleException (PersonNotCreateException e){
+        ErrorResponse response = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException (PersonAlreadyExistsException e){
-        PersonErrorResponse response = new PersonErrorResponse("Person already exists");
+    private ResponseEntity<ErrorResponse> handleException (PersonAlreadyExistsException e){
+        ErrorResponse response = new ErrorResponse("Person already exists");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
