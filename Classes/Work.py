@@ -1,13 +1,34 @@
+import requests
+from typing import Any, Union
+
 class Work():
 
     def __init__(self, id: int,  name :str, levelRequired: int, expReward: int, moneyReward: int):
         self.id = id
+        #Имя работы должно начинаться с глагола в инфинитиве
         self.name = name
         self.levelRequired = levelRequired
         self.expReward = expReward
         self.moneyReward = moneyReward
 
-#Имя работы должно начинаться с глагола в инфинитиве
+def GetAllWork() -> list[Work]:
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/work/all',
+        headers={"Content-Type": "application/json"})
+
+    if not responce.ok:
+        return None
+    
+    data: list[dict[str, Any]] = responce.json()
+    works = [Work(**work) for work in data]
+    return works
+
+def GetWork(id: int) -> Work:
+   works = GetAllWork()
+   for work in works:
+      if work.id == id:
+         return work
+
 Works : list[Work] = [
     Work( 
         0,
