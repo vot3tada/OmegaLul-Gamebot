@@ -43,14 +43,14 @@ public class PersonDTO {
     @Data
     public static class PersonPKDTO {
         @NotNull(groups = Create.class)
-        private int chatId;
+        private Integer chatId;
         @NotNull(groups = Create.class)
-        private int userId;
+        private Integer userId;
 
         public PersonPKDTO() {
         }
 
-        public PersonPKDTO(int chatId, int userId) {
+        public PersonPKDTO(Integer chatId, Integer userId) {
             this.chatId = chatId;
             this.userId = userId;
         }

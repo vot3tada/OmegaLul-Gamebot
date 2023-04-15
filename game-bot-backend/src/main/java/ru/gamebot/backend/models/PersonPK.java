@@ -13,11 +13,11 @@ import java.util.Objects;
 public class PersonPK implements Serializable {
 
     @Column(name = "user_id")
-    private int userId;
+    private Integer userId;
     @Column(name="chat_id")
-    private int chatId;
+    private Integer chatId;
 
-    public PersonPK(int chatId, int userId){
+    public PersonPK(Integer chatId, Integer userId){
         this.chatId=chatId;
         this.userId=userId;
     }

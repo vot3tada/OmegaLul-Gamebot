@@ -20,6 +20,7 @@ public class TaskDTO {
     private Integer chatId;
     @NotNull(groups = Create.class)
     private Integer ownerUserId;
+    private Integer workerUserId;
     @NotEmpty(groups = Create.class)
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private java.util.Date deadline;
