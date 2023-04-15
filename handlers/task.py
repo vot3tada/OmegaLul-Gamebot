@@ -226,7 +226,7 @@ async def acceptTask(call: types.CallbackQuery):
     if call.message.chat.id != int(task.chatId) or call.from_user.id != int(task.ownerUserId):
         await call.answer('Это не ваш список')
         return
-    if task.workerUserId == -1:
+    if not task.workerUserId:
         await call.answer('Задание никто не взял')
         return
     worker: Player.Player = Player.GetPlayer(task.chatId, task.workerUserId)
@@ -256,7 +256,7 @@ async def deleteTask(call: types.CallbackQuery):
     if call.message.chat.id != int(task.chatId) or call.from_user.id != int(task.ownerUserId):
         await call.answer('Это не ваш список!')
         return
-    if task.workerUserId != -1:
+    if task.workerUserId:
         await call.answer('Задание кем то взято!')
         return
     player: Player.Player = Player.GetPlayer(task.chatId, task.ownerUserId)
@@ -285,7 +285,7 @@ async def takeTask(message: types.Message):
 
     task: Task.Task = Task.GetTask(id)
 
-    if task.workerUserId != -1:
+    if task.workerUserId:
         await message.reply('Задание уже взято')
         return
     if task.ownerUserId == worker.userId:
@@ -463,7 +463,7 @@ async def setTaskDeadline(message: types.Message, state: FSMContext):
         await message.reply('Неправильный формат даты: ДД/ЧЧ/ММ')
         return
     
-    if time > 60:
+    if time < 60:
         await message.reply('Слишком мало времени на задание, не будьте так жестоки!!')
         return
 
@@ -499,7 +499,9 @@ async def punish(chatId: int, userId: int, taskId: int):
         return
     scheduler.remove_job(f'punish_{task.chatId}_{userId}_{task.id}')
     await st.set_state(CollectorState.Punished)
-    
+
+    Task.FreeTask(Task.GetTask(taskId))
+
     player: Player.Player = Player.GetPlayer(chatId, userId)
     keyboard = types.InlineKeyboardMarkup()
     
