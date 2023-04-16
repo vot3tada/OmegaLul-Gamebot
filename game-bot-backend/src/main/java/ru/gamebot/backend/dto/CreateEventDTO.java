@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class EventDTO {
+public class CreateEventDTO {
     private Integer id;
     @NotNull(groups = Create.class)
     private Integer chatId;

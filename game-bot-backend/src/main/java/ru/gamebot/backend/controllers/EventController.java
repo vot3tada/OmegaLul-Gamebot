@@ -9,7 +9,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.Create;
-import ru.gamebot.backend.dto.EventDTO;
+import ru.gamebot.backend.dto.CreateEventDTO;
+import ru.gamebot.backend.dto.GetEventDTO;
 import ru.gamebot.backend.services.EventService;
 import ru.gamebot.backend.util.exceptions.ErrorResponse;
 import ru.gamebot.backend.util.exceptions.EventExceptions.EventNotCreateException;
@@ -24,8 +25,13 @@ import java.util.List;
 public class EventController {
     private final EventService eventService;
 
+    @GetMapping("id/{id}")
+    public GetEventDTO getEvent(@PathVariable("id") Integer id){
+        return eventService.getEventById(id);
+    }
+
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createEvent(@RequestBody @Validated(Create.class) EventDTO eventDTO
+    public ResponseEntity<HttpStatus> createEvent(@RequestBody @Validated(Create.class) CreateEventDTO createEventDTO
                                                     ,BindingResult bindingResult){
         if(bindingResult.hasErrors()){
             StringBuilder errorMsg = new StringBuilder();
@@ -37,7 +43,7 @@ public class EventController {
             }
             throw new EventNotCreateException(errorMsg.toString());
         }
-        eventService.createEvent(eventDTO);
+        eventService.createEvent(createEventDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
