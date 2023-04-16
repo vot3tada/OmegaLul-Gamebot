@@ -118,8 +118,6 @@ async def InitAttackStep(message: types.CallbackQuery):
             await st1.set_state(Fight.Ready)
             await st2.set_state(Fight.Ready)
 
-            photo = open('./static/fight/' + random.choice(os.listdir('./static/fight')) ,'rb')
-
             keyboard = types.InlineKeyboardMarkup()
             keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
