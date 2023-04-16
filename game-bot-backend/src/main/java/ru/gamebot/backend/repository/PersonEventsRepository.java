@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface PersonEventsRepository extends JpaRepository<PersonEvents, Integer> {
     List<PersonEvents> findAllByEvent(Event event);
+    List<PersonEvents> findAllEventByPersonPersonPkChatId(Integer id);
 }

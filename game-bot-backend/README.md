@@ -238,6 +238,62 @@ Body выглядит следующим образом, обратите вни
             "totalLeaveFights": 200
          }
 
+# Event
+1. Получить евент по айди: GET: **localhost:8080/api/event/id/{id}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
+2. Получить все евенты в чате: GET: **localhost:8080/api/event/chat/{chatId}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
+3. Создать евент(см. пример): POST: **localhost:8080/api/event/create**
+   >Success: Status 201
+
+   >Fail: Status 400, 404, 500
+4. Добавить участника на евент(см. пример): POST: **localhost:8080/api/event/add-member**
+   >Success: Status 201
+
+   >Fail: Status 400, 404, 500
+### Пример
+Обратите внимание на ввод даты(yyyy-MM-dd HH:mm:ss)
+
+**Создание ивента:**
+
+      {
+      "name":"boba",
+      "startedAt": "2023-12-12 20:20:20",
+      "chatId":3,
+      "userId":4
+      }
+
+**Добавление мембера:**
+
+      {
+      "id":1,//айди евента
+      "chatId":3,
+      "userId":4
+      }
+
+**Так выглядит json /id/{id} реквеста:**
+
+      {
+       "id": 2,
+       "name": "vfff",
+       "startedAt": "2023-12-12 20:20:20",
+       "members": [
+           {
+               "creator": true,
+               "chatId": 3,
+               "userId": 3
+           },
+           {
+               "creator": false,
+               "chatId": 3,
+               "userId": 4
+           }
+       ]
+      }
 ## !!!ВАЖНО!!!
 После каждого git pull репы, запуск контейнера будет таким: docker compose up -d --build
 
