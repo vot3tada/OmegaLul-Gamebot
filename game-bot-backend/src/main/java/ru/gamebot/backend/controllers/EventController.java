@@ -9,10 +9,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.gamebot.backend.dto.Create;
-import ru.gamebot.backend.dto.EventDTO;
+import ru.gamebot.backend.dto.CreateEventDTO;
+import ru.gamebot.backend.dto.GetEventDTO;
 import ru.gamebot.backend.services.EventService;
 import ru.gamebot.backend.util.exceptions.ErrorResponse;
+import ru.gamebot.backend.util.exceptions.EventExceptions.ChatNotFoundException;
+import ru.gamebot.backend.util.exceptions.EventExceptions.EventAlreadyExistException;
 import ru.gamebot.backend.util.exceptions.EventExceptions.EventNotCreateException;
+import ru.gamebot.backend.util.exceptions.EventExceptions.EventNotFoundException;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 
 import java.util.List;
@@ -24,8 +28,18 @@ import java.util.List;
 public class EventController {
     private final EventService eventService;
 
+    @GetMapping("id/{id}")
+    public GetEventDTO getEvent(@PathVariable("id") Integer id){
+        return eventService.getEventById(id);
+    }
+
+    @GetMapping("/chat/{chatId}")
+    public List<GetEventDTO> getEvents(@PathVariable("chatId") Integer chatId){
+        return eventService.getEventsByChatId(chatId);
+    }
+
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createEvent(@RequestBody @Validated(Create.class) EventDTO eventDTO
+    public ResponseEntity<HttpStatus> createEvent(@RequestBody @Validated(Create.class) CreateEventDTO createEventDTO
                                                     ,BindingResult bindingResult){
         if(bindingResult.hasErrors()){
             StringBuilder errorMsg = new StringBuilder();
@@ -37,10 +51,15 @@ public class EventController {
             }
             throw new EventNotCreateException(errorMsg.toString());
         }
-        eventService.createEvent(eventDTO);
+        eventService.createEvent(createEventDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PostMapping("/add-member")
+    public ResponseEntity<HttpStatus> addMemberToEvent(@RequestBody CreateEventDTO eventDTO){
+        eventService.addMember(eventDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(PersonNotFoundException e){
         var response = new ErrorResponse("Person not found!");
@@ -51,5 +70,23 @@ public class EventController {
     public ResponseEntity<ErrorResponse> handleException(EventNotCreateException e){
         var response = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleException(EventAlreadyExistException e){
+        var response = new ErrorResponse("Event not found!");
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleException(ChatNotFoundException e){
+        var response = new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> handleException(EventNotFoundException e){
+        var response = new ErrorResponse("Event not found!");
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
     }
 }
