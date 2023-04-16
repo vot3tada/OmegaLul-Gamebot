@@ -1,0 +1,21 @@
+CREATE TABLE history(
+    person_chat_id integer,
+    person_user_id integer,
+    total_money integer,
+    total_exp integer,
+    total_questions integer,
+    total_fights integer,
+    total_win_fights integer,
+    total_win_boss integer,
+    total_item integer,
+    total_taken_tasks integer,
+    total_ended_tasks integer,
+    total_fall_tasks integer,
+    total_win_collector integer,
+    total_create_event integer,
+    total_enter_event integer,
+    total_kick_event integer,
+    total_leave_fights integer,
+    PRIMARY KEY (person_chat_id, person_user_id),
+    FOREIGN KEY (person_chat_id, person_user_id) REFERENCES person(chat_id, user_id)
+);

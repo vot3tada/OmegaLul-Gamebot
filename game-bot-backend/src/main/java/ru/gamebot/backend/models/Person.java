@@ -13,7 +13,8 @@ public class Person {
 
     private String name;
 
-
+    @OneToOne(mappedBy = "person",cascade=CascadeType.ALL)
+    private History history;
     private Integer experience;
 
 

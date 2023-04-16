@@ -172,7 +172,7 @@ Body выглядит следующим образом, обратите вни
 
    >Fail: Status 400, 404, 500 
 7. Удаление таска по айдишнику: DELETE: **localhost:8080/api/task/delete/{id}**
-   >Success: Status 200
+   >Success: Status 204
 
    >Fail: Status 400, 404, 500 
 
@@ -204,6 +204,39 @@ Body выглядит следующим образом, обратите вни
       "workerUserId":null,
       "deadline":null
       }
+
+# History
+1. Получение истории по чат-юзер айдишнику: GET **localhost:8080/api/history/id/{chatId}/{userId}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500(но это врятли)
+
+2. Апдейт истории(см. пример): PUT: **localhost:8080/api/history/update**
+   >Success: Status 204
+
+   >Fail: Status 400, 404, 500
+
+### Пример 
+
+          {
+            "chatId": 8,
+            "userId": 8,
+            "totalMoney": 200,
+            "totalExp": 200,
+            "totalQuestions": 200,
+            "totalFights": 200,
+            "totalWinFights": 200,
+            "totalWinBoss": 200,
+            "totalItem": 200,
+            "totalTakenTasks": 200,
+            "totalEndedTasks": 200,
+            "totalFallTasks": 200,
+            "totalWinCollector": 200,
+            "totalCreateEvent": 200,
+            "totalEnterEvent": 200,
+            "totalKickEvent": 200,
+            "totalLeaveFights": 200
+         }
 
 ## !!!ВАЖНО!!!
 После каждого git pull репы, запуск контейнера будет таким: docker compose up -d --build

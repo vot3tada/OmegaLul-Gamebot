@@ -34,8 +34,7 @@ public class WorkService {
     @Transactional
     public void createWork(WorkDTO workDTO) throws WorkAlreadyExistException {
         var work = workMapper.workDTOToWork(workDTO);
-        var existWork = workRepository.findByName(work.getName());
-        if(existWork!=null){
+        if(workRepository.existsByName(work.getName())){
             throw new WorkAlreadyExistException();
         }
         workRepository.save(work);
