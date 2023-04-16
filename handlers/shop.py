@@ -3,7 +3,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import Classes.Player as Player
-from Classes.Item import Items
+import Classes.Good as Good
 import random
 import os
 
@@ -18,28 +18,46 @@ async def shop_start(message : types.Message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Нужно зарегаться для такого')
         return
-    #await FSMShop.isShopping.set()
-    text = 'Добро пожаловать в магазин!\nУ нас есть:'
+
+    text = 'Добро пожаловать в магазин!\nУ нас есть:\n'
     keyboard = types.InlineKeyboardMarkup()
-    for i in Items.values():
-        keyboard.add(types.InlineKeyboardButton(text = f'{i.name} - {i.price}', callback_data=f"buy:{i.id}"))
-    #keyboard.add(types.InlineKeyboardButton(text = 'Выйти', callback_data=f"buy:Exit"))
+    Items = Good.GetAllItems()
+    for i in Items:
+        time = ''
+        if i.duration // 86400:
+            time += f'{i.duration // 86400} д. '
+        if  (i.duration % 86400)// 3600:
+            time += f'{(i.duration % 86400)// 3600} ч. '
+        if (i.duration % 3600)// 60:
+            time += f'{(i.duration % 3600)// 60} м. '
+        text+=f'''
+        <b>{i.name}</b>
+        {i.description}
+        Цена: {i.price} монет
+        Длительность: {time}
+        '''
+        keyboard.add(types.InlineKeyboardButton(text = f'Купить  {i.name}', callback_data=f"buy:{i.id}"))
+
     await message.reply_photo(
         photo= open('./static/shop/' + random.choice(os.listdir('./static/shop')) ,'rb'),
         caption=text, 
-        reply_markup=keyboard)
+        reply_markup=keyboard,
+        parse_mode='HTML')
 
 async def shopping(call: types.CallbackQuery, state : FSMContext):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
         await call.answer('Нужно зарегаться для такого')
         return
     """try:"""
-    buy : str = call.data.replace("buy:",'')
+    try:
+        id = int(call.data.replace("buy:",''))
+    except:
+        call.answer('id предмета не определен')
     #if buy == 'Exit':
     #    await state.finish()
     #    await call.message.answer('Вы вышли из магазина')
     #    return
-    good = Items[buy]
+    good = Good.GetItem(id)
     player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
     if player.money < good.price:
         await call.answer('У вас не хватает денег')
@@ -50,7 +68,6 @@ async def shopping(call: types.CallbackQuery, state : FSMContext):
     """except:
         await state.finish()
         await call.answer()"""
-    
 
 def register_handlers_shop(dp: Dispatcher):
     dp.register_message_handler(shop_start, commands='shop', state=None)

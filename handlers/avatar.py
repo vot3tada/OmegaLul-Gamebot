@@ -10,8 +10,16 @@ async def getAvatar(message : types.Message):
         return
     player = Player.GetPlayer(message.chat.id, message.from_user.id)
     orig = player.photo
-    text = f'Имя: {player.name}\nХП: {player.hp}\nУровень: {player.level} (опыт: {player.exp})\nДеньги: {player.money}\nСтатус:\n'
-    for st in player.status:
+    text = f'''
+Имя: {player.name}
+ХП: {player.hp}
+Уровень: {player.level} 
+Опыт: {player.exp}   (x{player.expMultiply})
+Деньги: {player.money}
+Урон: {player.damage}   (x{player.damageMultiply})
+Удача: {player.luck}   (x{player.luckMultiply})
+Статус:\n'''
+    for st in player.GetStatus():
         text += f'{st.name}: {st.description}\n'
     photo=open(orig, "rb")
     await message.answer_photo(photo, caption=text)
@@ -33,6 +41,11 @@ async def getInventory(message : types.Message):
         keyboard.add(types.InlineKeyboardButton(text = f'{i[0].name}: {i[1]}', callback_data=f"item:{i[0].id}"))
     await message.reply_photo(photo=photo,caption=text, reply_markup=keyboard)
 
+async def getMoney(message: types.Message):
+    player = Player.GetPlayer(message.chat.id, message.from_user.id)
+    player.money+=2000
+
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(getInventory, commands='inventory', state=None)
     dp.register_message_handler(getAvatar, commands='avatar', state=None)
+    dp.register_message_handler(getMoney, commands='tyanki_and_grechka', state=None)

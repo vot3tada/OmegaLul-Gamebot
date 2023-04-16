@@ -1,7 +1,10 @@
-from Classes.Good import Good
+import Classes.Good as Good
 from typing import Any, Union
 from utils.scheduler import scheduler
+from datetime import timedelta, datetime
+import apscheduler.job
 import requests
+from dateutil import tz
 
 class Player():
     def __init__(self, 
@@ -11,13 +14,11 @@ class Player():
                  experience : int  = 0,
                  experienceMultiply: int = 1,
                  money: int  = 1000,
-                 inventory : list[list[Good,int]] = [],
                  luck : float = 0.2,
                  luckMultiply : int = 1,
                  hp : int = 100,
                  damage : int = 20,
-                 damageMultiply : int = 1,
-                 status : list[Good] = []):
+                 damageMultiply : int = 1,):
         self._chatId = personPk['chatId']
         self._userId = personPk['userId']
         self._name = name
@@ -25,13 +26,23 @@ class Player():
         self._experienceMultiply = experienceMultiply
         self._money = money
         self._photo = photo
-        self._inventory = inventory
         self._luck = luck
         self._luckMultiply = luckMultiply
         self._hp = hp
         self._damage = damage
         self._damageMultiply = damageMultiply
-        self._status = status
+
+        responce: requests.Response = requests.get(
+            url=f'http://localhost:8080/api/inventory/id/{self._chatId}/{self._userId}',
+            headers={"Content-Type": "application/json"})
+        data: list[dict[str, Any]] = responce.json()
+        if responce.status_code == 404:
+            self._inventory = []
+        else:
+            self._inventory: list[Good.Good, int] = [[Good.GetItem(good['itemId']), good['count']] for good in data]
+
+        scheduler
+
 
     def to_json(self, withIds = True) -> dict[str, Any]:
         json = {
@@ -65,6 +76,11 @@ class Player():
     @property
     def name(self):
         return self._name
+    
+    @name.setter
+    def name(self, x: str):
+        self._name = x
+        self._updatePlayer()
 
     @property
     def hp(self):
@@ -161,67 +177,94 @@ class Player():
     def inventory(self):
         return self._inventory.copy()
     
-    @property
-    def status(self):
-        return self._status.copy()
-    
-    def FindItem(self, item : Good) -> bool:
+    def FindItem(self, item : Good.Good) -> bool:
         return item.id in [good[0].id for good in self._inventory]
     
-    def GetItem(self, item : Good) -> Union[list[Good,int], None]:
+    def GetItem(self, item : Good.Good) -> Union[list[Good.Good,int], None]:
         for _item in self._inventory:
             if _item[0].id == item.id:
                 return _item
         return None 
     
-    def AddItem(self, item : Good):
+    def AddItem(self, item : Good.Good):
         if self.FindItem(item):
-            self.GetItem(item)[1] += 1
+             good = self.GetItem(item)
+             good[1] += 1
         else:
-            self._inventory.append([item, 1])
-        self._updatePlayer()
+            good = [item, 1]
+            self._inventory.append(good)
+        
+        response: requests.Response = requests.put(
+            url=f'http://localhost:8080/api/inventory/update',
+            json = {
+                "itemId":item.id,
+                "count": good[1],
+                "chatId": self._chatId,
+                "userId": self._userId
+            },
+            headers={"Content-Type": "application/json"})
+    
+        if not response.ok:
+            raise RuntimeError(f'Добавление предмета пользователю: {response.status_code}')
     
     def RemoveItem(self, item: Good):
         if not self.FindItem(item):
-            raise ValueError('Попытка удалить несуществующий статус')
-        _item : list[Good, int] = self.GetItem(item)
+            raise ValueError('Попытка удалить несуществующий предмет')
+        _item : list[Good.Good, int] = self.GetItem(item)
         _item[1] -= 1
         if not _item[1]:
-            self._inventory.remove(_item)
-        self._updatePlayer()
-    
-    def FindStatus(self, item : Good) -> bool:
-        return item.id in [good.id for good in self._status]
-    
-    def AddStatus(self, item : Good):
-        if self.FindStatus(item):
-            raise ValueError('Двойной статус запрещен')
-        self._status.append(item)
-        self._updatePlayer()
 
-    def GetStatus(self, item : Good) -> Union[Good, None]:
-        for _item in self._status:
-            if _item.id == item.id:
-                return _item
-        return None 
+            for __item in self._inventory:
+                if __item[0].id == item.id:
+                    self._inventory.remove(__item)
+                    break
+            
+            response: requests.Response = requests.delete(
+                url=f'http://localhost:8080/api/inventory/delete',
+                json = {
+                    "itemId":_item[0].id,
+                    "chatId": self._chatId,
+                    "userId": self._userId
+                },
+                headers={"Content-Type": "application/json"})
+            if not response.ok:
+                raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
+        else:
+            response: requests.Response = requests.put(
+                url=f'http://localhost:8080/api/inventory/update',
+                json = {
+                    "itemId":_item[0].id,
+                    "count": _item[1],
+                    "chatId": self._chatId,
+                    "userId": self._userId
+                },
+                headers={"Content-Type": "application/json"})
+            if response.status_code != 204:
+                raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
 
-    def RemoveStatus(self, item : Good):
-        if not self.FindStatus(item):
-            raise ValueError('Попытка удалить несуществующий статус')
-        status = self.GetStatus(item)
-        self._status.remove(status)
-        self._updatePlayer()
+    def FindStatus(self,item: Good.Good) -> bool:
+        return scheduler.get_job(f'buff:{item.id}_{self._chatId}_{self._userId}') != None
 
-    def BuffByItem(self, item: Good):
-        if not scheduler.get_job(f'{item.id}_{self._chatId}_{self._userId}') is None:
+    def GetStatus(self) -> list[Good.Good]:
+        goods:list[Good.Good] = [] 
+        for job in scheduler.get_jobs():
+            job: apscheduler.job.Job
+            if str.find(job.id, 'buff') != -1:
+                itemId, chatId, userId = str.replace(job.id,'buff:','').split('_')
+                itemId, chatId, userId = int(itemId), int(chatId), int(userId)
+                if userId == self._userId and chatId == self._chatId:
+                    goods.append(Good.GetItem(itemId))
+        return goods
+        
+    def BuffByItem(self, item: Good.Good):
+        if not scheduler.get_job(f'buff:{item.id}_{self._chatId}_{self._userId}') is None:
             raise ValueError('Попытка применения двойного эффекта')
         
-        for key in item.effects.keys():
-            setattr(self, key, getattr(self, key) + item.effects[key])
+        for key in item.effects:
+            setattr(self, key['property'], getattr(self, key['property']) + key['value'])
 
         if item.duration:
-            self.AddStatus(item)
-            buff_id = f'{item.id}_{self._chatId}_{self._userId}'
+            buff_id = f'buff:{item.id}_{self._chatId}_{self._userId}'
             scheduler.add_job(_debuffByItem, trigger='interval', seconds=item.duration, args=[self.chatId, self.userId, item], id=buff_id)
 
     def _updatePlayer(self):
@@ -234,13 +277,12 @@ class Player():
         if response.status_code != 204:
             raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
 
-def _debuffByItem(chatId: int, userId: int, item: Good):
-    player = GetPlayer(chatId, userId)
-    buff_id = f'{item.id}_{chatId}_{userId}'
-    for key in item.effects.keys():
-        setattr(player, key, getattr(player, key) - item.effects[key])
-    player.RemoveStatus(item)
+def _debuffByItem(chatId: int, userId: int, item: Good.Good):
+    buff_id = f'buff:{item.id}_{chatId}_{userId}'
     scheduler.remove_job(buff_id)
+    player = GetPlayer(chatId, userId)
+    for key in item.effects:
+        setattr(player, key['property'], getattr(player, key['property']) - key['value'])
 
 def GetAllPlayers(chatId : int) -> list[Player]:
 

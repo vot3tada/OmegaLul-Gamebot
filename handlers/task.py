@@ -8,13 +8,13 @@ import Classes.Task as Task
 from utils.scheduler import scheduler
 import random
 import os
+from handlers.collector import CollectorState
 
 
 class TaskState(StatesGroup):
     name = State()
     money = State()
     deadline = State()
-    punished = State()
 
 async def taskList(message: types.Message):
 
@@ -40,6 +40,7 @@ async def taskList(message: types.Message):
         Заказчик:  {player.name}
         Время на выполнение: {time}
         Награда:  {task.money} монет
+        ID: {task.id}
         """
     if len(tasks) > 4:
         keyboard = types.InlineKeyboardMarkup()
@@ -66,7 +67,7 @@ async def pageTaskList(call: types.CallbackQuery):
         return
 
     tasks: list[Task.Task] = Task.GetFreeTasks()
-    replytext = '<b>Список заданий</b>:\n<i>Выволните задание и покажите заказчику, он вам засчитает\n</i>'
+    replytext = '<b>Список заданий</b>:\n<i>Возьмите задание, выолните и попросите Заказчика зачесть\n</i>'
     keyboard = None
     for task in tasks[page*4:page*4+4]:
         player = Player.GetPlayer(task.chatId, task.ownerUserId)
@@ -83,6 +84,7 @@ async def pageTaskList(call: types.CallbackQuery):
         Заказчик:  {player.name}
         Время на выполнение: {time}
         Награда:  {task.money} монет
+        ID: {task.id}
         """
     if len(tasks) > 4:
         keyboard = types.InlineKeyboardMarkup()
@@ -224,7 +226,7 @@ async def acceptTask(call: types.CallbackQuery):
     if call.message.chat.id != int(task.chatId) or call.from_user.id != int(task.ownerUserId):
         await call.answer('Это не ваш список')
         return
-    if task.workerUserId == -1:
+    if not task.workerUserId:
         await call.answer('Задание никто не взял')
         return
     worker: Player.Player = Player.GetPlayer(task.chatId, task.workerUserId)
@@ -234,7 +236,7 @@ async def acceptTask(call: types.CallbackQuery):
     Task.AcceptTask(task)
     await call.message.answer_photo(
         photo=open('./static/taskcomplete/' + random.choice(os.listdir('./static/taskcomplete')) ,'rb'),
-        caption=f'{worker.name} успешно выполнил задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',
+        caption=f'{worker.name} успешно выполняет задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',
         parse_mode='HTML'
     )
     await call.answer()
@@ -254,7 +256,7 @@ async def deleteTask(call: types.CallbackQuery):
     if call.message.chat.id != int(task.chatId) or call.from_user.id != int(task.ownerUserId):
         await call.answer('Это не ваш список!')
         return
-    if task.workerUserId != -1:
+    if task.workerUserId:
         await call.answer('Задание кем то взято!')
         return
     player: Player.Player = Player.GetPlayer(task.chatId, task.ownerUserId)
@@ -283,7 +285,7 @@ async def takeTask(message: types.Message):
 
     task: Task.Task = Task.GetTask(id)
 
-    if task.workerUserId != -1:
+    if task.workerUserId:
         await message.reply('Задание уже взято')
         return
     if task.ownerUserId == worker.userId:
@@ -414,7 +416,7 @@ async def refuseTask(call: types.CallbackQuery):
     
     player: Player.Player = Player.GetPlayer(task.chatId, task.workerUserId)
     if Task.RefuseTask(player, task):
-        await call.message.answer(f'{player.name} будет наказан за столь позднюю отмену задания...')
+        await call.message.answer(f'{player.name} получает наказание за столь позднюю отмену задания...')
     call.data = f'myTakenTaskPage:{player.chatId}_{player.userId}_0'
     await pageMyTakenTaskList(call)
 
@@ -428,6 +430,9 @@ async def startAddTask(message: types.Message):
 async def setTaskName(message: types.Message, state: FSMContext):
     if message.text == '':
         await message.reply(text='Описание не может быть пустым')
+        return
+    if len(message.text) > 150:
+        await message.reply(text='Описание слишком больше, формулируйте лаконичнее!')
         return
     async with state.proxy() as data:
         data['name'] = message.text
@@ -458,6 +463,10 @@ async def setTaskDeadline(message: types.Message, state: FSMContext):
         await message.reply('Неправильный формат даты: ДД/ЧЧ/ММ')
         return
     
+    if time < 60:
+        await message.reply('Слишком мало времени на задание, не будьте так жестоки!!')
+        return
+
     player: Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     sale = 1 if (await message.chat.get_member(player.userId)).is_chat_admin() else 0
     async with state.proxy() as data:
@@ -489,31 +498,38 @@ async def punish(chatId: int, userId: int, taskId: int):
     if (await st.get_state()):
         return
     scheduler.remove_job(f'punish_{task.chatId}_{userId}_{task.id}')
-    await st.set_state(TaskState.punished)
+    await st.set_state(CollectorState.Punished)
+
+    Task.FreeTask(Task.GetTask(taskId))
+
     player: Player.Player = Player.GetPlayer(chatId, userId)
     keyboard = types.InlineKeyboardMarkup()
+    
     if player.money >= (task.money // 2):
-        keyboard.add(
-            types.InlineKeyboardButton(text='Заплатить', callback_data=f'collectorPay:{player.chatId}_{player.userId}_{task.money // 2}')
-        )
+        payText =  'Заплатить'  
     else:
-        keyboard.add(
-            types.InlineKeyboardButton(text='Не хватает денег...', callback_data=f'@$^')
-        )
+        payText = 'Заплатить что есть'
+    keyboard.add(
+        types.InlineKeyboardButton(text=payText, callback_data=f'collectorPay:{player.chatId}_{player.userId}_{task.money // 2}')
+    )
     keyboard.add(
         types.InlineKeyboardButton(text='Сразиться', callback_data=f'collectorFight:{player.chatId}_{player.userId}_{task.money // 2}')
     )
     username: str = (await bot.get_chat_member(chatId, userId)).user.username
-    await bot.send_message(chat_id=chatId,
+    message = await bot.send_photo(chat_id=chatId,
                      parse_mode='HTML',
                      reply_markup=keyboard,
-                     text=f'''<i>Он пришел...</i>
+                     photo = open('./static/collector/T801.jpg','rb'),
+                     caption=f'''<i>Он пришел...</i>
                      
 Коллектор пришел по твою душу, {player.name}, и взял тебя в заложники!
 @{username} У тебя есть выбор:\n
 <b>Заплатить</b> сумму {task.money // 2} и мирно разойтись
 <b>Драться</b> за свою свободу''',
                      )
+    await st.set_data(
+        {'messageId':  message.message_id}
+    )
 
 def register_handlers_task(dp: Dispatcher):
     dp.register_message_handler(taskList, commands='task', state=None)

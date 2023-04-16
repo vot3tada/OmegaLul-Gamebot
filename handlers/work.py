@@ -15,16 +15,15 @@ class FSMWork(StatesGroup):
 async def work_info(message : types.Message):
     work_text = 'Хотите отправить работягу по вашим стопам ?\nГде будем батрачить ?\n'
     keyboard = types.InlineKeyboardMarkup()
-    for i in range(len(Work.Works)):
+    for work in Work.GetAllWork():
         work_text += f'''
-        <b>{Work.Works[i].name}</b>
-        <i>(нужен уровень: {Work.Works[i].levelRequired})</i>
-        Опыт:  {Work.Works[i].expReward}    Деньги:  {Work.Works[i].moneyReward}\n\n'''
-        keyboard.add(types.InlineKeyboardButton(text=Work.Works[i].name, callback_data=f"work:{Work.Works[i].id}"))
+        <b>{work.name}</b>
+        <i>(нужен уровень: {work.levelRequired})</i>
+        Опыт:  {work.expReward}    Деньги:  {work.moneyReward}\n\n'''
+        keyboard.add(types.InlineKeyboardButton(text=work.name, callback_data=f"work:{work.id}"))
     work_text += 'Время работы: 2 часика'
     photo = open('./static/worklist/' + random.choice(os.listdir('./static/worklist')) ,'rb')
     await message.answer_photo(photo=photo,caption=work_text, reply_markup=keyboard, parse_mode='HTML')
-
 
 async def work_start(call: types.CallbackQuery):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
@@ -34,14 +33,14 @@ async def work_start(call: types.CallbackQuery):
     work_id = call.data.replace('work:','')
     try:
         work_id = int(work_id)
-        work = Work.Works[work_id]
+        work = Work.GetWork(work_id)
     except:
         await call.answer('Что то ты не то нажал')
         return
     if user.level < work.levelRequired:
         await call.answer('Это не ваш уровень')
         return
-    scheduler.add_job(work_complete, trigger='interval', seconds=10, args=[user.chatId, user.userId, work.id, call.from_user.username], coalesce=True, id=f'work_{user.chatId}_{user.userId}')
+    scheduler.add_job(work_complete,jobstore='local', trigger='interval', seconds=10, args=[user.chatId, user.userId, work.id, call.from_user.username], coalesce=True, id=f'work_{user.chatId}_{user.userId}')
     await FSMWork.work.set()
     photo = open(user.photo, 'rb')
     await call.message.reply_photo(photo=photo,caption=f'{user.name} отправился {work.name}')
@@ -50,7 +49,7 @@ async def work_start(call: types.CallbackQuery):
 async def work_complete(chatId: int, userId: int, workId: int, username: str):
 
     user: Player.Player = Player.GetPlayer(chatId, userId)
-    work = Work.Works[workId] 
+    work = Work.GetWork(workId)
     state = dp.current_state(chat=chatId, user=userId)
 
     user.exp += work.expReward 
@@ -58,7 +57,7 @@ async def work_complete(chatId: int, userId: int, workId: int, username: str):
     await state.finish()
     scheduler.remove_job(f'work_{user.chatId}_{user.userId}')
     await bot.send_photo(chat_id=chatId,  
-                        caption=f"@{username}\n{user.name} вернулся с работенки!\n<b>Получено</b>:\nОпыт: {work.expReward}\nДеньги: {work.moneyReward}", 
+                        caption=f"@{username}\n{user.name} возвращается с работенки!\n<b>Получено</b>:\nОпыт: {work.expReward}\nДеньги: {work.moneyReward}", 
                         photo=open(user.photo,'rb'),
                         parse_mode='HTML')
 
