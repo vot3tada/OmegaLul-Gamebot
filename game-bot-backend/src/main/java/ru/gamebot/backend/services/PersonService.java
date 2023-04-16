@@ -8,6 +8,7 @@ import ru.gamebot.backend.models.History;
 import ru.gamebot.backend.models.HistoryPK;
 import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonPK;
+import ru.gamebot.backend.repository.HistoryRepository;
 import ru.gamebot.backend.repository.PersonRepository;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonAlreadyExistsException;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonChatIdNotFound;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PersonService {
     private final PersonRepository personRepository;
+    private final HistoryRepository historyRepository;
     private final PersonMapper personMapper;
 
     public List<PersonDTO> getPersonsByChatId(int chatId) throws PersonChatIdNotFound {
@@ -52,8 +54,8 @@ public class PersonService {
         if (personRepository.existsById(person.getPersonPk())) {
             throw new PersonAlreadyExistsException();
         }
-        person.setHistory(new History(new HistoryPK(person.getPersonPk().getUserId(),person.getPersonPk().getChatId())));
         personRepository.save(person);
+        historyRepository.save(new History(new HistoryPK(person.getPersonPk().getUserId(), person.getPersonPk().getChatId())));
     }
 
     @Transactional
