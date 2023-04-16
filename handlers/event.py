@@ -48,7 +48,7 @@ async def event_delete_end(message : types.Message, state: FSMContext):
         await message.answer('Такого эвента не существует')
         return
     player : Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
-    if (event.creator.chatId != player.chatId or event.creator.userId != player.userId):
+    if (event.chatId != player.chatId or event.userId != player.userId):
         await message.answer('Вы не являетесь создателем этого эвента')
         return
     scheduler.remove_job('e'+event.id+'-')
@@ -68,10 +68,11 @@ async def event_end(message : types.Message, state: FSMContext):
     except:
         await message.reply('Неправильный формат даты: ГГГГ/ММ/ДД/ЧЧ/ММ')
         return
-    if len([i for i in Event.GetAllEvents() if abs((event.datetime-i.datetime).total_seconds()) < 600]) > 0:
+    if len([i for i in Event.GetAllEvents(message.chat.id) if abs((event.datetime-i.datetime).total_seconds()) < 600]) > 0:
         await message.reply('В это время уже существует эвент')
         return
-    event.creator = Player.GetPlayer(message.chat.id, message.from_user.id)
+    event.chatId = message.chat.id
+    event.userId = message.from_user.id
     event.id = str(Event.GetCount())
     Event.AddEvent(event)
     await state.finish()
@@ -118,11 +119,11 @@ async def trigger_event(chatId: int, eventId: int):
         if statePlayer == None:
             await st.set_state(FSMEvent.addplayers)
             await st.set_data(event.id)
-    st : FSMContext = dp.current_state(chat = event.creator.chatId, user = event.creator.userId)
+    st : FSMContext = dp.current_state(chat = event.chatId, user = event.userId)
     await st.set_state(FSMEvent.admin)
     await st.set_data(event.id)
-    scheduler.add_job(event_set_state, trigger='interval', seconds=2, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
-    scheduler.add_job(scheduler_end, trigger='interval', seconds=300, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
+    scheduler.add_job(event_set_state, trigger='interval', seconds=2, jobstore='local', args=[event.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
+    scheduler.add_job(scheduler_end, trigger='interval', seconds=300, jobstore='local', args=[event.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
 
 async def event_add_players(message : types.Message, state: FSMContext):
     eventId = await state.get_data()

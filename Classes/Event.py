@@ -7,11 +7,13 @@ class Event():
 
  
     def __init__(self):
-        self.id = datetime.today()
+        self.id = 0
+        self.chatId = 0
+        self.name: str = ''
         self.datetime = datetime.today()
         self.players: list[Player] = []
-        self.creator: Player = None
-        self.name: str = ''
+        self.userId = 0
+        
 
 Events: list[Event] = []
 
@@ -25,8 +27,8 @@ def GetCount() -> int:
     jobs = scheduler.get_jobs()
     return len([i for i in jobs if i.id[0] == 'e'])
 
-def GetAllEvents() -> list[Event]:
-    return Events.copy()
+def GetAllEvents(chatId) -> list[Event]:
+    return [i for i in Events if i.chatId == chatId]
 
 def AddEvent(event : Event):
     Events.append(event)
