@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 import Classes.Player as Player
 from utils.scheduler import scheduler
 from utils.create_bot import dp, bot
-from handlers.fight import fighter, UltaCharge, fight_texts, ExpReward, MoneyReward, HPCut
+from Classes.Fighter import *
 import random
 import os
 
