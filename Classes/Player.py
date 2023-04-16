@@ -321,8 +321,8 @@ def GetPlayer(chatId: int, userId: int) -> Union[Player, None]:
         url=f'http://localhost:8080/api/person/id/{chatId}',
         headers={"Content-Type": "application/json"})
 
-    if responce.status_code == 404:
-        return False
+    if not responce.ok:
+        raise RuntimeError(f'Поиск пользователя: {responce.status_code}')
     
     data: list[dict[str, Any]] = responce.json()
     Players = [Player(**person) for person in data]
