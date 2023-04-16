@@ -107,6 +107,7 @@ class Player():
             raise ValueError('Опыт не может не увеличиваться')
         self._exp = x
         self._updatePlayer()
+        
 
     @property
     def money(self):

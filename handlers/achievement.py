@@ -1,6 +1,11 @@
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher import Dispatcher
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram import types
 import Classes.Player as Player
 import Classes.Achievement as Achievement
 from utils.create_bot import bot, dp
+from aiogram.types import InputFile, InputMediaPhoto
 
 async def SendAchievement(chatId: int, userId: int, achievementsId: list[int]):
     for i in achievementsId:
@@ -9,3 +14,65 @@ async def SendAchievement(chatId: int, userId: int, achievementsId: list[int]):
         photo = open('./static/achiv/'+achievement.image,'rb')
         await bot.send_photo(chat_id=chatId, caption=f'<b>{player.name}</b> зарабатывает достижение:\n<b>{achievement.name}</b>\n{achievement.description}',
             photo=photo, parse_mode='HTML')
+        
+async def GetAchievements(message : types.Message):
+    if not Player.FindPlayer(message.chat.id, message.from_user.id):
+        await message.reply('Нужно зарегаться для такого')
+        return
+    userAchiv: list[Achievement.UserAchievement] = Achievement.GetUserAchivs(message.chat.id, message.from_user.id)
+    if len(userAchiv) == 0:
+        await message.reply('У вас нет ачивок😓')
+        return
+    achievement = Achievement.GetAchievement(userAchiv[0].achId)
+    replytext = f'<b>{achievement.name}</b>:\n{achievement.description}\n'
+    buttons: list[types.InlineKeyboardButton] = []
+    buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    if (len(userAchiv) > 1):
+        buttons.append(types.InlineKeyboardButton(text='>', callback_data=f'achiv:{message.chat.id}_{message.from_user.id}_1'))
+    else:
+        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(*buttons)
+    await message.answer_photo(
+        caption=replytext,
+        photo=open('./static/achiv/'+achievement.image, 'rb'),
+        reply_markup=keyboard,
+        parse_mode='HTML'
+    )
+
+async def GetAchievementsPages(call: types.CallbackQuery):
+    chatId, userId, page = call.data.replace("achiv:",'').split('_')
+    if call.message.chat.id != int(chatId) or call.from_user.id != int(userId):
+        await call.answer('Это не ваш список')
+        return
+    try:
+        page = int(page)
+    except:
+        await call.answer()
+        return
+    
+    
+    userAchiv: list[Achievement.UserAchievement] = Achievement.GetUserAchivs(call.message.chat.id, call.from_user.id)
+
+    achievement = Achievement.GetAchievement(userAchiv[page].achId)
+    replytext = f'<b>{achievement.name}</b>:\n{achievement.description}\n'
+
+    replytext = f'<b>{achievement.name}</b>:\n{achievement.description}\n'
+    buttons: list[types.InlineKeyboardButton] = []
+    if (page - 1 < 0):
+        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    else:
+        buttons.append(types.InlineKeyboardButton(text='<', callback_data=f'achiv:{call.message.chat.id}_{call.from_user.id}_{page - 1}'))
+    if (page + 1 < len(userAchiv)):
+        buttons.append(types.InlineKeyboardButton(text='>', callback_data=f'achiv:{call.message.chat.id}_{call.from_user.id}_{page + 1}'))
+    else:
+        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(*buttons)
+    media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/achiv/'+achievement.image), caption=replytext, parse_mode='HTML')
+    await call.message.edit_media(media, reply_markup=keyboard)
+
+
+def register_handlers_achievement(dp: Dispatcher):
+    dp.register_message_handler(GetAchievements, commands='achiv_list')
+    dp.register_callback_query_handler(GetAchievementsPages, regexp='^achiv:*')

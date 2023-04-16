@@ -1,36 +1,61 @@
 import Classes.Achievement as Achiv
-
+from typing import Any, Union
+import requests
 
 class History():
 
-    def __init__(self):
-        self.userChatId = 0
-        self.userId = 0
-        self._totalMoney = 0
-        self._totalExp = 0
-        self._totalQuestions = 0
-        self._totalFights = 0
-        self._totalWinFights = 0
-        self._totalWinBoss = 0
-        self._totalItem = 0
-        self._totalTakenTasks = 0
-        self._totalEndedTasks = 0
-        self._totalFallTasks = 0
-        self._totalWinCollector = 0
-        self._totalCreateEvent = 0
-        self._totalEnterEvent = 0
-        self._totalKickEvent = 0
-        self._totalLeaveFights = 0
+    def __init__(self, chatId, userId, totalMoney, totalExp, totalQuestions = 0, totalFights = 0, totalWinFights = 0, totalWinBoss = 0,
+                       totalItem = 0, totalTakenTasks = 0, totalEndedTasks = 0, totalFallTasks = 0, totalWinCollector = 0,
+                         totalCreateEvent = 0, totalEnterEvent = 0, totalKickEvent = 0, totalLeaveFights = 0):
+        self.chatId = chatId
+        self.userId = userId
+        self._totalMoney = totalMoney
+        self._totalExp = totalExp
+        self._totalQuestions = totalQuestions
+        self._totalFights = totalFights
+        self._totalWinFights = totalWinFights
+        self._totalWinBoss = totalWinBoss
+        self._totalItem = totalItem
+        self._totalTakenTasks = totalTakenTasks
+        self._totalEndedTasks = totalEndedTasks
+        self._totalFallTasks = totalFallTasks
+        self._totalWinCollector = totalWinCollector
+        self._totalCreateEvent = totalCreateEvent
+        self._totalEnterEvent = totalEnterEvent
+        self._totalKickEvent = totalKickEvent
+        self._totalLeaveFights = totalLeaveFights
+
+    def to_json(self) -> dict[str, Any]:
+        json = {
+            "chatId": self.chatId,
+            "userId": self.userId,
+            "totalMoney": self._totalMoney,
+            "totalExp": self._totalExp,
+            "totalQuestions": self._totalQuestions,
+            "totalFights": self._totalFights,
+            "totalWinFights": self._totalWinFights,
+            "totalWinBoss": self._totalWinBoss,
+            "totalItem": self._totalItem,
+            "totalTakenTasks": self._totalTakenTasks,
+            "totalEndedTasks": self._totalEndedTasks,
+            "totalFallTasks": self._totalFallTasks,
+            "totalWinCollector": self._totalWinCollector,
+            "totalCreateEvent": self._totalCreateEvent,
+            "totalEnterEvent": self._totalEnterEvent,
+            "totalKickEvent": self._totalKickEvent,
+            "totalLeaveFights": self._totalLeaveFights
+        }
+        return json
 
     def UpdateHistory(self, totalMoney = 0, totalExp = 0, totalQuestions = 0, totalFights = 0, totalWinFights = 0, totalWinBoss = 0,
                        totalItem = 0, totalTakenTasks = 0, totalEndedTasks = 0, totalFallTasks = 0, totalWinCollector = 0,
                          totalCreateEvent = 0, totalEnterEvent = 0, totalKickEvent = 0, totalLeaveFights = 0):
         checkAchId = []
         def Updater(i: int, total: int):
-            if (Achiv.Check(i, total) and i not in [j.achId for j in Achiv.GetUserAchivs(self.userChatId, self.userId)]):
+            if (Achiv.Check(i, total) and i not in [j.achId for j in Achiv.GetUserAchivs(self.chatId, self.userId)]):
                 u = Achiv.UserAchievement()
                 u.achId = i
-                u.chatId = self.userChatId
+                u.chatId = self.chatId
                 u.userId = self.userId
                 Achiv.AddUserAchiv(u)
                 checkAchId.append(i)
@@ -46,21 +71,19 @@ class History():
             if value:
                 setattr(self, attribute, getattr(self, attribute) + value)
                 Updater(i, getattr(self, attribute))
-
+            responce:requests.Response = requests.put(
+                    url=f'http://localhost:8080/api/history/update',
+                    json = self.to_json(),
+                    headers={"Content-Type": "application/json"})
         return checkAchId
 
-his1 = History()
-his1.userChatId = -884518885 
-his1.userId = 1121151192
-history: list[History] = [his1]
-
-def GetHistory(chatId: int, userId: int):
-    h = [i for i in history if i.userChatId == chatId and i.userId == userId]
-    return h[0] if len(h) > 0 else None
-        
-
+def GetHistory(chatId: int, userId: int) -> Union[History, None]:
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/history/id/{chatId}/{userId}',
+        headers={"Content-Type": "application/json"})
     
-        
+    if responce.status_code >= 400:
+        return None
     
-
-        
+    history: History = History(**responce.json())
+    return history

@@ -30,14 +30,14 @@ ach1 = Achievement()
 ach1.id = 0
 ach1.name = 'Пончик'
 ach1.image = '0.jpg'
-ach1.condition = 100000
+ach1.condition = 20
 ach1.description = 'Своим трудом заработать 100000 денег'
 
 ach2 = Achievement()
 ach2.id = 1
 ach2.name = 'Старец'
 ach2.image = '1.jpg'
-ach2.condition = 100000
+ach2.condition = 20
 ach2.description = 'Заработать 100000 опыта'
 
 ach3 = Achievement()

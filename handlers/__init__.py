@@ -1,4 +1,4 @@
-from handlers import avatar, registration, shop, fight, talk, work, event, item, info, task, collector, quiz, raid
+from handlers import avatar, registration, shop, fight, talk, work, event, item, info, task, collector, quiz, raid, achievement
 from aiogram.dispatcher import Dispatcher
 
 def register_handlers(dp : Dispatcher):
@@ -15,5 +15,6 @@ def register_handlers(dp : Dispatcher):
     talk.register_handlers_talk(dp)
     quiz.register_handlers_quiz(dp)
     raid.register_handlers_raid(dp)
+    achievement.register_handlers_achievement(dp)
 
     

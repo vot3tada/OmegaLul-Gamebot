@@ -77,14 +77,21 @@ async def event_end(message : types.Message, state: FSMContext):
     Event.AddEvent(event)
     await state.finish()
     await message.reply(f'Мероприятие с #{event.id} создано')
-    photo = open('./static/anonce/' + random.choice(os.listdir('./static/anonce')) ,'rb')
-
     await bot.send_photo(chat_id=message.chat.id,  
                         caption=f'<b>ВСЕ! ВСЕ! ВСЕ!</b>\nУслышьте! Этого числа <b>{event.datetime:%d.%m.%Y}</b> ' +
                         f'в <b>{event.datetime:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
                         'Не опаздывайте! Награда ждет посетителей!', 
-                        photo=photo,
+                        photo=open('./static/anonce/' + random.choice(os.listdir('./static/anonce')) ,'rb'),
                         parse_mode='HTML')
+    
+    for i in Player.GetAllPlayers(message.chat.id):
+        await bot.send_photo(chat_id=i.userId, 
+                               caption=f'Услышьте! Этого числа <b>{event.datetime:%d.%m.%Y}</b> ' +
+                                f'в <b>{event.datetime:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
+                                'Не опаздывайте! Награда ждет посетителей!',
+                               parse_mode='HTML',
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
+
     scheduler.add_job(trigger_before_event, 'date', run_date= 
                       datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]) - 1, int(date[4]), 
                                                                         tzinfo=tz.gettz("Europe/Moscow")), args=[message.chat.id, event.name], id=('e'+str(event.id)+'-'))
@@ -92,15 +99,15 @@ async def event_end(message : types.Message, state: FSMContext):
                                                                         tzinfo=tz.gettz("Europe/Moscow")), args=[message.chat.id, event.id], id=('e'+str(event.id)+'--'))
 
 async def trigger_before_event(chatId: int, eventName: str):
-    photo = open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb')
     await bot.send_photo(chat_id=chatId, 
                                caption=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
                                parse_mode='HTML',
-                               photo=photo)
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
     for i in Player.GetAllPlayers(chatId):
-        await bot.send_message(chat_id=i.userId, 
-                               text=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
-                               parse_mode='HTML')
+        await bot.send_photo(chat_id=i.userId, 
+                               caption=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
+                               parse_mode='HTML',
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
 
 async def trigger_event(chatId: int, eventId: int):
     event = Event.GetEvent(eventId)
@@ -111,9 +118,10 @@ async def trigger_event(chatId: int, eventId: int):
                             parse_mode='HTML')
       
     for i in Player.GetAllPlayers(chatId):
-        await bot.send_message(chat_id=i.userId, 
-                             text=f'Сейчас проходит эвент:\n <b>{event.name}</b>!\n Присоединяйтесь', 
-                             parse_mode='HTML')
+        await bot.send_photo(chat_id=i.userId, 
+                               caption=f'Сейчас проходит эвент:\n <b>{event.name}</b>!\n Присоединяйтесь', 
+                               parse_mode='HTML',
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
         if statePlayer == None:
