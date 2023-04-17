@@ -132,7 +132,13 @@ async def startRecr(call: types.CallbackQuery):
             callback_data=f'enterRaid:{chatRaid.id}'
         )
     )
-    
+    keyboard.add(
+        types.InlineKeyboardButton(
+            text='Закончить набор',
+            callback_data=f'endRecr:{chatRaid.id}'
+        )
+    )
+
     await RaidState.awaiting.set()
 
     scheduler.add_job(endRecr, jobstore='local' ,trigger='interval',minutes=2, args=[chatId], id=f'raidRecr:{chatId}')
@@ -147,6 +153,7 @@ async def startRecr(call: types.CallbackQuery):
 Присоединяйтесь в битве!
 Покажите свою честь, механики!
 <i>Время записи - две минуты</i>
+<i>Количество человек - не больше 15</i>
         ''',
         reply_markup=keyboard
     )
@@ -207,14 +214,16 @@ async def leaveRaid(message: types.Message, state: FSMContext):
         await message.answer(f'Все сбежали с рейда, он окончен...')
 
     
-async def instantEndRecr(message: types.Message):
+async def instantEndRecr(call: types.CallbackQuery):
 
-    chatRaid = Raid.GetChatRaidByChat(message.chat.id)
+    chatRaidId = call.data.replace('endRecr:','')
+
+    chatRaid = Raid.GetChatRaid(chatRaidId)
     if not chatRaid:
-        await message.reply('В данном чате рейд не проходит')
+        await call.answer('В данном чате данный рейд не проходит')
         return
-    if chatRaid.players[0].userId != message.from_user.id:
-        await message.reply('Вы не лидер группы')
+    if chatRaid.players[0].userId != call.from_user.id:
+        await call.answer('Вы не лидер группы')
         return
     await endRecr(chatId=chatRaid.chatId)
     
@@ -226,7 +235,7 @@ async def endRecr(chatId: int):
     if chatRaid:
 
         if len(chatRaid.players) > 1:
-            text = f'Здоровье босса:  {chatRaid.boss.hp}\n\nЗдоровье бойцов:\n'
+            text = f'<b>{chatRaid.boss.name}</b>:  ({chatRaid.boss.hp})   [0/{chatRaid.boss.ultaCharge}]\n'
             for player in chatRaid.players:
                 st: FSMContext = dp.current_state(chat=player.chatId, user=player.userId)
                 await st.set_state(RaidState.ready)
@@ -235,7 +244,7 @@ async def endRecr(chatId: int):
                 fighterData['damage'] = player.damage * player.damageMultiply
                 fighterData['luck'] = player.luck * player.luckMultiply
                 await st.set_data(fighterData)
-                text+=f'<b>{player.name}</b> ({player.hp})\n'
+                text+=f'<b>{player.name}</b>:  ({player.hp})   [0/{UltaCharge}]\n'
                 player.hp -= 15
             keyboard = types.InlineKeyboardMarkup()
             keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"bossFightR:{chatRaid.id}"))
@@ -251,10 +260,12 @@ async def endRecr(chatId: int):
                                  reply_markup=keyboard
                                  )
             actionMessage = await bot.send_message(chat_id=chatId, text='Действия бойцов:\n')
-            chatRaid.actionMessage = actionMessage
-            chatRaid.battleMessage = battleMessage
-            print(chatRaid.id)
-            scheduler.add_job(outOfTime, trigger='interval',jobstore='local',args=[chatRaid.id], seconds=35, id=f'boss_{chatRaid.id}')
+            chatRaid.AcceptRaid(actionMessage, battleMessage)
+
+            extraSec = 0  
+            if len(chatRaid.players) > 5:
+                extraSec = (len(chatRaid.players) - 5) * 3
+            scheduler.add_job(outOfTime, trigger='interval',jobstore='local',args=[chatRaid.id], seconds=35 + extraSec, id=f'boss_{chatRaid.id}')
         else:
             await bot.send_message(chat_id=chatId, text='Один в поле не войн, рейд не начат...')
             for player in chatRaid.players:
@@ -272,16 +283,27 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
             allAttack = False
             break
     if allAttack:
-        print(chatRaid.id)
-        scheduler.reschedule_job(job_id=f'boss_{chatRaid.id}', trigger='interval', seconds=35, jobstore='local')
+        extraSec = 0  
+        if len(chatRaid.alives) > 5:
+                extraSec = (len(chatRaid.alives) - 5) * 3
+        scheduler.reschedule_job(job_id=f'boss_{chatRaid.id}', trigger='interval', seconds=35 + extraSec, jobstore='local')
         dead = False
         alives = 0
         text = ''
         target = chatRaid.bossTarget()
+        bossUlta = 0
         if not target:
-            text += 'Босс замахивается и пытается нанести урон каждому бойцу!\n'
+            text += '  Замахивается и пытается нанести урон каждому бойцу!\n'
         else:
-            text += f'Босс прицеливается и пытается нанести урон точно в <i>{target.name}</i>!\n'
+            bossUlta = chatRaid.boosUlta()
+            if bossUlta:
+                text += f'  Прицеливается и пытается УЛЬТАНУТЬ в <i>{target.name}</i>!\n'
+            else:
+                text += f'  Прицеливается и пытается нанести урон в <i>{target.name}</i>!\n'
+
+        if not bossUlta:
+            chatRaid.boss.ulta += 1
+        
         for player in chatRaid.players:
             playerText = ''
             st: FSMContext = dp.current_state(chat=chatRaid.chatId,user=player.userId)
@@ -293,16 +315,20 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
             if stt == 'RaidState:runOut':
                 text += f'\n<b>{player.name}</b> долго думал и босс задавил его...\n  <i>Погиб...</i>'
                 await st.set_state(RaidState.dead)
+                chatRaid.alives.remove(player)
                 continue
 
             playerLuck = 1 if random.random() // (std.get('luck') + (std.get('luck') * 0.55 * std.get('dexFactor')) ) > 0 else 0
             bossLuck = 1 if (random.random() // chatRaid.boss.luck) > 0 else 0
             playerDamage = (std.get('damage') + 
-                            (std.get('damage') * 0.15 * std.get('rageFactor')) +
+                            (std.get('damage') * 0.2 * std.get('rageFactor')) +
                             (std.get('damage') * std.get('ulta')))
 
             if not target or player.userId == target.userId:
-                bossDamage = chatRaid.boss.damage - 0.3 * chatRaid.boss.damage * (1 if not target else 0)
+                bossDamage = (chatRaid.boss.damage 
+                              - 0.3 * chatRaid.boss.damage * (1 if not target else 0)
+                              + chatRaid.boss.damage * bossUlta
+                              )
                 
                 if not std['defence']:
                     playerText += f'  Защищается от урона '
@@ -318,17 +344,26 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
             if not bossLuck or not std['defence']:
                 playerText += f'и не наносит урона'
             else:
-                chatRaid.boss.hp -= bossLuck * playerDamage
-                playerText += f'и наносит урон: {playerDamage}'
+                chatRaid.boss.hp -= playerDamage
+                chatRaid.damagePie[player.userId] += playerDamage
+                if std['ulta']:
+                    playerText += f'и ультует: {playerDamage}'
+                else:
+                    playerText += f'и наносит урон: {playerDamage}'
+
             if std["health"] <= 0:
                 playerText += f'\n  <i>Погиб...</i>'
                 dead = True
                 await st.set_state(RaidState.dead)
+                chatRaid.alives.remove(player)
             else:
                 alives += 1
                 await st.set_state(RaidState.ready)
-            text += f'\n<b>{player.name}</b> ({std["health"]})\n' + playerText
-        text = f'Здоровье босса: {chatRaid.boss.hp}\n' + text + '\n'
+
+            await st.update_data(charge = std['charge'] + 1)
+
+            text += f'\n<b>{player.name}</b>:  ({std["health"]})   [{std["charge"]+1}/{UltaCharge}]\n' + playerText
+        text = f'<b>{chatRaid.boss.name}</b>:  ({chatRaid.boss.hp})   [{chatRaid.boss.ulta}/{chatRaid.boss.ultaCharge}]\n' + text + '\n'
 
         photoCategory = 'memberDead' if dead else 'bossFight'
         keyboard = chatRaid.battleMessage.reply_markup
@@ -339,16 +374,31 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
                 st: FSMContext = dp.current_state(chat=chatRaid.chatId,user=player.userId)
                 await st.set_state(None)
             scheduler.remove_job(f'boss_{chatRaid.id}', jobstore='local')
+            Raid.EndRaidInChat(chatRaid)
         if chatRaid.boss.hp <= 0:
             keyboard = None
             photoCategory = 'bossWin'
-            text += f'\n<b>БОСС ПАЛ!</b> Хвала инженерам!\n<b>Получено:</b>\nОпыт: {chatRaid.boss.expReward}\nДеньги: {chatRaid.boss.moneyReward}'
+            text += f'\n<b>БОСС ПАЛ!</b> Хвала инженерам!\n<b>Добыча:</b>\nОпыт: {chatRaid.boss.expReward}\nДеньги: {chatRaid.boss.moneyReward}'
+            rewardText = 'Делим добычу, бойцы:\n\n'
+            allDamage = sum((chatRaid.damagePie.items()))
             for player in chatRaid.players:
                 st: FSMContext = dp.current_state(chat=chatRaid.chatId,user=player.userId)
                 await st.set_state(None)
-                player.exp += chatRaid.boss.expReward
-                player.money += chatRaid.boss.moneyReward
+
+                rewardPart = chatRaid.damagePie[player.userId] / allDamage
+                moneyPart = round(chatRaid.boss.moneyReward * rewardPart) 
+                expPart = round(chatRaid.boss.expReward * rewardPart) 
+                player.exp += expPart
+                player.money += moneyPart
+                rewardText += f'<b>{player.name}</b>\n   Опыт: {expPart}\n   Деньги: {moneyPart}'
+
             scheduler.remove_job(f'boss_{chatRaid.id}', jobstore='local')
+            Raid.EndRaidInChat(chatRaid)
+            await chatRaid.actionMessage.edit_text(
+            text=rewardText,
+            parse_mode='HTML'
+            )
+
         media = types.input_media.InputMediaPhoto(media=types.InputFile(f'./static/{photoCategory}/' + random.choice(os.listdir(f'./static/{photoCategory}'))), caption=text, parse_mode='HTML')
         await chatRaid.battleMessage.edit_media( media=media, reply_markup=keyboard)
         await chatRaid.actionMessage.edit_text(
@@ -433,6 +483,7 @@ async def Ulta(call: types.CallbackQuery, state: FSMContext):
         await call.answer('Ультовать еще нельзя')
         return
     
+    await state.update_data(charge = -1)
     await state.set_state(RaidState.attack)
     await state.update_data(rageFactor = 0, dexFactor = 0, defence = 1, ulta = 1)
     await InitAttackStep(chatRaidId, player, 'ультует!')
@@ -477,7 +528,7 @@ def register_handlers_raid(dp: Dispatcher):
     dp.register_callback_query_handler(startRecr, state=None, regexp='^startRecr:*')
     dp.register_callback_query_handler(enterToRaid, state=[None, RaidState.awaiting], regexp='^enterRaid:*')
     dp.register_message_handler(leaveRaid, state=RaidState.awaiting, commands='raid_leave')
-    dp.register_message_handler(instantEndRecr, state=RaidState.awaiting, commands='raid_end_recr')
+    dp.register_callback_query_handler(instantEndRecr, state=RaidState.awaiting, regexp='^endRecr:')
 
     dp.register_callback_query_handler(RageAttack, state=RaidState.ready, regexp='^bossFightR:*')
     dp.register_callback_query_handler(DexAttack, state=RaidState.ready, regexp='^bossFightD:*')

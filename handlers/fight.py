@@ -294,7 +294,7 @@ async def Ulta(call: types.CallbackQuery, state: FSMContext):
         await call.answer('Ультовать еще нельзя')
         return
     
-    await state.update_data(charge = 0)
+    await state.update_data(charge = -1)
     await state.set_state(Fight.Attack)
     await state.update_data(rageFactor = 0, dexFactor = 0, defence = 1, ulta = 1)
     await InitAttackStep(call)

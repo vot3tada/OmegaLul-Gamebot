@@ -18,7 +18,8 @@ class Boss:
                 moneyReward: int,
                 expReward: int,
                 ultaCharge: int,
-                cleaveRate: float
+                cleaveRate: float,
+                ultaRate: float
                  ) -> None:
         self.id = id
         self.name = name
@@ -30,19 +31,23 @@ class Boss:
         self.expReward = expReward
         self.ultaCharge = ultaCharge
         self.cleaveRate = cleaveRate
+        self.ultaRate = ultaRate
+
         self.ulta = 0
+        
 
 Bosses: list[Boss] = [
     Boss(
         0,
         'Батя Коллектора',
         './static/boss/father.jpg',
-        750,
-        30,
+        100,
+        10,
         0.3,
         450,
         600,
         5,
+        0.5,
         0.5
     ),
     Boss(
@@ -55,6 +60,7 @@ Bosses: list[Boss] = [
         700,
         800,
         8,
+        0.3,
         0.3
     )
 ]
@@ -77,6 +83,15 @@ class ChatRaid:
         self.id = (datetime.datetime.now(tz.gettz("Europe/Moscow")).__str__()) + str(chatId) + str(bossId)
         self.actionMessage: Message = None
         self.battleMessage: Message = None
+        self.alives: list[Player] = None
+        self.damagePie: dict[int, int] = {}
+
+    def AcceptRaid(self, actionMessage: Message, battleMessage: Message):
+        self.actionMessage = actionMessage
+        self.battleMessage = battleMessage
+        self.alives = self.players.copy()
+        for player in self.players:
+            self.damagePie[player.userId] = 0
 
     def EnterToRaid(self, player: Player):
         self.players.append(player)
@@ -97,7 +112,15 @@ class ChatRaid:
         if random.random() <= self.boss.cleaveRate:
             return None
         else:
-            return random.choice(self.players)
+            return random.choice(self.alives)
+        
+    def boosUlta(self) -> int:
+        if (self.boss.ulta >= self.boss.ultaCharge and 
+            random.random() > self.boss.ultaRate + 0.075 * (self.boss.ulta - self.boss.ultaCharge)):
+            self.boss.ulta = 0
+            return 1
+        else:
+            return 0
 
 ChatRaids: list[ChatRaid] = []
 
