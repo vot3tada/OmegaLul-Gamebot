@@ -48,14 +48,15 @@ public class EventService {
         return eventsDTO;
     }
     @Transactional
-    public void createEvent(CreateEventDTO createEventDTO) throws EventAlreadyExistException{
+    public GetEventDTO createEvent(CreateEventDTO createEventDTO) throws EventAlreadyExistException{
         var event = eventMapper.eventDTOToEvent(createEventDTO);
         if(eventRepository.existsByNameAndStartedAt(event.getName(),event.getStartedAt())){
             throw new EventAlreadyExistException("This event already exists!");
         }
         var person = personRepository.findById(new PersonPK(createEventDTO.getChatId(), createEventDTO.getUserId())).orElseThrow(PersonNotFoundException::new);
-        eventRepository.save(event);
+        var savedEvent = eventRepository.save(event);
         personEventsRepository.save(new PersonEvents(true, person,event));
+        return new GetEventDTO(savedEvent.getName(),savedEvent.getStartedAt(),savedEvent.getId());
     }
     @Transactional
     public void addMember(CreateEventDTO eventDTO){

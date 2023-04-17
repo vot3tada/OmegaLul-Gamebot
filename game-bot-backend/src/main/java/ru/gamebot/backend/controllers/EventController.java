@@ -39,7 +39,7 @@ public class EventController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createEvent(@RequestBody @Validated(Create.class) CreateEventDTO createEventDTO
+    public ResponseEntity<GetEventDTO> createEvent(@RequestBody @Validated(Create.class) CreateEventDTO createEventDTO
                                                     ,BindingResult bindingResult){
         if(bindingResult.hasErrors()){
             StringBuilder errorMsg = new StringBuilder();
@@ -51,8 +51,8 @@ public class EventController {
             }
             throw new EventNotCreateException(errorMsg.toString());
         }
-        eventService.createEvent(createEventDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        var event = eventService.createEvent(createEventDTO);
+        return new ResponseEntity<>(event,HttpStatus.CREATED);
     }
 
     @PostMapping("/add-member")
