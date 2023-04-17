@@ -3,12 +3,12 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-import Classes.Player as Player
 from utils.scheduler import scheduler
 from utils.create_bot import dp, bot
 from Classes.Fighter import *
 import random
 import os
+import Classes.Player as Player
 
 collectorFight: list[Player.Player] = []
 
@@ -206,10 +206,7 @@ async def fightCollector(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer(f"{player.name} остаивает свой сгоревший дедлайн, чтож...")
     await CollectorState.Ready.set()
     
-    fighterData = dict(fighter, **collectorFighter)
-    fighterData['health'] = player.hp
-    fighterData['damage'] = player.damage * player.damageMultiply
-    fighterData['luck'] = player.luck * player.luckMultiply
+    fighterData = dict(getFighterData(player), **collectorFighter)
     fighterData['cMoney'] = money
     await state.set_data(fighterData)
 

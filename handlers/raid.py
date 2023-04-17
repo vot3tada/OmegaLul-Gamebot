@@ -239,11 +239,7 @@ async def endRecr(chatId: int):
             for player in chatRaid.players:
                 st: FSMContext = dp.current_state(chat=player.chatId, user=player.userId)
                 await st.set_state(RaidState.ready)
-                fighterData = fighter.copy()
-                fighterData['health'] = player.hp
-                fighterData['damage'] = player.damage * player.damageMultiply
-                fighterData['luck'] = player.luck * player.luckMultiply
-                await st.set_data(fighterData)
+                await st.set_data(getFighterData(player))
                 text+=f'<b>{player.name}</b>:  ({player.hp})   [0/{UltaCharge}]\n'
                 player.hp -= 15
             keyboard = types.InlineKeyboardMarkup()

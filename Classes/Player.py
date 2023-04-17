@@ -6,6 +6,9 @@ import apscheduler.job
 import requests
 from dateutil import tz
 
+levelLuckFactor = 1
+levelDamageFactor = 0.05
+
 class Player():
     def __init__(self, 
                  personPk: dict[str, int],
@@ -105,7 +108,7 @@ class Player():
     def exp(self, x: int):
         if self._exp >= x:
             raise ValueError('Опыт не может не увеличиваться')
-        self._exp = x
+        self._exp = x * self.expMultiply
         self._updatePlayer()
 
     @property

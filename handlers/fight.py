@@ -5,9 +5,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from utils.create_bot import dp, bot
 import os
 import random
-import Classes.Player as Player
 from Classes.Fighter import *
 from utils.scheduler import scheduler
+import Classes.Player as Player
 
 fights : dict[int, list[int, int]] = {}
 
@@ -204,19 +204,12 @@ async def fight_accept(message: types.Message):
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][0])
         await st.set_state(Fight.Ready)
         user1 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][0])
-        fighterData = fighter.copy()
-        fighterData['health'] = user1.hp
-        fighterData['damage'] = user1.damage * user1.damageMultiply
-        fighterData['luck'] = user1.luck * user1.luckMultiply
-        await st.set_data(fighterData)
+        await st.set_data(getFighterData(user1))
+
         st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][1])
         await st.set_state(Fight.Ready)
         user2 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][1])
-        fighterData = fighter.copy()
-        fighterData['health'] = user2.hp
-        fighterData['damage'] = user2.damage * user2.damageMultiply
-        fighterData['luck'] = user2.luck * user2.luckMultiply
-        await st.set_data(fighterData)
+        await st.set_data(getFighterData(user2))
 
         scheduler.reschedule_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}', 
                                  trigger='interval', minutes=1.5)

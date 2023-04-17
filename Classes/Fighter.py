@@ -1,3 +1,5 @@
+from typing import Any
+from Player import Player, levelLuckFactor, levelDamageFactor
 HPCut : int = 10
 UltaCharge: int = 4
 
@@ -25,3 +27,11 @@ fight_texts = [
     'Ааа, ща мы вам, арабы недоделанные!\n',
     'Выноси бычьё!\n'
 ]
+
+def getFighterData(player: Player) -> dict[str, Any]:
+    level = player.level
+    fighterData = fighter.copy()
+    fighterData['health'] = player.hp
+    fighterData['luck'] = (player.luck + levelLuckFactor * level) * player.luckMultiply
+    fighterData['damage']= (player.damage + levelDamageFactor * level) * player.damageMultiply
+    return fighterData
