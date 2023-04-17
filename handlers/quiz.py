@@ -7,6 +7,8 @@ import Classes.Player as Player
 from utils.create_bot import bot, dp
 import Classes.Quiz as Quiz
 import random
+import Classes.History as History
+import handlers.achievement as AchievementHandler
 from aiogram.types import InputFile, InputMediaPhoto
 
 class FSMQuiz(StatesGroup):
@@ -173,10 +175,22 @@ async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
     Quiz.AddQuizInChat(quiz)
     question: Quiz.Question = quiz.questions[0]
     scheduler.add_job(NextQuestion, trigger='interval', seconds=60, jobstore='local', args=[call.message.chat.id], coalesce=True, id=f'quiz:{call.message.chat.id}')         
+    
+    qq = Quiz.GetQuiz(id)
     for i in Player.GetAllPlayers(call.message.chat.id):
-        await bot.send_message(chat_id=i.userId, 
-                                text=f'Сейчас проходит квиз:\n <b>{Quiz.GetQuiz(id).name}</b>!\n Присоединяйтесь', 
+        if (qq.image != ''):
+            await bot.send_photo(chat_id=i.userId, 
+                                caption=f'Сейчас проходит квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
+                                photo=InputFile('./static/quizes/' + qq.image),
                                 parse_mode='HTML')
+        else:
+            await bot.send_message(chat_id=i.userId, 
+                                text=f'Сейчас проходит квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
+                                parse_mode='HTML')
+    
+    
+    
+    
     if (question.image != ''):
         photo = InputFile('./static/quizes/' + question.image)
         await call.message.answer_photo(caption=f'Минута на вопрос: {question.text}',photo=photo)
@@ -199,6 +213,8 @@ async def AnswerQuestion(message: types.Message, state: FSMContext):
         player = Player.GetPlayer(message.chat.id, message.from_user.id)
         player.money += 10
         player.exp += 10
+        history = History.GetHistory(message.chat.id, message.from_user.id)
+        await AchievementHandler.SendAchievement(message.chat.id, message.from_user.id, history.UpdateHistory(totalMoney=10, totalExp=10))
         if (quiz.number < len(quiz.questions)):
             question: Quiz.Question = quiz.questions[quiz.number]
             if (question.image != ''):

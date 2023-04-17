@@ -48,7 +48,7 @@ async def event_delete_end(message : types.Message, state: FSMContext):
         await message.answer('Такого эвента не существует')
         return
     player : Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
-    if (event.creator.chatId != player.chatId or event.creator.userId != player.userId):
+    if (event.chatId != player.chatId or event.userId != player.userId):
         await message.answer('Вы не являетесь создателем этого эвента')
         return
     scheduler.remove_job('e'+event.id+'-')
@@ -59,31 +59,38 @@ async def event_delete_end(message : types.Message, state: FSMContext):
 
 async def event_end(message : types.Message, state: FSMContext):
     from dateutil import tz
-    event = Event.Event()
     async with state.proxy() as data:
-        event.name = data['name']
+        name = data['name']
     date = message.text.split('/')
     try:
-        event.datetime = datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]), int(date[4]), tzinfo=tz.gettz("Europe/Moscow"))
+        time = datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]), int(date[4]), tzinfo=tz.gettz("Europe/Moscow"))
     except:
         await message.reply('Неправильный формат даты: ГГГГ/ММ/ДД/ЧЧ/ММ')
         return
-    if len([i for i in Event.GetAllEvents() if abs((event.datetime-i.datetime).total_seconds()) < 600]) > 0:
+    if len([i for i in Event.GetAllEvents(message.chat.id) if abs((time-i.datetime).total_seconds()) < 600]) > 0:
         await message.reply('В это время уже существует эвент')
-        return
-    event.creator = Player.GetPlayer(message.chat.id, message.from_user.id)
-    event.id = str(Event.GetCount())
-    Event.AddEvent(event)
+        #return
+    event = Event.Event(0, name, f'{date[0]}-{date[1]}-{date[2]} {date[3]}:{date[4]}:00', [])
+    event.chatId = message.chat.id
+    event.userId = message.from_user.id
+    event = Event.AddEvent(event)
     await state.finish()
     await message.reply(f'Мероприятие с #{event.id} создано')
-    photo = open('./static/anonce/' + random.choice(os.listdir('./static/anonce')) ,'rb')
-
     await bot.send_photo(chat_id=message.chat.id,  
-                        caption=f'<b>ВСЕ! ВСЕ! ВСЕ!</b>\nУслышьте! Этого числа <b>{event.datetime:%d.%m.%Y}</b> ' +
-                        f'в <b>{event.datetime:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
+                        caption=f'<b>ВСЕ! ВСЕ! ВСЕ!</b>\nУслышьте! Этого числа <b>{time:%d.%m.%Y}</b> ' +
+                        f'в <b>{time:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
                         'Не опаздывайте! Награда ждет посетителей!', 
-                        photo=photo,
+                        photo=open('./static/anonce/' + random.choice(os.listdir('./static/anonce')) ,'rb'),
                         parse_mode='HTML')
+    
+    for i in Player.GetAllPlayers(message.chat.id):
+        await bot.send_photo(chat_id=i.userId, 
+                               caption=f'Услышьте! Этого числа <b>{time:%d.%m.%Y}</b> ' +
+                                f'в <b>{time:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
+                                'Не опаздывайте! Награда ждет посетителей!',
+                               parse_mode='HTML',
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
+
     scheduler.add_job(trigger_before_event, 'date', run_date= 
                       datetime(int(date[0]), int(date[1]), int(date[2]), int(date[3]) - 1, int(date[4]), 
                                                                         tzinfo=tz.gettz("Europe/Moscow")), args=[message.chat.id, event.name], id=('e'+str(event.id)+'-'))
@@ -91,15 +98,15 @@ async def event_end(message : types.Message, state: FSMContext):
                                                                         tzinfo=tz.gettz("Europe/Moscow")), args=[message.chat.id, event.id], id=('e'+str(event.id)+'--'))
 
 async def trigger_before_event(chatId: int, eventName: str):
-    photo = open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb')
     await bot.send_photo(chat_id=chatId, 
                                caption=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
                                parse_mode='HTML',
-                               photo=photo)
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
     for i in Player.GetAllPlayers(chatId):
-        await bot.send_message(chat_id=i.userId, 
-                               text=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
-                               parse_mode='HTML')
+        await bot.send_photo(chat_id=i.userId, 
+                               caption=f'Через час пройдет эвент:\n <b>{eventName}</b>!\n Присоединяйтесь', 
+                               parse_mode='HTML',
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
 
 async def trigger_event(chatId: int, eventId: int):
     event = Event.GetEvent(eventId)
@@ -110,25 +117,25 @@ async def trigger_event(chatId: int, eventId: int):
                             parse_mode='HTML')
       
     for i in Player.GetAllPlayers(chatId):
-        await bot.send_message(chat_id=i.userId, 
-                             text=f'Сейчас проходит эвент:\n <b>{event.name}</b>!\n Присоединяйтесь', 
-                             parse_mode='HTML')
+        await bot.send_photo(chat_id=i.userId, 
+                               caption=f'Сейчас проходит эвент:\n <b>{event.name}</b>!\n Присоединяйтесь', 
+                               parse_mode='HTML',
+                               photo=open('./static/meeting/' + random.choice(os.listdir('./static/meeting')) ,'rb'))
         st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
         statePlayer = await st.get_state()
         if statePlayer == None:
             await st.set_state(FSMEvent.addplayers)
             await st.set_data(event.id)
-    st : FSMContext = dp.current_state(chat = event.creator.chatId, user = event.creator.userId)
+    st : FSMContext = dp.current_state(chat = event.chatId, user = event.userId)
     await st.set_state(FSMEvent.admin)
     await st.set_data(event.id)
-    scheduler.add_job(event_set_state, trigger='interval', seconds=2, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
-    scheduler.add_job(scheduler_end, trigger='interval', seconds=300, jobstore='local', args=[event.creator.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
+    scheduler.add_job(event_set_state, trigger='interval', seconds=2, jobstore='local', args=[event.chatId, eventId], coalesce=True, id=f'event:{eventId}reload')
+    scheduler.add_job(scheduler_end, trigger='interval', seconds=300, jobstore='local', args=[event.chatId, eventId], coalesce=True, id=f'event:{eventId}end')
 
 async def event_add_players(message : types.Message, state: FSMContext):
     eventId = await state.get_data()
-    event = Event.GetEvent(eventId)
     player: Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
-    event.players.append(player)
+    Event.AddUser(eventId, chatId=message.chat.id, userId=message.from_user.id)
     await message.reply(f'{player.name} подключился')
     await FSMEvent.inEvent.set()
 
@@ -174,7 +181,7 @@ async def admin_kick(message : types.Message, state: FSMContext):
     if not message.reply_to_message is None:
         eventUserId = [i.userId for i in event.players]
         if message.reply_to_message.from_user.id in eventUserId:
-            event.players.pop(eventUserId.index(message.reply_to_message.from_user.id))
+            Event.KickUser(eventId, chatId=message.chat.id, userId=message.reply_to_message.from_user.id)
             await message.reply(f'Выписан из движа')
         else:
             await message.reply('Такой чел не в эвенте')
