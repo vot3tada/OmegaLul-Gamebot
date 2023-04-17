@@ -116,7 +116,7 @@ class ChatRaid:
         
     def boosUlta(self) -> int:
         if (self.boss.ulta >= self.boss.ultaCharge and 
-            random.random() > self.boss.ultaRate + 0.075 * (self.boss.ulta - self.boss.ultaCharge)):
+            random.random() > self.boss.ultaRate + (0.075 * (self.boss.ulta - self.boss.ultaCharge))):
             self.boss.ulta = 0
             return 1
         else:

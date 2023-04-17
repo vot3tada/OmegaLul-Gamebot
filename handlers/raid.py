@@ -343,9 +343,9 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
                 chatRaid.boss.hp -= playerDamage
                 chatRaid.damagePie[player.userId] += playerDamage
                 if std['ulta']:
-                    playerText += f'и ультует: {playerDamage}'
+                    playerText += f'и ультует: {round(playerDamage)}'
                 else:
-                    playerText += f'и наносит урон: {playerDamage}'
+                    playerText += f'и наносит урон: {round(playerDamage)}'
 
             if std["health"] <= 0:
                 playerText += f'\n  <i>Погиб...</i>'
@@ -358,11 +358,12 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
 
             await st.update_data(charge = std['charge'] + 1)
 
-            text += f'\n<b>{player.name}</b>:  ({std["health"]})   [{std["charge"]+1}/{UltaCharge}]\n' + playerText
-        text = f'<b>{chatRaid.boss.name}</b>:  ({chatRaid.boss.hp})   [{chatRaid.boss.ulta}/{chatRaid.boss.ultaCharge}]\n' + text + '\n'
+            text += f'\n<b>{player.name}</b>:  ({round(std["health"])})   [{std["charge"]+1}/{UltaCharge}]\n' + playerText
+        text = f'<b>{chatRaid.boss.name}</b>:  ({round(chatRaid.boss.hp)})   [{chatRaid.boss.ulta}/{chatRaid.boss.ultaCharge}]\n' + text + '\n'
 
         photoCategory = 'memberDead' if dead else 'bossFight'
         keyboard = chatRaid.battleMessage.reply_markup
+        actionText = 'Действия бойцов:\n'
         if not alives:
             text += '\n<i>Все погибли...Пусть коллектор упокоит их тела.</i>'
             keyboard = None
@@ -375,8 +376,8 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
             keyboard = None
             photoCategory = 'bossWin'
             text += f'\n<b>БОСС ПАЛ!</b> Хвала инженерам!\n<b>Добыча:</b>\nОпыт: {chatRaid.boss.expReward}\nДеньги: {chatRaid.boss.moneyReward}'
-            rewardText = 'Делим добычу, бойцы:\n\n'
-            allDamage = sum((chatRaid.damagePie.items()))
+            rewardText = 'Делим добычу, бойцы:\n'
+            allDamage = sum((chatRaid.damagePie.values()))
             for player in chatRaid.players:
                 st: FSMContext = dp.current_state(chat=chatRaid.chatId,user=player.userId)
                 await st.set_state(None)
@@ -386,19 +387,16 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
                 expPart = round(chatRaid.boss.expReward * rewardPart) 
                 player.exp += expPart
                 player.money += moneyPart
-                rewardText += f'<b>{player.name}</b>\n   Опыт: {expPart}\n   Деньги: {moneyPart}'
+                rewardText += f'\n<b>{player.name}</b>\n   Опыт: {expPart}   Деньги: {moneyPart}'
 
             scheduler.remove_job(f'boss_{chatRaid.id}', jobstore='local')
             Raid.EndRaidInChat(chatRaid)
-            await chatRaid.actionMessage.edit_text(
-            text=rewardText,
-            parse_mode='HTML'
-            )
+            actionText = rewardText
 
         media = types.input_media.InputMediaPhoto(media=types.InputFile(f'./static/{photoCategory}/' + random.choice(os.listdir(f'./static/{photoCategory}'))), caption=text, parse_mode='HTML')
         await chatRaid.battleMessage.edit_media( media=media, reply_markup=keyboard)
         await chatRaid.actionMessage.edit_text(
-            text='Действия бойцов:\n',
+            text=actionText,
             parse_mode='HTML'
         )
     else:

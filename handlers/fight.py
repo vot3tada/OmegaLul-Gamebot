@@ -64,7 +64,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             replyText += f'{name1} уворачивается и'
         else:
             replyText += f'{name1}'
-        replyText += f' наносит {dmg1} урона!\n'
+        replyText += f' наносит {round(dmg1)} урона!\n'
 
         if st2d.get('ulta'):
             replyText += f'{name2} ультует и'
@@ -74,7 +74,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             replyText += f'{name2} уворачивается и'
         else:
             replyText += f'{name2}'
-        replyText += f' наносит {dmg2} урона!\n'
+        replyText += f' наносит {round(dmg2)} урона!\n'
 
         await st1.update_data(charge = st1d.get('charge') + 1)
         await st2.update_data(charge = st2d.get('charge') + 1)
@@ -82,7 +82,7 @@ async def InitAttackStep(message: types.CallbackQuery):
         st1d = await st1.get_data()
         st2d = await st2.get_data()
         
-        replyText += f'<b>Здоровье бойцов</b>:\n{name1}: {st1d.get("health")}\n{name2}: {st2d.get("health")}\n'
+        replyText += f'<b>Здоровье бойцов</b>:\n{name1}: {round(st1d.get("health"))}\n{name2}: {round(st2d.get("health"))}\n'
         replyText += f'<b>Заряд бойцов</b>:\n{name1}: {st1d.get("charge")}\\{UltaCharge}\n{name2}: {st2d.get("charge")}\\{UltaCharge}\n'
 
         

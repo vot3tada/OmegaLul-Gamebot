@@ -17,8 +17,8 @@ async def getAvatar(message : types.Message):
 Уровень: {level} 
 Опыт: {player.exp}   (x{player.expMultiply})
 Деньги: {player.money}
-Урон: {player.damage}   (+{Player.levelDamageFactor*level})   (x{player.damageMultiply})
-Удача: {player.luck}   (+{Player.levelLuckFactor*level})   (x{player.luckMultiply})
+Урон: {player.damage}   (+{round(Player.levelDamageFactor*level)})   (x{player.damageMultiply})
+Удача: {player.luck}   (+{round(Player.levelLuckFactor*level,3)})   (x{player.luckMultiply})
 Статус:\n'''
     for st in player.GetStatus():
         text += f'{st.name}: {st.description}\n'

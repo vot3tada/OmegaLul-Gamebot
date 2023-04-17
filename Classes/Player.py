@@ -6,8 +6,8 @@ import apscheduler.job
 import requests
 from dateutil import tz
 
-levelLuckFactor = 1
-levelDamageFactor = 0.05
+levelLuckFactor = 0.005
+levelDamageFactor = 1
 
 class Player():
     def __init__(self, 

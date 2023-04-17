@@ -1,5 +1,5 @@
 from typing import Any
-from Player import Player, levelLuckFactor, levelDamageFactor
+import Classes.Player as Player
 HPCut : int = 10
 UltaCharge: int = 4
 
@@ -28,10 +28,10 @@ fight_texts = [
     'Выноси бычьё!\n'
 ]
 
-def getFighterData(player: Player) -> dict[str, Any]:
+def getFighterData(player: Player.Player) -> dict[str, Any]:
     level = player.level
     fighterData = fighter.copy()
     fighterData['health'] = player.hp
-    fighterData['luck'] = (player.luck + levelLuckFactor * level) * player.luckMultiply
-    fighterData['damage']= (player.damage + levelDamageFactor * level) * player.damageMultiply
+    fighterData['luck'] = (player.luck + Player.levelLuckFactor * level) * player.luckMultiply
+    fighterData['damage']= (player.damage + Player.levelDamageFactor * level) * player.damageMultiply
     return fighterData
