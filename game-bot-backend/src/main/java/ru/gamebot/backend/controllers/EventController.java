@@ -60,6 +60,12 @@ public class EventController {
         eventService.addMember(eventDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+    @DeleteMapping("/delete-member")
+    public ResponseEntity<HttpStatus> deleteMemberToEvent(@RequestBody CreateEventDTO eventDTO){
+        eventService.deleteMember(eventDTO);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(PersonNotFoundException e){
         var response = new ErrorResponse("Person not found!");
