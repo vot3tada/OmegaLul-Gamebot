@@ -65,6 +65,13 @@ public class EventService {
         personEventsRepository.save(new PersonEvents(false,person,event));
     }
 
+    @Transactional
+    public void deleteMember(CreateEventDTO eventDTO){
+        var event = eventRepository.findById(eventDTO.getId()).orElseThrow(EventNotFoundException::new);
+        var person = personRepository.findById(new PersonPK(eventDTO.getChatId(),eventDTO.getUserId())).orElseThrow(PersonNotFoundException::new);
+        personEventsRepository.deleteByEventAndPerson(event, person);
+    }
+
     private List<PersonEventsDTO> convertToPersonEventsDTO(List<PersonEvents> personEvents){
         var personEventsDTO = new ArrayList<PersonEventsDTO>();
         for(PersonEvents pe : personEvents){
