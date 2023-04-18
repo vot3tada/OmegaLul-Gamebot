@@ -17,6 +17,7 @@ import ru.gamebot.backend.util.exceptions.EventExceptions.EventNotFoundException
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 import ru.gamebot.backend.util.mappers.EventMapper.EventMapper;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class EventService {
 
     public List<GetEventDTO> getEventsByChatId(Integer chatId) throws ChatNotFoundException {
         var eventsDTO = new ArrayList<GetEventDTO>();
-        var personEvents = personEventsRepository.findAllEventByPersonPersonPkChatId(chatId);
+        var personEvents = personEventsRepository.findAllEventByPersonPersonPkChatIdAndEventStartedAtAfterOrderByEventDesc(chatId, new Timestamp(System.currentTimeMillis()));
         if(personEvents == null){
             throw new ChatNotFoundException("Chat not found!");
         }
@@ -72,6 +73,12 @@ public class EventService {
         personEventsRepository.deleteByEventAndPerson(event, person);
     }
 
+    @Transactional
+    public void deleteEvent(Integer id){
+        var event = eventRepository.findById(id).orElseThrow(EventNotFoundException::new);
+        personEventsRepository.deleteByEvent(event);
+        eventRepository.delete(event);
+    }
     private List<PersonEventsDTO> convertToPersonEventsDTO(List<PersonEvents> personEvents){
         var personEventsDTO = new ArrayList<PersonEventsDTO>();
         for(PersonEvents pe : personEvents){
