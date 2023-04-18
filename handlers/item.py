@@ -2,7 +2,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram import types
 import Classes.Player as Player
 import Classes.Good as Good
-import handlers.achievement as AchievementHandler
+
 
 async def useItem(call : types.CallbackQuery):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):

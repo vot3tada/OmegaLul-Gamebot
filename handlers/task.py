@@ -235,7 +235,7 @@ async def acceptTask(call: types.CallbackQuery):
     worker.exp += 40 + (task.money * 0.7)
     owner: Player.Player = Player.GetPlayer(task.chatId, task.ownerUserId)
     Task.AcceptTask(task)
-    await AchievementHandler.AddHistory(chatId = worker.chatId, userId = worker.userId, totalMoney=task.money, totalExp=40 + (task.money * 0.7))
+    await AchievementHandler.AddHistory(chatId = worker.chatId, userId = worker.userId, totalMoney=task.money, totalExp=40 + (task.money * 0.7), totalEndedTasks=1)
     await call.message.answer_photo(
         photo=open('./static/taskcomplete/' + random.choice(os.listdir('./static/taskcomplete')) ,'rb'),
         caption=f'{worker.name} успешно выполняет задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',
@@ -297,6 +297,7 @@ async def takeTask(message: types.Message):
     Task.TakeTask(worker, task, punish)
     owner = Player.GetPlayer(task.chatId, task.ownerUserId)
     await message.answer(f'{worker.name} успешно берет задание от {owner.name}')
+    await AchievementHandler.AddHistory(chatId = worker.chatId, userId = worker.userId, totalTakenTasks=1)
 
 async def myTakenTaskList(message: types.Message):
 
@@ -419,6 +420,7 @@ async def refuseTask(call: types.CallbackQuery):
     player: Player.Player = Player.GetPlayer(task.chatId, task.workerUserId)
     if Task.RefuseTask(player, task):
         await call.message.answer(f'{player.name} получает наказание за столь позднюю отмену задания...')
+        await AchievementHandler.AddHistory(chatId = player.chatId, userId = player.userId, totalFallTasks=1)
     call.data = f'myTakenTaskPage:{player.chatId}_{player.userId}_0'
     await pageMyTakenTaskList(call)
 

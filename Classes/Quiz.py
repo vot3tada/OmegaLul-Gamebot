@@ -3,10 +3,10 @@ from typing import Any, Union
 import requests
 
 class Quiz():
-    def __init__(self, id: int, name: str, image: str):
+    def __init__(self, id: int, name: str, photo: str):
         self.id: int = id
         self.name: str = name
-        self.image: str = image
+        self.image: str = photo
     
     def to_json(self) -> dict[str, Any]:
         json = {
@@ -17,11 +17,11 @@ class Quiz():
 
 
 class Question():
-    def __init__(self, id: int, text: str, answer: str, image: str, quizId: int):
+    def __init__(self, id: int, text: str, answer: str, photo: str, quizId: int):
         self.id: int = id
         self.text: str = text
         self.answer: str = answer
-        self.image: str = image
+        self.image: str = photo
         self.quizId: int = quizId
     
     def to_json(self) -> dict[str, Any]:
@@ -67,6 +67,9 @@ def AddQuiz(quiz: Quiz):
     
     if responce.status_code >= 400:
         return None
+    
+    quiz: Quiz = Quiz(**responce.json())
+    return quiz
 
 def GetQuiz(id: int):
     responce:requests.Response = requests.get(
@@ -76,8 +79,8 @@ def GetQuiz(id: int):
     if responce.status_code >= 400:
         return None
     
-    event: Quiz = Quiz(**responce.json())
-    return event
+    quiz: Quiz = Quiz(responce.json()['id'], responce.json()['name'], responce.json()['photo'])
+    return quiz
 
 def addQuestion(question: Question):
     responce:requests.Response = requests.post(
@@ -102,7 +105,7 @@ def GetAllQuizes() -> list[Quiz]:
 
 def GetQuestions(quizId: int):
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/quiz/id/{id}',
+        url=f'http://localhost:8080/api/quiz/id/{quizId}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
