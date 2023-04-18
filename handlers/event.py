@@ -34,7 +34,7 @@ async def event_set_date(message : types.Message, state: FSMContext):
 
 async def event_cancel(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.answer('Создание отменено')
+    await message.answer('Отменено')
 
 async def event_delete_start(message : types.Message, state: FSMContext):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
@@ -57,9 +57,9 @@ async def event_delete_end(message : types.Message, state: FSMContext):
         await message.answer('Вы не являетесь создателем этого эвента')
         return
     Event.RemoveEvent(event.id)
-    scheduler.remove_job('e'+event.id+'-')
-    scheduler.remove_job('e'+event.id+'--')
-    state.finish()
+    scheduler.remove_job('e'+str(event.id)+'-')
+    scheduler.remove_job('e'+str(event.id)+'--')
+    await state.finish()
     await message.answer('Эвент отменен')
     
 

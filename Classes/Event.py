@@ -111,4 +111,6 @@ def KickUser(eventId: int, userId: int, chatId: int):
         headers={"Content-Type": "application/json"})
     
 def RemoveEvent(eventId: int):
-    pass
+    responce:requests.Response = requests.delete(
+        url=f'http://localhost:8080/api/event/delete/{eventId}',
+        headers={"Content-Type": "application/json"})
