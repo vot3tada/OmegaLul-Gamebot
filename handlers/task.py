@@ -9,6 +9,7 @@ from utils.scheduler import scheduler
 import random
 import os
 from handlers.collector import CollectorState
+import handlers.achievement as AchievementHandler
 
 
 class TaskState(StatesGroup):
@@ -234,6 +235,7 @@ async def acceptTask(call: types.CallbackQuery):
     worker.exp += 40 + (task.money * 0.7)
     owner: Player.Player = Player.GetPlayer(task.chatId, task.ownerUserId)
     Task.AcceptTask(task)
+    await AchievementHandler.AddHistory(chatId = worker.chatId, userId = worker.userId, totalMoney=task.money, totalExp=40 + (task.money * 0.7))
     await call.message.answer_photo(
         photo=open('./static/taskcomplete/' + random.choice(os.listdir('./static/taskcomplete')) ,'rb'),
         caption=f'{worker.name} успешно выполняет задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',

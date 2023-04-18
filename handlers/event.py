@@ -9,6 +9,7 @@ import Classes.Player as Player
 from utils.create_bot import bot, dp
 import random
 import os
+import handlers.achievement as AchievementHandler
 
 class FSMEvent(StatesGroup):
     name = State()
@@ -81,6 +82,7 @@ async def event_end(message : types.Message, state: FSMContext):
     event.userId = message.from_user.id
     event = Event.AddEvent(event)
     await state.finish()
+    await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalCreateEvent=1)
     await message.reply(f'Мероприятие с #{event.id} создано')
     await bot.send_photo(chat_id=message.chat.id,  
                         caption=f'<b>ВСЕ! ВСЕ! ВСЕ!</b>\nУслышьте! Этого числа <b>{time:%d.%m.%Y}</b> ' +
@@ -158,6 +160,7 @@ async def admin_end(message : types.Message, state: FSMContext):
     for i in event.players:
         i.money += 50
         i.exp += 50
+        await AchievementHandler.AddHistory(chatId = i.chatId, userId = i.userId, totalMoney=50, totalExp=50, totalEnterEvent=1)
         text += f'\n {i.name}'
     await message.answer('Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
     scheduler.remove_job(f'event:{eventId}end')
@@ -176,6 +179,7 @@ async def scheduler_end(chatId: int, eventId):
     for i in event.players:
         i.money += 50
         i.exp += 50
+        await AchievementHandler.AddHistory(chatId = i.chatId, userId = i.userId, totalMoney=50, totalExp=50)
         text += f'\n {i.name}'
     await bot.send_message(chat_id=chatId, text='Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
     scheduler.remove_job(f'event:{eventId}end')
@@ -189,6 +193,7 @@ async def admin_kick(message : types.Message, state: FSMContext):
         if message.reply_to_message.from_user.id in eventUserId:
             Event.KickUser(eventId, chatId=message.chat.id, userId=message.reply_to_message.from_user.id)
             await message.reply(f'Выписан из движа')
+            await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalKickEvent=1)
         else:
             await message.reply('Такой чел не в эвенте')
     else:

@@ -6,6 +6,7 @@ import Classes.Player as Player
 import Classes.Good as Good
 import random
 import os
+import handlers.achievement as AchievementHandler
 
 #keyboard = types.InlineKeyboardMarkup()
 #keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
@@ -64,6 +65,7 @@ async def shopping(call: types.CallbackQuery, state : FSMContext):
         return
     player.money -= good.price
     player.AddItem(good)
+    await AchievementHandler.AddHistory(chatId = player.chatId, userId = player.userId, totalItem=1)
     await call.answer('Вы купили')
     """except:
         await state.finish()

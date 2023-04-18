@@ -1,19 +1,37 @@
 from Classes.Player import Player
+from typing import Any, Union
+import requests
 
 class Quiz():
-    def __init__(self):
-        self.id: int = 0
-        self.name: str = ''
-        self.image: str = ''
+    def __init__(self, id: int, name: str, image: str):
+        self.id: int = id
+        self.name: str = name
+        self.image: str = image
+    
+    def to_json(self) -> dict[str, Any]:
+        json = {
+            "name": self.name,
+            "photo": self.image
+        }
+        return json
 
 
 class Question():
-    def __init__(self):
-        self.id: int = 0
-        self.text: str = ''
-        self.answer: str = ''
-        self.image: str = ''
-        self.quizId: int = 0
+    def __init__(self, id: int, text: str, answer: str, image: str, quizId: int):
+        self.id: int = id
+        self.text: str = text
+        self.answer: str = answer
+        self.image: str = image
+        self.quizId: int = quizId
+    
+    def to_json(self) -> dict[str, Any]:
+        json = {
+            "text": self.text,
+            "photo": self.image,
+            "answer": self.answer,
+            "quizId": self.quizId
+        }
+        return json
 
 class QuizInChat():#этот класс в бд не надо
     def __init__(self):
@@ -22,25 +40,9 @@ class QuizInChat():#этот класс в бд не надо
         self.questions: list[Question] = []
         self.players: list[Player] = []
         
-quiz = Quiz()
-quiz.name = 'Евагелион еее'
-quiz.image = '1.png'
-quiz.id = 1
-
-question1 = Question()
-question1.text = 'Это кто?'
-question1.answer = 'Мисато'
-question1.image = '2.png'
-question1.quizId = 1
-question2 = Question()
-question2.text = 'И что она пьет?'
-question2.answer = 'Ебису'
-question2.quizId = 1
 
 
 Chats: list[QuizInChat] = []#Это тоже в бд не надо
-Quizes: list[Quiz] = [quiz,quiz,quiz,quiz,quiz,quiz,quiz,quiz]
-Questions: list[Question] = [question1, question2]
 
 def AddQuizInChat(quiz: QuizInChat):
     Chats.append(quiz)
@@ -58,20 +60,63 @@ def RemoveQuizInChat(quiz: QuizInChat):
     Chats.remove(quiz)
 
 def AddQuiz(quiz: Quiz):
-    Quizes.append(quiz)
+    responce:requests.Response = requests.post(
+        url=f'http://localhost:8080/api/quiz/create',
+        json = quiz.to_json(),
+        headers={"Content-Type": "application/json"})
+    
+    if responce.status_code >= 400:
+        return None
 
 def GetQuiz(id: int):
-    q = [i for i in Quizes if i.id == id]
-    return q[0] if len(q) != 0 else None
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/quiz/id/{id}',
+        headers={"Content-Type": "application/json"})
+    
+    if responce.status_code >= 400:
+        return None
+    
+    event: Quiz = Quiz(**responce.json())
+    return event
 
 def addQuestion(question: Question):
-    Questions.append(question)
+    responce:requests.Response = requests.post(
+        url=f'http://localhost:8080/api/quiz/add/question',
+        json = question.to_json(),
+        headers={"Content-Type": "application/json"})
+    
+    if responce.status_code >= 400:
+        return None
 
 def GetAllQuizes() -> list[Quiz]:
-    return Quizes.copy()
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/quiz/all',
+        headers={"Content-Type": "application/json"})
+    
+    if responce.status_code >= 400:
+        return []
+    
+    events = [Quiz(**i) for i in responce.json()]
+
+    return events
 
 def GetQuestions(quizId: int):
-    return [i for i in Questions if i.quizId == quizId]
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/quiz/id/{id}',
+        headers={"Content-Type": "application/json"})
+    
+    if responce.status_code >= 400:
+        return []
+    
+    questions: list[Question] = [Question(**i) for i in responce.json()['questions']]
+    return questions
+    
 
-def RemoveQuiz(quiz):
-    Quizes.remove(quiz)
+
+def RemoveQuiz(quizId: int):
+    responce:requests.Response = requests.delete(
+        url=f'http://localhost:8080/api/quiz/delete/{quizId}',
+        headers={"Content-Type": "application/json"})
+    
+    if responce.status_code >= 400:
+        return None

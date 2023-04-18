@@ -8,6 +8,7 @@ from utils.scheduler import scheduler
 import Classes.Player as Player
 import Classes.Work as Work
 from utils.create_bot import dp, bot
+import handlers.achievement as AchievementHandler
 
 class FSMWork(StatesGroup):
     work=State()
@@ -56,6 +57,7 @@ async def work_complete(chatId: int, userId: int, workId: int, username: str):
     user.money += work.moneyReward
     await state.finish()
     scheduler.remove_job(f'work_{user.chatId}_{user.userId}')
+    await AchievementHandler.AddHistory(chatId = user.chatId, userId = user.userId, totalMoney=work.moneyReward, totalExp=work.expReward)
     await bot.send_photo(chat_id=chatId,  
                         caption=f"@{username}\n{user.name} возвращается с работенки!\n<b>Получено</b>:\nОпыт: {work.expReward}\nДеньги: {work.moneyReward}", 
                         photo=open(user.photo,'rb'),

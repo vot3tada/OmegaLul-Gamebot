@@ -7,9 +7,8 @@ import Classes.Player as Player
 from utils.create_bot import bot, dp
 import Classes.Quiz as Quiz
 import random
-import Classes.History as History
 import handlers.achievement as AchievementHandler
-from aiogram.types import InputFile, InputMediaPhoto
+from aiogram.types import InputFile
 import os
 
 class FSMQuiz(StatesGroup):
@@ -214,8 +213,7 @@ async def AnswerQuestion(message: types.Message, state: FSMContext):
         player = Player.GetPlayer(message.chat.id, message.from_user.id)
         player.money += 10
         player.exp += 10
-        history = History.GetHistory(message.chat.id, message.from_user.id)
-        await AchievementHandler.SendAchievement(message.chat.id, message.from_user.id, history.UpdateHistory(totalMoney=10, totalExp=10))
+        await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalMoney=10, totalExp=10)
         if (quiz.number < len(quiz.questions)):
             question: Quiz.Question = quiz.questions[quiz.number]
             if (question.image != ''):
