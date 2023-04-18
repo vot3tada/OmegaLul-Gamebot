@@ -43,9 +43,15 @@ async def event_delete_start(message : types.Message, state: FSMContext):
     await message.answer('Напишите номер эвента')
 
 async def event_delete_end(message : types.Message, state: FSMContext):
-    event = Event.GetEvent(message.text)
+    try:
+        event = Event.GetEvent(message.text)
+    except:
+        await message.answer('Неправильный номер')
+        state.finish()
+        return
     if (event == None):
         await message.answer('Такого эвента не существует')
+        state.finish()
         return
     player : Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     if (event.chatId != player.chatId or event.userId != player.userId):
@@ -69,7 +75,7 @@ async def event_end(message : types.Message, state: FSMContext):
         return
     if len([i for i in Event.GetAllEvents(message.chat.id) if abs((time-i.datetime).total_seconds()) < 600]) > 0:
         await message.reply('В это время уже существует эвент')
-        #return
+        return
     event = Event.Event(0, name, f'{date[0]}-{date[1]}-{date[2]} {date[3]}:{date[4]}:00', [])
     event.chatId = message.chat.id
     event.userId = message.from_user.id
@@ -197,6 +203,60 @@ async def event_set_state(chatId: int, eventId):
             await st.set_state(FSMEvent.addplayers)
             await st.set_data(eventId)
 
+async def event_get_all(message : types.Message):
+    if not Player.FindPlayer(message.chat.id, message.from_user.id):
+        await message.reply('Нужно зарегаться для такого')
+        return
+    events = Event.GetAllEvents(message.chat.id)
+    replytext = 'Список эвентов:'
+    for i in events[:9]:
+        replytext += f'\n<b>#{i.id}</b> - {i.name} - {i.datetime}'
+    if (len == 0):
+        message.answer('Нет эвентов в этом чате🤔')
+        return
+    buttons: list[types.InlineKeyboardButton] = []
+    buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    if (len(events) > 10):
+        buttons.append(types.InlineKeyboardButton(text='>', callback_data=f'eventPages:{message.chat.id}_{message.from_user.id}_2'))
+    else:
+        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(*buttons)
+    await message.answer(
+        text=replytext,
+        reply_markup=keyboard,
+        parse_mode='HTML'
+    )
+
+async def event_get_all_pages(call: types.CallbackQuery):
+    chatId, userId, page = call.data.replace("eventPages:",'').split('_')
+    if call.message.chat.id != int(chatId) or call.from_user.id != int(userId):
+        await call.answer('Это не ваш список')
+        return
+    try:
+        page = int(page)
+    except:
+        await call.answer()
+        return  
+    events = Event.GetAllEvents(call.message.chat.id)
+    replytext = 'Список эвентов:'
+    for i in events[(page-1)*10:(page*10)-1]:
+        replytext += f'\n<b>#{i.id}</b> - {i.name} - {i.datetime}'
+    buttons: list[types.InlineKeyboardButton] = []
+    if (page - 1 < 1):
+        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    else:
+        buttons.append(types.InlineKeyboardButton(text='<', callback_data=f'eventPages:{call.message.chat.id}_{call.from_user.id}_{page - 1}'))
+    if (page*10 < len(events)):
+        buttons.append(types.InlineKeyboardButton(text='>', callback_data=f'eventPages:{call.message.chat.id}_{call.from_user.id}_{page + 1}'))
+    else:
+        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.row(*buttons)
+    await call.message.edit_text(text=replytext, reply_markup=keyboard, parse_mode='HTML')
+
+
+    
 
      
      
@@ -205,6 +265,8 @@ async def event_set_state(chatId: int, eventId):
 
 
 def register_handlers_registration(dp: Dispatcher):
+    dp.register_message_handler(event_get_all, commands='events_list')
+    dp.register_callback_query_handler(event_get_all_pages, regexp='^eventPages:*')
     dp.register_message_handler(event_start, commands='event_create')
     dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name, FSMEvent.delete], commands='event_cancel')
     dp.register_message_handler(event_set_date, state=FSMEvent.name)

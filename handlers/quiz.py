@@ -10,6 +10,7 @@ import random
 import Classes.History as History
 import handlers.achievement as AchievementHandler
 from aiogram.types import InputFile, InputMediaPhoto
+import os
 
 class FSMQuiz(StatesGroup):
     inQuiz = State()
@@ -143,7 +144,7 @@ async def NextQuestion(ChatId: int):
     top.sort(key=lambda x:x[1])
     for i in top[::-1]:
         text += f'\n{i[0]} - {i[1]}'
-    await bot.send_message(chat_id=ChatId, text=text)
+    await bot.send_photo(chat_id=ChatId, caption=text, photo=open('./static/quizWin/' + random.choice(os.listdir('./static/quizWin')) ,'rb'))
     scheduler.remove_job(f'quiz:{ChatId}')
 
 async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
@@ -238,7 +239,7 @@ async def AnswerQuestion(message: types.Message, state: FSMContext):
         top.sort(key=lambda x:x[1])
         for i in top[::-1]:
             text += f'\n{i[0]} - {i[1]}'
-        await message.answer(text)
+        await message.answer_photo(caption = text, photo=open('./static/quizWin/' + random.choice(os.listdir('./static/quizWin')) ,'rb'))
         scheduler.remove_job(f'quiz:{message.chat.id}')
     else:
         question: Quiz.Question = quiz.questions[quiz.number]
