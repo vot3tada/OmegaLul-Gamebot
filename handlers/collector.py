@@ -3,13 +3,13 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-import Classes.Player as Player
 from utils.scheduler import scheduler
 from utils.create_bot import dp, bot
-from handlers.fight import fighter, UltaCharge, fight_texts, ExpReward, MoneyReward, HPCut
+from Classes.Fighter import *
 import random
 import os
 import handlers.achievement as AchievementHandler
+import Classes.Player as Player
 
 collectorFight: list[Player.Player] = []
 
@@ -102,7 +102,7 @@ async def InitAttackStep(call: types.CallbackQuery):
         replyText += f'{player.name} уворачивается и'
     else:
         replyText += f'{player.name}'
-    replyText += f' наносит {dmg1} урона!\n'
+    replyText += f' наносит {round(dmg1)} урона!\n'
 
     if std.get('cUlta') and lk2 == 0:
         replyText += f'Коллектор ультует, уворачивается и'
@@ -114,7 +114,7 @@ async def InitAttackStep(call: types.CallbackQuery):
         replyText += f'Коллектор уворачивается и'
     else:
         replyText += f'Коллектор'
-    replyText += f' наносит {dmg2} урона!\n'
+    replyText += f' наносит {round(dmg2)} урона!\n'
 
     await st.update_data(
         charge = std.get('charge') + 1,
@@ -123,7 +123,7 @@ async def InitAttackStep(call: types.CallbackQuery):
 
     std = await st.get_data()
 
-    replyText += f'<b>Здоровье бойцов</b>:\n{player.name}: {std.get("health")}\nКоллектор: {std.get("cHealth")}\n'
+    replyText += f'<b>Здоровье бойцов</b>:\n{player.name}: {round(std.get("health"))}\nКоллектор: {round(std.get("cHealth"))}\n'
     replyText += f'<b>Заряд бойцов</b>:\n{player.name}: {std.get("charge")}\\{UltaCharge}\nКоллектор: {std.get("cCharge")}\\{UltaCharge}\n'
     media: types.InputMedia = None
     if std.get("health") > 0 and std.get("cHealth") > 0:
@@ -208,10 +208,7 @@ async def fightCollector(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer(f"{player.name} остаивает свой сгоревший дедлайн, чтож...")
     await CollectorState.Ready.set()
     
-    fighterData = dict(fighter, **collectorFighter)
-    fighterData['health'] = player.hp
-    fighterData['damage'] = player.damage * player.damageMultiply
-    fighterData['luck'] = player.luck * player.luckMultiply
+    fighterData = dict(getFighterData(player), **collectorFighter)
     fighterData['cMoney'] = money
     await state.set_data(fighterData)
 
@@ -229,7 +226,7 @@ async def fightCollector(call: types.CallbackQuery, state: FSMContext):
     media.attach_photo(types.InputFile('./static/collector/T801.jpg'))
 
     collectorHp = collectorFighter['cHealth']
-    replyText = f'<b>Здоровье бойцов</b>:\n{player.name}: {player.hp}\nКоллектор: {collectorHp}\n'
+    replyText = f'<b>Здоровье бойцов</b>:\n{player.name}: {round(player.hp)}\nКоллектор: {round(collectorHp)}\n'
     replyText += f'<b>Заряд бойцов</b>:\n{player.name}: {0}\\{UltaCharge}\nКоллектор: {0}\\{UltaCharge}\n'
 
     await call.message.answer_media_group(media)

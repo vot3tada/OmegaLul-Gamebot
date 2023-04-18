@@ -5,7 +5,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from utils.create_bot import dp, bot
 import os
 import random
-import Classes.Player as Player
+from Classes.Fighter import *
 from utils.scheduler import scheduler
 import handlers.achievement as AchievementHandler
 
@@ -17,32 +17,13 @@ def MoneyReward(hp: int) -> int:
 
 HPCut : int = 10
 UltaCharge: int = 4
+import Classes.Player as Player
 
 fights : dict[int, list[int, int]] = {}
 
 class Fight(StatesGroup):
     Ready = State()
     Attack = State()
-
-fighter = {
-    'health':100,
-    'luck':0.2,
-    'damage':25,
-    'rageFactor':0,
-    'dexFactor': 0,
-    'defence': 1,
-    'ulta': 0,
-    'charge': 0
-}
-
-fight_images = os.listdir('./static/fight')
-fight_texts = [
-    'Каждую пятницу одно и тоже!\n',
-    'Заходи! Сбоку заходи!\n',
-    'Кранты вам всем!!\n',
-    'Ааа, ща мы вам, арабы недоделанные!\n',
-    'Выноси бычьё!\n'
-]
 
 def fightsFind(chat_id:int, player_id : int):
     for i in range(len(fights[chat_id])):
@@ -93,7 +74,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             replyText += f'{name1} уворачивается и'
         else:
             replyText += f'{name1}'
-        replyText += f' наносит {dmg1} урона!\n'
+        replyText += f' наносит {round(dmg1)} урона!\n'
 
         if st2d.get('ulta'):
             replyText += f'{name2} ультует и'
@@ -103,7 +84,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             replyText += f'{name2} уворачивается и'
         else:
             replyText += f'{name2}'
-        replyText += f' наносит {dmg2} урона!\n'
+        replyText += f' наносит {round(dmg2)} урона!\n'
 
         await st1.update_data(charge = st1d.get('charge') + 1)
         await st2.update_data(charge = st2d.get('charge') + 1)
@@ -111,7 +92,7 @@ async def InitAttackStep(message: types.CallbackQuery):
         st1d = await st1.get_data()
         st2d = await st2.get_data()
         
-        replyText += f'<b>Здоровье бойцов</b>:\n{name1}: {st1d.get("health")}\n{name2}: {st2d.get("health")}\n'
+        replyText += f'<b>Здоровье бойцов</b>:\n{name1}: {round(st1d.get("health"))}\n{name2}: {round(st2d.get("health"))}\n'
         replyText += f'<b>Заряд бойцов</b>:\n{name1}: {st1d.get("charge")}\\{UltaCharge}\n{name2}: {st2d.get("charge")}\\{UltaCharge}\n'
 
         
@@ -160,7 +141,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             fights[message.message.chat.id].pop(index)
             await message.message.edit_media(media=media)
 
-async def fight_call(message : types.Message):
+async def fightCall(message : types.Message):
     if not message.chat.id in fights.keys():
         fights[message.chat.id] = []
 
@@ -194,11 +175,15 @@ async def fight_call(message : types.Message):
         fights[message.chat.id].append([message.from_user.id, message.reply_to_message.from_user.id])
         index = fightsFind(message.chat.id, message.from_user.id) 
         scheduler.add_job(OutOfTimeFight,'interval', minutes=1.5, args=[message.chat.id, index], jobstore='local' ,id=f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
-        await message.answer(f'{playerTo.name} бросил вызов {playerFrom.name}!')
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(
+            types.InlineKeyboardButton(text='Принять дуэль', callback_data=f'acceptFight:{playerFrom.userId}')
+        )
+        await message.answer(f'{playerTo.name} бросил вызов {playerFrom.name}!', reply_markup=keyboard)
     else:
         await message.answer(f'С кем дуэль то, {playerTo.name} ?')
 
-async def fight_refuse(message: types.Message, state :FSMContext):
+async def fightRefuse(message: types.Message, state :FSMContext):
     if not message.chat.id in fights.keys():
         fights[message.chat.id] = []
     index = fightsFind(message.chat.id, message.from_user.id)
@@ -228,51 +213,57 @@ async def fight_refuse(message: types.Message, state :FSMContext):
         fights[message.chat.id].pop(index)
         await message.answer(reply_text, parse_mode='HTML')
 
-async def fight_accept(message: types.Message):
+async def accept(message: types. Message, index: int):
+    st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][0])
+    await st.set_state(Fight.Ready)
+    user1 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][0])
+    await st.set_data(getFighterData(user1))
+    st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][1])
+    await st.set_state(Fight.Ready)
+    user2 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][1])
+    await st.set_data(getFighterData(user2))
+    scheduler.reschedule_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}', 
+                             trigger='interval', minutes=1.5)
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
+    keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
+    keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"ulta:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
+    keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"defence:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
+    media = types.MediaGroup()
+    media.attach_photo(types.InputFile(user1.photo), 'Битва этих двух ронинов начинается!!!')
+    media.attach_photo(types.InputFile(user2.photo))
+    await message.answer_media_group(media)
+    replyText = f'<b>Здоровье бойцов</b>:\n{user1.name}: {user1.hp}\n{user2.name}: {user2.hp}\n'
+    replyText += f'<b>Заряд бойцов</b>:\n{user1.name}: {0}\\{UltaCharge}\n{user2.name}: {0}\\{UltaCharge}\n'
+    await message.answer_photo(photo=open('./static/fight/' + random.choice(os.listdir('./static/fight')), 'rb'),
+                                caption=replyText,
+                                reply_markup=keyboard, 
+                                parse_mode='HTML')
+    
+async def buttonFightAccept(call: types.CallbackQuery):
+    if not call.message.chat.id in fights.keys():
+        fights[call.message.chat.id] = []
+    index = fightsFind(call.message.chat.id, call.from_user.id)
+
+    userId = int(call.data.replace("acceptFight:",''))
+
+    if call.from_user.id != userId:
+        await call.answer("Это не ваша битва...")
+        return
+
+    if index == -1 or fights[call.message.chat.id][index][0] == call.from_user.id:
+        await call.answer("Нечего принимать")
+    else:
+        await accept(call.message, index)
+
+async def commandFightAccept(message: types.Message):
     if not message.chat.id in fights.keys():
         fights[message.chat.id] = []
     index = fightsFind(message.chat.id, message.from_user.id)
     if index == -1 or fights[message.chat.id][index][0] == message.from_user.id:
         await message.answer("Нечего принимать")
     else:
-        st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][0])
-        await st.set_state(Fight.Ready)
-        user1 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][0])
-        fighterData = fighter.copy()
-        fighterData['health'] = user1.hp
-        fighterData['damage'] = user1.damage * user1.damageMultiply
-        fighterData['luck'] = user1.luck * user1.luckMultiply
-        await st.set_data(fighterData)
-        st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][1])
-        await st.set_state(Fight.Ready)
-        user2 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][1])
-        fighterData = fighter.copy()
-        fighterData['health'] = user2.hp
-        fighterData['damage'] = user2.damage * user2.damageMultiply
-        fighterData['luck'] = user2.luck * user2.luckMultiply
-        await st.set_data(fighterData)
-
-        scheduler.reschedule_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}', 
-                                 trigger='interval', minutes=1.5)
-
-        keyboard = types.InlineKeyboardMarkup()
-        keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
-        keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
-        keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"ulta:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
-        keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"defence:{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}"))
-
-        media = types.MediaGroup()
-        media.attach_photo(types.InputFile(user1.photo), 'Битва этих двух ронинов начинается!!!')
-        media.attach_photo(types.InputFile(user2.photo))
-        await message.answer_media_group(media)
-
-        replyText = f'<b>Здоровье бойцов</b>:\n{user1.name}: {user1.hp}\n{user2.name}: {user2.hp}\n'
-        replyText += f'<b>Заряд бойцов</b>:\n{user1.name}: {0}\\{UltaCharge}\n{user2.name}: {0}\\{UltaCharge}\n'
-
-        await message.answer_photo(photo=open('./static/fight/' + random.choice(os.listdir('./static/fight')), 'rb'),
-                                    caption=replyText,
-                                    reply_markup=keyboard, 
-                                    parse_mode='HTML')
+        await accept(message, index)
 
 async def RageAttack(call: types.CallbackQuery, state : FSMContext):
 
@@ -328,7 +319,7 @@ async def Ulta(call: types.CallbackQuery, state: FSMContext):
         await call.answer('Ультовать еще нельзя')
         return
     
-    await state.update_data(charge = 0)
+    await state.update_data(charge = -1)
     await state.set_state(Fight.Attack)
     await state.update_data(rageFactor = 0, dexFactor = 0, defence = 1, ulta = 1)
     await InitAttackStep(call)
@@ -405,9 +396,10 @@ async def OutOfTimeFight(chatId: int, fightIndex: int):
 
 #################################################
 def register_fight_handlers(dp : Dispatcher):
-    dp.register_message_handler(fight_call, state=None, commands='duel')
-    dp.register_message_handler(fight_refuse, state=[None,Fight.Ready,Fight.Attack], commands='duel_refuse')
-    dp.register_message_handler(fight_accept, state=None ,commands='duel_accept')
+    dp.register_message_handler(fightCall, state=None, commands='duel')
+    dp.register_message_handler(fightRefuse, state=[None,Fight.Ready,Fight.Attack], commands='duel_refuse')
+    dp.register_message_handler(commandFightAccept, state=None ,commands='duel_accept')
+    dp.register_callback_query_handler(buttonFightAccept, state=None, regexp='^acceptFight:*')
     dp.register_callback_query_handler(RageAttack, state=Fight.Ready, regexp='^fightR:*')
     dp.register_callback_query_handler(DexAttack, state=Fight.Ready, regexp='^fightD:*')
     dp.register_callback_query_handler(Defence, state=Fight.Ready, regexp='^defence:*')

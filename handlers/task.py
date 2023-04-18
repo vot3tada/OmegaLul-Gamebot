@@ -494,6 +494,24 @@ async def cancelAddingTask(message: types.Message, state: FSMContext):
     await state.finish()
     await message.reply('Создание задания отменено')
 
+async def remind(chatId: int, userId: int, taskId: int):
+    scheduler.remove_job(f'remember_{chatId}_{userId}_{taskId}')
+    task = Task.GetTask(taskId)
+    durationLeft = task.duration / 3
+    time = ''
+    if durationLeft // 86400:
+        time += f'{durationLeft // 86400} д. '
+    if  (durationLeft % 86400)// 3600:
+        time += f'{(durationLeft % 86400)// 3600} ч. '
+    if (durationLeft % 3600)// 60:
+        time += f'{(durationLeft % 3600)// 60} м. '
+
+    await bot.send_photo(
+        chat_id=userId,
+        parse_mode='HTML',
+        photo=open('./static/remind/' + random.choice(os.listdir('./static/remind')) ,'rb'),
+
+    )
 
 async def punish(chatId: int, userId: int, taskId: int):
     

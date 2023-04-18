@@ -6,6 +6,9 @@ import apscheduler.job
 import requests
 from dateutil import tz
 
+levelLuckFactor = 0.005
+levelDamageFactor = 1
+
 class Player():
     def __init__(self, 
                  personPk: dict[str, int],
@@ -105,7 +108,7 @@ class Player():
     def exp(self, x: int):
         if self._exp >= x:
             raise ValueError('Опыт не может не увеличиваться')
-        self._exp = x
+        self._exp = x * self.expMultiply
         self._updatePlayer()
         
 
@@ -322,8 +325,8 @@ def GetPlayer(chatId: int, userId: int) -> Union[Player, None]:
         url=f'http://localhost:8080/api/person/id/{chatId}',
         headers={"Content-Type": "application/json"})
 
-    if responce.status_code == 404:
-        return False
+    if not responce.ok:
+        raise RuntimeError(f'Поиск пользователя: {responce.status_code}')
     
     data: list[dict[str, Any]] = responce.json()
     Players = [Player(**person) for person in data]
