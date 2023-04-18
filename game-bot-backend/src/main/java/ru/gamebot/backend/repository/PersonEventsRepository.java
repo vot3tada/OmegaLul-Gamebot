@@ -14,4 +14,6 @@ public interface PersonEventsRepository extends JpaRepository<PersonEvents, Inte
     List<PersonEvents> findAllByEvent(Event event);
     void deleteByEventAndPerson(Event event, Person person);
     List<PersonEvents> findAllEventByPersonPersonPkChatIdAndEventStartedAtAfterOrderByEventDesc(Integer id, Date date);
+
+    void deleteByEvent(Event event);
 }

@@ -260,6 +260,10 @@ Body выглядит следующим образом, обратите вни
    >Success: Status 204
 
    >Fail: Status 400, 404, 500
+6. Удалить евент по айди: DELETE: **localhost:8080/api/event/delete/{id}**
+   >Success: Status 204
+
+   >Fail: Status 400, 404, 500
 ### Пример
 Обратите внимание на ввод даты(yyyy-MM-dd HH:mm:ss)
 

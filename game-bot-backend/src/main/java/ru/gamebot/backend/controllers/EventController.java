@@ -62,8 +62,14 @@ public class EventController {
     }
 
     @DeleteMapping("/delete-member")
-    public ResponseEntity<HttpStatus> deleteMemberToEvent(@RequestBody CreateEventDTO eventDTO){
+    public ResponseEntity<HttpStatus> deleteEventMember(@RequestBody CreateEventDTO eventDTO){
         eventService.deleteMember(eventDTO);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<HttpStatus> deleteEvent(@PathVariable("id") Integer id){
+        eventService.deleteEvent(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @ExceptionHandler
