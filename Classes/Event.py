@@ -109,3 +109,6 @@ def KickUser(eventId: int, userId: int, chatId: int):
         url=f'http://localhost:8080/api/event/delete-member',
         json = member,
         headers={"Content-Type": "application/json"})
+    
+def RemoveEvent(eventId: int):
+    pass

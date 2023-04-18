@@ -48,16 +48,15 @@ async def event_delete_end(message : types.Message, state: FSMContext):
         event = Event.GetEvent(message.text)
     except:
         await message.answer('Неправильный номер')
-        state.finish()
         return
     if (event == None):
         await message.answer('Такого эвента не существует')
-        state.finish()
         return
     player : Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
     if (event.chatId != player.chatId or event.userId != player.userId):
         await message.answer('Вы не являетесь создателем этого эвента')
         return
+    Event.RemoveEvent(event.id)
     scheduler.remove_job('e'+event.id+'-')
     scheduler.remove_job('e'+event.id+'--')
     state.finish()
