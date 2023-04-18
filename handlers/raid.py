@@ -8,6 +8,7 @@ import os, random
 import Classes.Player as Player
 from utils.create_bot import dp, bot
 from Classes.Fighter import *
+import handlers.achievement as AchievementHandler
 
 class RaidState(StatesGroup):
     awaiting = State()
@@ -381,12 +382,12 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
             for player in chatRaid.players:
                 st: FSMContext = dp.current_state(chat=chatRaid.chatId,user=player.userId)
                 await st.set_state(None)
-
                 rewardPart = chatRaid.damagePie[player.userId] / allDamage
                 moneyPart = round(chatRaid.boss.moneyReward * rewardPart) 
                 expPart = round(chatRaid.boss.expReward * rewardPart) 
                 player.exp += expPart
                 player.money += moneyPart
+                await AchievementHandler.AddHistory(chatId = player.chatId, userId = player.userId, totalWinBoss=1, totalMoney=moneyPart, totalExp=expPart)
                 rewardText += f'\n<b>{player.name}</b>\n   Опыт: {expPart}   Деньги: {moneyPart}'
 
             scheduler.remove_job(f'boss_{chatRaid.id}', jobstore='local')

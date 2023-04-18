@@ -3,6 +3,7 @@ import random
 from aiogram.dispatcher import Dispatcher
 from aiogram import types
 import Classes.Player as Player
+import handlers.achievement as AchievementHandler
 
 async def getAvatar(message : types.Message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
@@ -45,6 +46,7 @@ async def getInventory(message : types.Message):
 async def getMoney(message: types.Message):
     player = Player.GetPlayer(message.chat.id, message.from_user.id)
     player.money+=2000
+    await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalMoney=2000)
 
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(getInventory, commands='inventory', state=None)

@@ -8,6 +8,7 @@ from utils.create_bot import dp, bot
 from Classes.Fighter import *
 import random
 import os
+import handlers.achievement as AchievementHandler
 import Classes.Player as Player
 
 collectorFight: list[Player.Player] = []
@@ -145,6 +146,7 @@ async def InitAttackStep(call: types.CallbackQuery):
             money = MoneyReward(player.hp)
             player.exp += exp
             player.money += money
+            await AchievementHandler.AddHistory(chatId = call.message.chat.id, userId = call.message.from_user.id, totalMoney=money, totalExp=exp, totalWinCollector=1)
             replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
             media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
         elif std.get("cHealth") > 0 and  std.get("health") <= 0:

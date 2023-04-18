@@ -7,9 +7,10 @@ import Classes.Player as Player
 from utils.create_bot import bot, dp
 import Classes.Quiz as Quiz
 import random
-import Classes.History as History
 import handlers.achievement as AchievementHandler
-from aiogram.types import InputFile, InputMediaPhoto
+from aiogram.types import InputFile
+import os
+from pathlib import Path
 
 class FSMQuiz(StatesGroup):
     inQuiz = State()
@@ -143,7 +144,7 @@ async def NextQuestion(ChatId: int):
     top.sort(key=lambda x:x[1])
     for i in top[::-1]:
         text += f'\n{i[0]} - {i[1]}'
-    await bot.send_message(chat_id=ChatId, text=text)
+    await bot.send_photo(chat_id=ChatId, caption=text, photo=open('./static/quizWin/' + random.choice(os.listdir('./static/quizWin')) ,'rb'))
     scheduler.remove_job(f'quiz:{ChatId}')
 
 async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
@@ -213,8 +214,7 @@ async def AnswerQuestion(message: types.Message, state: FSMContext):
         player = Player.GetPlayer(message.chat.id, message.from_user.id)
         player.money += 10
         player.exp += 10
-        history = History.GetHistory(message.chat.id, message.from_user.id)
-        await AchievementHandler.SendAchievement(message.chat.id, message.from_user.id, history.UpdateHistory(totalMoney=10, totalExp=10))
+        await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalMoney=10, totalExp=10, totalQuestions=1)
         if (quiz.number < len(quiz.questions)):
             question: Quiz.Question = quiz.questions[quiz.number]
             if (question.image != ''):
@@ -238,7 +238,7 @@ async def AnswerQuestion(message: types.Message, state: FSMContext):
         top.sort(key=lambda x:x[1])
         for i in top[::-1]:
             text += f'\n{i[0]} - {i[1]}'
-        await message.answer(text)
+        await message.answer_photo(caption = text, photo=open('./static/quizWin/' + random.choice(os.listdir('./static/quizWin')) ,'rb'))
         scheduler.remove_job(f'quiz:{message.chat.id}')
     else:
         question: Quiz.Question = quiz.questions[quiz.number]
@@ -288,27 +288,24 @@ async def CreateQuizPhoto(message: types.Message, state: FSMContext):
     await message.answer('Отправь фото, если не хочешь фото, просто ответь что-нибудь')
 
 async def CreateQuizCreateWithoutPhoto(message: types.Message, state: FSMContext):
-    id = len(Quiz.GetAllQuizes())
-    quiz = Quiz.Quiz()
-    quiz.id = id
+    folder = Path('./static/quizes')
+    id = len(list(folder.iterdir()))
     async with state.proxy() as data:
-        quiz.name = data['createQuizName']
+        quiz = Quiz.Quiz(id, data['createQuizName'], '')
+        quiz = Quiz.AddQuiz(quiz)
         data['createQuizName'] = quiz
-    Quiz.AddQuiz(quiz)
     await FSMQuiz.questionText.set()
     await message.answer('Напиши текст первого вопроса')
 
 async def CreateQuizCreateWithPhoto(message: types.Message, state: FSMContext):
-    id = len(Quiz.GetAllQuizes())
-    orig = f'./static/quizes/{id}_.png'
+    folder = Path('./static/quizes')
+    id = len(list(folder.iterdir()))
+    orig = f'./static/quizes/{id}.png'
     await message.photo[-1].download(orig)
-    quiz = Quiz.Quiz()
-    quiz.id = id
-    quiz.image = f'{id}_.png'
     async with state.proxy() as data:
-        quiz.name = data['createQuizName']
+        quiz = Quiz.Quiz(id, data['createQuizName'], f'{id}.png')
+        quiz = Quiz.AddQuiz(quiz)
         data['createQuizName'] = quiz
-    Quiz.AddQuiz(quiz)
     await FSMQuiz.questionText.set()
     await message.answer('Напиши текст первого вопроса')
 
@@ -325,26 +322,19 @@ async def QuestionAnswer(message: types.Message, state: FSMContext):
     await message.answer('Отправь фото. Если не хочешь фото, просто ответь что-нибудь')
 
 async def QuestionCreateWithoutPhoto(message: types.Message, state: FSMContext):
-    question = Quiz.Question()
     async with state.proxy() as data:
-        question.quizId = data['createQuizName'].id
-        question.id = len(Quiz.GetQuestions(question.quizId))
-        question.text = data['questionText']
-        question.answer = data['questionAnswer']
+        question = Quiz.Question(0, data['questionText'], data['questionAnswer'], '', data['createQuizName'].id)
     Quiz.addQuestion(question)
     await FSMQuiz.questionContinue.set()
     await message.answer('Напиши + если хочешь ещё вопрос. Если нет, просто ответь что-нибудь')
 
 async def QuestionCreateWithPhoto(message: types.Message, state: FSMContext):
-    question = Quiz.Question()
-    async with state.proxy() as data:
-        question.quizId = data['createQuizName'].id
-        question.id = len(Quiz.GetQuestions(question.quizId))
-        question.text = data['questionText']
-        question.answer = data['questionAnswer']
-    orig = f'./static/quizes/{question.quizId}_{question.id}.png'
+    folder = Path('./static/quizes')
+    id = len(list(folder.iterdir()))
+    orig = f'./static/quizes/{id}.png'
     await message.photo[-1].download(orig)
-    question.image = f'{question.quizId}_{question.id}.png'
+    async with state.proxy() as data:
+        question = Quiz.Question(0, data['questionText'], data['questionAnswer'], f'{id}.png', data['createQuizName'].id)
     Quiz.addQuestion(question)
     await FSMQuiz.questionContinue.set()
     await message.answer('Напиши + если хочешь ещё вопрос. Если нет, просто ответь что-нибудь')
@@ -361,7 +351,7 @@ async def CancelQuizCreate(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         quiz = Quiz.GetQuiz(data['createQuizName'].id)
     if quiz != None:
-        Quiz.RemoveQuiz(quiz)
+        Quiz.RemoveQuiz(quiz.id)
     await state.finish()
     await message.answer('Вы закончили создание квиза')
 

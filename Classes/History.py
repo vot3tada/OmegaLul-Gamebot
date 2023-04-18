@@ -9,41 +9,41 @@ class History():
                          totalCreateEvent = 0, totalEnterEvent = 0, totalKickEvent = 0, totalLeaveFights = 0):
         self.chatId = chatId
         self.userId = userId
-        self._totalMoney = totalMoney
-        self._totalExp = totalExp
-        self._totalQuestions = totalQuestions
-        self._totalFights = totalFights
-        self._totalWinFights = totalWinFights
-        self._totalWinBoss = totalWinBoss
-        self._totalItem = totalItem
-        self._totalTakenTasks = totalTakenTasks
-        self._totalEndedTasks = totalEndedTasks
-        self._totalFallTasks = totalFallTasks
-        self._totalWinCollector = totalWinCollector
-        self._totalCreateEvent = totalCreateEvent
-        self._totalEnterEvent = totalEnterEvent
-        self._totalKickEvent = totalKickEvent
-        self._totalLeaveFights = totalLeaveFights
+        self.totalMoney = totalMoney
+        self.totalExp = totalExp
+        self.totalQuestions = totalQuestions
+        self.totalFights = totalFights
+        self.totalWinFights = totalWinFights
+        self.totalWinBoss = totalWinBoss
+        self.totalItem = totalItem
+        self.totalTakenTasks = totalTakenTasks
+        self.totalEndedTasks = totalEndedTasks
+        self.totalFallTasks = totalFallTasks
+        self.totalWinCollector = totalWinCollector
+        self.totalCreateEvent = totalCreateEvent
+        self.totalEnterEvent = totalEnterEvent
+        self.totalKickEvent = totalKickEvent
+        self.totalLeaveFights = totalLeaveFights
 
     def to_json(self) -> dict[str, Any]:
         json = {
             "chatId": self.chatId,
             "userId": self.userId,
-            "totalMoney": self._totalMoney,
-            "totalExp": self._totalExp,
-            "totalQuestions": self._totalQuestions,
-            "totalFights": self._totalFights,
-            "totalWinFights": self._totalWinFights,
-            "totalWinBoss": self._totalWinBoss,
-            "totalItem": self._totalItem,
-            "totalTakenTasks": self._totalTakenTasks,
-            "totalEndedTasks": self._totalEndedTasks,
-            "totalFallTasks": self._totalFallTasks,
-            "totalWinCollector": self._totalWinCollector,
-            "totalCreateEvent": self._totalCreateEvent,
-            "totalEnterEvent": self._totalEnterEvent,
-            "totalKickEvent": self._totalKickEvent,
-            "totalLeaveFights": self._totalLeaveFights
+            "totalMoney": self.totalMoney,
+            "totalExp": self.totalExp,
+            "totalQuestions": self.totalQuestions,
+            "totalFights": self.totalFights,
+            "totalWinFights": self.totalWinFights,
+            "totalWinBoss": self.totalWinBoss,
+            "totalItem": self.totalItem,
+            "totalTakenTasks": self.totalTakenTasks,
+            "totalEndedTasks": self.totalEndedTasks,
+            "totalFallTasks": self.totalFallTasks,
+            "totalWinCollector": self.totalWinCollector,
+            "totalCreateEvent": self.totalCreateEvent,
+            "totalEnterEvent": self.totalEnterEvent,
+            "totalKickEvent": self.totalKickEvent,
+            "totalLeaveFights": self.totalLeaveFights
         }
         return json
 
@@ -60,12 +60,12 @@ class History():
                 Achiv.AddUserAchiv(u)
                 checkAchId.append(i)
 
-        updates = [(totalMoney, '_totalMoney'), (totalExp, '_totalExp'), (totalQuestions, '_totalQuestions'),
-                    (totalFights, '_totalFights'), (totalWinFights, '_totalWinFights'), (totalWinBoss, '_totalWinBoss'),
-                      (totalItem, '_totalItem'), (totalTakenTasks, '_totalTakenTasks'), (totalEndedTasks, '_totalEndedTasks'),
-                        (totalFallTasks, '_totalFallTasks'), (totalWinCollector, '_totalWinCollector'),
-                          (totalCreateEvent, '_totalCreateEvent'), (totalEnterEvent, '_totalEnterEvent'),
-                            (totalKickEvent, '_totalKickEvent'), (totalLeaveFights, '_totalLeaveFights')]
+        updates = [(totalMoney, 'totalMoney'), (totalExp, 'totalExp'), (totalQuestions, 'totalQuestions'),
+                    (totalFights, 'totalFights'), (totalWinFights, 'totalWinFights'), (totalWinBoss, 'totalWinBoss'),
+                      (totalItem, 'totalItem'), (totalTakenTasks, 'totalTakenTasks'), (totalEndedTasks, 'totalEndedTasks'),
+                        (totalFallTasks, 'totalFallTasks'), (totalWinCollector, 'totalWinCollector'),
+                          (totalCreateEvent, 'totalCreateEvent'), (totalEnterEvent, 'totalEnterEvent'),
+                            (totalKickEvent, 'totalKickEvent'), (totalLeaveFights, 'totalLeaveFights')]
 
         for i, (value, attribute) in enumerate(updates):
             if value:

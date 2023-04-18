@@ -3,6 +3,7 @@ from aiogram import types
 import Classes.Player as Player
 import Classes.Good as Good
 
+
 async def useItem(call : types.CallbackQuery):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
         await call.answer('Нужно зарегаться для такого')

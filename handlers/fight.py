@@ -7,6 +7,16 @@ import os
 import random
 from Classes.Fighter import *
 from utils.scheduler import scheduler
+import handlers.achievement as AchievementHandler
+
+def ExpReward(hp: int) -> int:
+    return 50 + 100 * (100 - hp)//(100)
+
+def MoneyReward(hp: int) -> int:
+    return 10 + 25 * (100 - hp)//(100)
+
+HPCut : int = 10
+UltaCharge: int = 4
 import Classes.Player as Player
 
 fights : dict[int, list[int, int]] = {}
@@ -103,12 +113,15 @@ async def InitAttackStep(message: types.CallbackQuery):
             scheduler.remove_job(f'fight_{message.message.chat.id}_{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}')
             await st1.finish()
             await st2.finish()
+            await AchievementHandler.AddHistory(chatId = player1.chatId, userId = player1.userId, totalFights=1)
+            await AchievementHandler.AddHistory(chatId = player2.chatId, userId = player2.userId, totalFights=1)
             if st1d.get("health") > 0 and  st2d.get("health") <= 0:
                 replyText += f'Победитель: {name1}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player1.hp)
                 money = MoneyReward(player1.hp)
                 player1.exp += exp
                 player1.money += money
+                await AchievementHandler.AddHistory(chatId = player1.chatId, userId = player1.userId, totalMoney=money, totalExp=exp, totalWinFights=1)
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
                 media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
             elif st2d.get("health") > 0 and  st1d.get("health") <= 0:   
@@ -117,6 +130,7 @@ async def InitAttackStep(message: types.CallbackQuery):
                 money = MoneyReward(player2.hp)
                 player2.exp += exp
                 player2.money += money
+                await AchievementHandler.AddHistory(chatId = player2.chatId, userId = player2.userId, totalMoney=money, totalExp=exp, totalWinFights=1)
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
                 media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
             else: 
@@ -190,7 +204,8 @@ async def fightRefuse(message: types.Message, state :FSMContext):
             money = MoneyReward(user2.hp)
             user2.exp += exp
             user2.money += money
-
+            await AchievementHandler.AddHistory(chatId = user1.chatId, userId = user1.userId, totalFights=1, totalLeaveFights=1)
+            await AchievementHandler.AddHistory(chatId = user2.chatId, userId = user2.userId, totalMoney=money, totalExp=exp, totalFights=1, totalWinFights=1)
             reply_text = f'{user1.name} позорно бежит с поля боя!\n{user2.name} - победитель!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}'
             scheduler.remove_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
         else:
@@ -361,6 +376,8 @@ async def OutOfTimeFight(chatId: int, fightIndex: int):
         money = MoneyReward(player2.hp)
         player2.exp += exp
         player2.money += money
+        await AchievementHandler.AddHistory(chatId = player1.chatId, userId = player1.userId, totalFights=1)
+        await AchievementHandler.AddHistory(chatId = player2.chatId, userId = player2.userId, totalMoney=money, totalExp=exp, totalWinFights=1, totalFights=1)
         await bot.send_message(
                         chat_id=chatId,
                         parse_mode="HTML",
@@ -370,6 +387,8 @@ async def OutOfTimeFight(chatId: int, fightIndex: int):
         money = MoneyReward(player1.hp)
         player1.exp += exp
         player1.money += money
+        await AchievementHandler.AddHistory(chatId = player2.chatId, userId = player2.userId, totalFights=1)
+        await AchievementHandler.AddHistory(chatId = player1.chatId, userId = player1.userId, totalMoney=money, totalExp=exp, totalWinFights=1, totalFights=1)
         await bot.send_message(
                         chat_id=chatId,
                         parse_mode="HTML",

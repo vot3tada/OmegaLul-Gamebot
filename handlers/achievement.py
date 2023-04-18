@@ -1,11 +1,17 @@
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import Classes.Player as Player
 import Classes.Achievement as Achievement
+import Classes.History as History
 from utils.create_bot import bot, dp
-from aiogram.types import InputFile, InputMediaPhoto
+
+async def AddHistory(chatId: int, userId: int, totalMoney = 0, totalExp = 0, totalQuestions = 0, totalFights = 0, totalWinFights = 0, totalWinBoss = 0,
+                       totalItem = 0, totalTakenTasks = 0, totalEndedTasks = 0, totalFallTasks = 0, totalWinCollector = 0,
+                         totalCreateEvent = 0, totalEnterEvent = 0, totalKickEvent = 0, totalLeaveFights = 0):
+    history = History.GetHistory(chatId, userId)
+    await SendAchievement(chatId, userId, history.UpdateHistory(totalMoney, totalExp, totalQuestions, totalFights, totalWinFights, totalWinBoss,
+                       totalItem, totalTakenTasks, totalEndedTasks, totalFallTasks, totalWinCollector,
+                         totalCreateEvent, totalEnterEvent, totalKickEvent, totalLeaveFights))
 
 async def SendAchievement(chatId: int, userId: int, achievementsId: list[int]):
     for i in achievementsId:
@@ -14,7 +20,7 @@ async def SendAchievement(chatId: int, userId: int, achievementsId: list[int]):
         photo = open('./static/achiv/'+achievement.image,'rb')
         await bot.send_photo(chat_id=chatId, caption=f'<b>{player.name}</b> зарабатывает достижение:\n<b>{achievement.name}</b>\n{achievement.description}',
             photo=photo, parse_mode='HTML')
-        
+
 async def GetAchievements(message : types.Message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Нужно зарегаться для такого')
