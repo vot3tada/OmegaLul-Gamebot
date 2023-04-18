@@ -1,7 +1,7 @@
 from aiogram.utils import executor
-from utils.create_bot import dp
-import handlers
-from utils.scheduler import scheduler
+from telegram.utils.create_bot import dp
+import telegram.handlers as handlers
+from telegram.utils.scheduler import scheduler
 
 async def StartUp(dp):
     scheduler.print_jobs()
