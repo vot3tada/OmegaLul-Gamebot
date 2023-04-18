@@ -299,6 +299,78 @@ Body выглядит следующим образом, обратите вни
            }
        ]
       }
+
+# Quiz
+1. Получение всех квизов: GET: **localhost:8080/api/quiz/all**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
+
+2. Получение квиза по айди и всех его вопросов: GET: **localhost:8080/api/quiz/id/{id}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
+3. Добавление квиза(см. пример): POST: **localhost:8080/api/quiz/create**
+   >Success: Status 201
+
+   >Fail: Status 400, 404, 500
+4. Добавление вопроса к квизу(см. пример): POST: **localhost:8080/api/quiz/add/question**
+   >Success: Status 201
+
+   >Fail: Status 400, 404, 500
+5. Удаление квиза по айди и всех его вопросов: DELETE: **localhost:8080/api/quiz/delete/{id}**
+   >Success: Status 204
+
+   >Fail: Status 400, 404, 500
+
+### Пример
+**Как выглядит json при получении всех квизов:**
+
+      [
+         {
+         "id": 2,
+         "name": "aboba",
+         "photo": "dgdf"
+         },
+         {
+         "id": 4,
+         "name": "aboba",
+         "photo": "dgdf"
+         }
+      ]
+
+**Как выглядит json когда при получении квиза и его вопросов:**
+
+      {
+      "id": 4,
+      "name": "aboba",
+      "photo": "dgdf",
+      "questions": [
+         {
+            "id": 4,
+            "text": "aboba",
+            "answer": "ddfgf",
+            "photo": "dgdf",
+            "quizId": 4
+         }
+         ]
+      }
+
+**Json при добавление квиза:**
+      
+      {
+        "name": "aboba",
+        "photo": "dgdf"
+      }
+
+**Json при добавлении вопроса к квизу:**
+
+      {
+        "text": "aboba",
+        "photo": "dgdf",
+        "answer":"fsddfg",
+        "quizId":12
+      }
 ## !!!ВАЖНО!!!
 После каждого git pull репы, запуск контейнера будет таким: docker compose up -d --build
 
