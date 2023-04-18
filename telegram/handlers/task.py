@@ -2,14 +2,14 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-import Classes.Player as Player
-from utils.create_bot import dp, bot
-import Classes.Task as Task
-from utils.scheduler import scheduler
+from ..Classes import Player
+from ..utils.create_bot import dp, bot
+from ..Classes import Task
+from ..utils.scheduler import scheduler
 import random
 import os
-from handlers.collector import CollectorState
-import handlers.achievement as AchievementHandler
+from ..handlers.collector import CollectorState
+from ..handlers import achievement as AchievementHandler
 
 
 class TaskState(StatesGroup):

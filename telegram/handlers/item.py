@@ -1,7 +1,7 @@
 from aiogram.dispatcher import Dispatcher
 from aiogram import types
-import Classes.Player as Player
-import Classes.Good as Good
+from ..Classes import Player
+from ..Classes import Good
 
 
 async def useItem(call : types.CallbackQuery):

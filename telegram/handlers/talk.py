@@ -2,7 +2,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import utils.gpt as gpt
+from ..utils import gpt
 
 class FSMTalk(StatesGroup):
     talk=State()

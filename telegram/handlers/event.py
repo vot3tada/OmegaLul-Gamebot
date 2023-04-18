@@ -2,14 +2,14 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import Classes.Event as Event
+from ..Classes import Event
 from datetime import datetime
-from utils.scheduler import scheduler
-import Classes.Player as Player
-from utils.create_bot import bot, dp
+from ..utils.scheduler import scheduler
+from ..Classes import Player
+from ..utils.create_bot import bot, dp
 import random
 import os
-import handlers.achievement as AchievementHandler
+from ..handlers import achievement as AchievementHandler
 
 class FSMEvent(StatesGroup):
     name = State()

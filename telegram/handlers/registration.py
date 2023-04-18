@@ -2,8 +2,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import utils.avatarCreator as ac
-import Classes.Player as Player
+from ..utils import avatarCreator as ac
+from ..Classes import Player
 
 reRegMoney: int = 150
 

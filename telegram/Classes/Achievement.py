@@ -1,5 +1,3 @@
-import Classes.Player as Player
-from utils.create_bot import dp, bot
 
 class Achievement():
 

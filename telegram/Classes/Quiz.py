@@ -1,4 +1,4 @@
-from Classes.Player import Player
+from . import Player
 from typing import Any, Union
 import requests
 
@@ -38,7 +38,7 @@ class QuizInChat():#этот класс в бд не надо
         self.chatId: int = 0
         self.number: int = 0
         self.questions: list[Question] = []
-        self.players: list[Player] = []
+        self.players: list[Player.Player] = []
         
 
 

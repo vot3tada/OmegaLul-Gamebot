@@ -4,11 +4,11 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-from utils.scheduler import scheduler
-import Classes.Player as Player
-import Classes.Work as Work
-from utils.create_bot import dp, bot
-import handlers.achievement as AchievementHandler
+from ..utils.scheduler import scheduler
+from ..Classes import Player
+from ..Classes import Work
+from ..utils.create_bot import dp, bot
+from ..handlers import achievement as AchievementHandler
 
 class FSMWork(StatesGroup):
     work=State()

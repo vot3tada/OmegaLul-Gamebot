@@ -1,5 +1,5 @@
 from typing import Any
-import Classes.Player as Player
+from . import Player
 HPCut : int = 10
 UltaCharge: int = 4
 

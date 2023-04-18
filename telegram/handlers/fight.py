@@ -2,12 +2,13 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from utils.create_bot import dp, bot
+from ..utils.create_bot import dp, bot
 import os
 import random
-from Classes.Fighter import *
-from utils.scheduler import scheduler
-import handlers.achievement as AchievementHandler
+from ..Classes.Fighter import *
+from ..utils.scheduler import scheduler
+from ..handlers import achievement as AchievementHandler
+from ..Classes import Player
 
 def ExpReward(hp: int) -> int:
     return 50 + 100 * (100 - hp)//(100)
@@ -17,7 +18,6 @@ def MoneyReward(hp: int) -> int:
 
 HPCut : int = 10
 UltaCharge: int = 4
-import Classes.Player as Player
 
 fights : dict[int, list[int, int]] = {}
 

@@ -1,9 +1,9 @@
 from aiogram.dispatcher import Dispatcher
 from aiogram import types
-import Classes.Player as Player
-import Classes.Achievement as Achievement
-import Classes.History as History
-from utils.create_bot import bot, dp
+from ..Classes import Player
+from ..Classes.Achievement import Achievement
+from ..Classes.History import History 
+from ..utils.create_bot import bot, dp
 
 async def AddHistory(chatId: int, userId: int, totalMoney = 0, totalExp = 0, totalQuestions = 0, totalFights = 0, totalWinFights = 0, totalWinBoss = 0,
                        totalItem = 0, totalTakenTasks = 0, totalEndedTasks = 0, totalFallTasks = 0, totalWinCollector = 0,
