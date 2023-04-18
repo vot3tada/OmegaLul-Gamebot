@@ -6,11 +6,12 @@ import ru.gamebot.backend.models.Event;
 import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonEvents;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
 public interface PersonEventsRepository extends JpaRepository<PersonEvents, Integer> {
     List<PersonEvents> findAllByEvent(Event event);
     void deleteByEventAndPerson(Event event, Person person);
-    List<PersonEvents> findAllEventByPersonPersonPkChatId(Integer id);
+    List<PersonEvents> findAllEventByPersonPersonPkChatIdAndEventStartedAtAfterOrderByEventDesc(Integer id, Date date);
 }
