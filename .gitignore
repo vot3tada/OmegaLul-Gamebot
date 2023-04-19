@@ -1,11 +1,15 @@
 /FaceEnv
 /static
-*.png
 *.jpg
+*.png
 .vscode
 *.dat
 bot_venv/
 config.ini
 *.env
-main.py
 /__pycache__
+*.pyc
+*.pkl
+/venv
+*.json
+.idea
