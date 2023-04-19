@@ -8,6 +8,10 @@ import random
 from Classes.Fighter import *
 from utils.scheduler import scheduler
 import handlers.achievement as AchievementHandler
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 def ExpReward(hp: int) -> int:
     return 50 + 100 * (100 - hp)//(100)
@@ -17,7 +21,6 @@ def MoneyReward(hp: int) -> int:
 
 HPCut : int = 10
 UltaCharge: int = 4
-import Classes.Player as Player
 
 fights : dict[int, list[int, int]] = {}
 
@@ -107,7 +110,7 @@ async def InitAttackStep(message: types.CallbackQuery):
             keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"defence:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             
             #await message.message.answer_photo(photo, caption=replyText, reply_markup=keyboard, parse_mode='HTML')
-            media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/fight/' + random.choice(os.listdir('./static/fight'))), caption=replyText, parse_mode='HTML')
+            media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/fight/' / random.choice(os.listdir(ROOT / 'static/fight'))), caption=replyText, parse_mode='HTML')
             await message.message.edit_media(media, reply_markup=keyboard)
         else:
             scheduler.remove_job(f'fight_{message.message.chat.id}_{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}')
@@ -123,7 +126,7 @@ async def InitAttackStep(message: types.CallbackQuery):
                 player1.money += money
                 await AchievementHandler.AddHistory(chatId = player1.chatId, userId = player1.userId, totalMoney=money, totalExp=exp, totalWinFights=1)
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
-                media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
+                media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/win/' / random.choice(os.listdir(ROOT / 'static/win'))), caption=replyText, parse_mode='HTML')
             elif st2d.get("health") > 0 and  st1d.get("health") <= 0:   
                 replyText += f'Победитель: {name2}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player2.hp)
@@ -132,10 +135,10 @@ async def InitAttackStep(message: types.CallbackQuery):
                 player2.money += money
                 await AchievementHandler.AddHistory(chatId = player2.chatId, userId = player2.userId, totalMoney=money, totalExp=exp, totalWinFights=1)
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
-                media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
+                media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/win/' / random.choice(os.listdir(ROOT / 'static/win'))), caption=replyText, parse_mode='HTML')
             else: 
                 replyText += f'Победителя нет! Оба бойца ушатали друг друга!\nНикогда такого не было и вот опять...'
-                media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/lose/' + random.choice(os.listdir('./static/lose'))), caption=replyText, parse_mode='HTML')
+                media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/lose/' / random.choice(os.listdir(ROOT / 'static/lose'))), caption=replyText, parse_mode='HTML')
             player1.hp -= HPCut
             player2.hp -= HPCut
             fights[message.message.chat.id].pop(index)
@@ -235,7 +238,7 @@ async def accept(message: types. Message, index: int):
     await message.answer_media_group(media)
     replyText = f'<b>Здоровье бойцов</b>:\n{user1.name}: {user1.hp}\n{user2.name}: {user2.hp}\n'
     replyText += f'<b>Заряд бойцов</b>:\n{user1.name}: {0}\\{UltaCharge}\n{user2.name}: {0}\\{UltaCharge}\n'
-    await message.answer_photo(photo=open('./static/fight/' + random.choice(os.listdir('./static/fight')), 'rb'),
+    await message.answer_photo(photo=open(ROOT / 'static/fight/' / random.choice(os.listdir(ROOT / 'static/fight')), 'rb'),
                                 caption=replyText,
                                 reply_markup=keyboard, 
                                 parse_mode='HTML')

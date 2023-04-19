@@ -3,6 +3,10 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import utils.gpt as gpt
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 class FSMTalk(StatesGroup):
     talk=State()

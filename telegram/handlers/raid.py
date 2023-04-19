@@ -9,6 +9,10 @@ import Classes.Player as Player
 from utils.create_bot import dp, bot
 from Classes.Fighter import *
 import handlers.achievement as AchievementHandler
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 class RaidState(StatesGroup):
     awaiting = State()
@@ -145,7 +149,7 @@ async def startRecr(call: types.CallbackQuery):
     scheduler.add_job(endRecr, jobstore='local' ,trigger='interval',minutes=2, args=[chatId], id=f'raidRecr:{chatId}')
 
     message = await call.message.answer_photo(
-        photo=open('./static/raidRecr/' + random.choice(os.listdir('./static/raidRecr')), 'rb'),
+        photo=open('./static/raidRecr/' / random.choice(os.listdir('./static/raidRecr')), 'rb'),
         parse_mode='HTML',
         caption=f'''
 <b>!!ВНИМАНИЕ!!</b>
@@ -160,7 +164,7 @@ async def startRecr(call: types.CallbackQuery):
     )
     for i in Player.GetAllPlayers(call.message.chat.id):
         await bot.send_photo(chat_id=i.userId, 
-                                photo= open('./static/anonce/' + random.choice(os.listdir('./static/anonce')), 'rb'),
+                                photo= open('./static/anonce/' / random.choice(os.listdir('./static/anonce')), 'rb'),
                                 caption=f'Сейчас в чате <b>{message.chat.full_name}</b> проходит набор в рейд!\nБосс: <b>{boss.name}</b>!\nПрисоединяйтесь!', 
                                 parse_mode='HTML'
                                 )
@@ -251,7 +255,7 @@ async def endRecr(chatId: int):
 
             await bot.send_message(chat_id=chatId, text='НАЧИНАЕМ РЕЙД!')
             battleMessage = await bot.send_photo(chat_id=chatId,
-                                 photo=open('./static/bossFight/' + random.choice(os.listdir('./static/bossFight')), 'rb'),
+                                 photo=open('./static/bossFight/' / random.choice(os.listdir('./static/bossFight')), 'rb'),
                                  caption=text,
                                  parse_mode='HTML',
                                  reply_markup=keyboard
@@ -359,8 +363,8 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
 
             await st.update_data(charge = std['charge'] + 1)
 
-            text += f'\n<b>{player.name}</b>:  ({round(std["health"])})   [{std["charge"]+1}/{UltaCharge}]\n' + playerText
-        text = f'<b>{chatRaid.boss.name}</b>:  ({round(chatRaid.boss.hp)})   [{chatRaid.boss.ulta}/{chatRaid.boss.ultaCharge}]\n' + text + '\n'
+            text += f'\n<b>{player.name}</b>:  ({round(std["health"])})   [{std["charge"]+1}/{UltaCharge}]\n' / playerText
+        text = f'<b>{chatRaid.boss.name}</b>:  ({round(chatRaid.boss.hp)})   [{chatRaid.boss.ulta}/{chatRaid.boss.ultaCharge}]\n' / text + '\n'
 
         photoCategory = 'memberDead' if dead else 'bossFight'
         keyboard = chatRaid.battleMessage.reply_markup
@@ -394,7 +398,7 @@ async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):
             Raid.EndRaidInChat(chatRaid)
             actionText = rewardText
 
-        media = types.input_media.InputMediaPhoto(media=types.InputFile(f'./static/{photoCategory}/' + random.choice(os.listdir(f'./static/{photoCategory}'))), caption=text, parse_mode='HTML')
+        media = types.input_media.InputMediaPhoto(media=types.InputFile(f'./static/{photoCategory}/' / random.choice(os.listdir(f'./static/{photoCategory}'))), caption=text, parse_mode='HTML')
         await chatRaid.battleMessage.edit_media( media=media, reply_markup=keyboard)
         await chatRaid.actionMessage.edit_text(
             text=actionText,

@@ -9,6 +9,10 @@ import Classes.Player as Player
 import Classes.Work as Work
 from utils.create_bot import dp, bot
 import handlers.achievement as AchievementHandler
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 class FSMWork(StatesGroup):
     work=State()
@@ -23,7 +27,7 @@ async def work_info(message : types.Message):
         Опыт:  {work.expReward}    Деньги:  {work.moneyReward}\n\n'''
         keyboard.add(types.InlineKeyboardButton(text=work.name, callback_data=f"work:{work.id}"))
     work_text += 'Время работы: 2 часика'
-    photo = open('./static/worklist/' + random.choice(os.listdir('./static/worklist')) ,'rb')
+    photo = open(ROOT / 'static/worklist/' / random.choice(os.listdir(ROOT / 'static/worklist')) ,'rb')
     await message.answer_photo(photo=photo,caption=work_text, reply_markup=keyboard, parse_mode='HTML')
 
 async def work_start(call: types.CallbackQuery):
@@ -67,7 +71,7 @@ async def work_end(message: types.Message, state : FSMContext):
     user = Player.GetPlayer(message.chat.id, message.from_user.id)
     await state.finish()
     scheduler.remove_job(f'work_{user.chatId}_{user.userId}')
-    photo = open('./static/runForWork/' + random.choice(os.listdir('./static/runForWork')) ,'rb')
+    photo = open(ROOT / 'static/runForWork/' / random.choice(os.listdir(ROOT / 'static/runForWork')) ,'rb')
     await message.reply_photo(photo=photo ,caption=f'{user.name} в страхе сбежал(а) с работы')
 
 def register_handlers_work(dp: Dispatcher):

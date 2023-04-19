@@ -5,6 +5,10 @@ import datetime
 from dateutil import tz
 import random
 from aiogram.types import Message
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 class Boss:
 
@@ -40,7 +44,7 @@ Bosses: list[Boss] = [
     Boss(
         0,
         'Батя Коллектора',
-        './static/boss/father.jpg',
+        (ROOT / 'static/boss/father.jpg').__str__(),
         100,
         10,
         0.3,
@@ -53,7 +57,7 @@ Bosses: list[Boss] = [
     Boss(
         1,
         'Жаба',
-        './static/boss/frog.jpg',
+        (ROOT / 'static/boss/frog.jpg').__str__(),
         2000,
         15,
         0.1,

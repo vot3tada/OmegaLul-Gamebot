@@ -2,9 +2,13 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.memory import MemoryJobStore
 import configparser
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(ROOT / 'config.ini')
 
 dbuser = config['DEFAULT']['DBUSER']
 dbpassword = config['DEFAULT']['DBPASSWORD']

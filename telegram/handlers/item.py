@@ -2,6 +2,10 @@ from aiogram.dispatcher import Dispatcher
 from aiogram import types
 import Classes.Player as Player
 import Classes.Good as Good
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 
 async def useItem(call : types.CallbackQuery):

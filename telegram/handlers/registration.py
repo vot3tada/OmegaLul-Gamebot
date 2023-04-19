@@ -4,6 +4,10 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import utils.avatarCreator as ac
 import Classes.Player as Player
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 reRegMoney: int = 150
 
@@ -42,7 +46,7 @@ async def changePhoto(message : types.Message):
     text = '\n'
     for i in ac.classes.keys():
         text += i + '\n'
-    await message.reply('Выбери пол:' + text)
+    await message.reply('Выбери пол:' / text)
 
 async def getPhotoclass(call: types.CallbackQuery, state : FSMContext):
     try:
@@ -55,14 +59,14 @@ async def getPhotoclass(call: types.CallbackQuery, state : FSMContext):
         await call.answer('Неправильный класс фото')    
 
 async def getPhoto(message : types.Message, state: FSMContext):
-    orig = f'./static/user/{message.chat.id}_{message.from_user.id}.jpg'
+    orig = ROOT / f'static/user/{message.chat.id}_{message.from_user.id}.jpg'
     await message.photo[-1].download(orig)
     try:
         ac.getAvatar(message.chat.id, message.from_user.id, (await state.get_data())['photoclass'])
     except:
         await message.reply('Плохое фото, попробуй ещё раз')
         return
-    photo=open(f'./static/player/{message.chat.id}_{message.from_user.id}.jpg', "rb")
+    photo=open(ROOT / f'static/player/{message.chat.id}_{message.from_user.id}.jpg', "rb")
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text = 'Беру!', callback_data=f"ava1:{message.chat.id}_{message.from_user.id}"))
     keyboard.add(types.InlineKeyboardButton(text = 'Давай другую...', callback_data=f"ava0:{message.chat.id}_{message.from_user.id}"))
@@ -79,12 +83,12 @@ async def getAnotherPhoto(call: types.CallbackQuery, state: FSMContext):
 
     ac.getAvatar(call.message.chat.id, call.from_user.id, (await state.get_data())['photoclass'])
 
-    photo=open(f'./static/player/{call.message.chat.id}_{call.from_user.id}.jpg', "rb")
+    photo=open(ROOT / f'static/player/{call.message.chat.id}_{call.from_user.id}.jpg', "rb")
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text = 'Беру!', callback_data=f"ava1:{call.message.chat.id}_{call.from_user.id}"))
     keyboard.add(types.InlineKeyboardButton(text = 'Давай другую...', callback_data=f"ava0:{call.message.chat.id}_{call.from_user.id}"))
     
-    media = types.input_media.InputMediaPhoto(media=types.InputFile(f'./static/player/{call.message.chat.id}_{call.from_user.id}.jpg'), caption='А этот как ?', parse_mode='HTML') 
+    media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / f'static/player/{call.message.chat.id}_{call.from_user.id}.jpg'), caption='А этот как ?', parse_mode='HTML') 
     await call.message.edit_media(
         media=media,
         reply_markup=call.message.reply_markup
@@ -99,7 +103,7 @@ async def endRegistation(call: types.CallbackQuery, state: FSMContext):
         await call.answer("Это не ваша личико...")
         return
     
-    orig = f'./static/player/{call.message.chat.id}_{call.from_user.id}.jpg'
+    orig = ROOT / f'static/player/{call.message.chat.id}_{call.from_user.id}.jpg'
     photo=open(orig, "rb")
     if Player.FindPlayer(call.message.chat.id, call.from_user.id):
         player:Player.Player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
@@ -113,7 +117,7 @@ async def endRegistation(call: types.CallbackQuery, state: FSMContext):
                 'userId':call.from_user.id,
             },
             (await state.get_data())['name'],
-            orig
+            str(orig)
         )
         await state.finish()
         Player.AddPlayer(newPlayer)

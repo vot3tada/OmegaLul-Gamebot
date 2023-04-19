@@ -10,6 +10,10 @@ import random
 import os
 import handlers.achievement as AchievementHandler
 import Classes.Player as Player
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 collectorFight: list[Player.Player] = []
 
@@ -134,7 +138,7 @@ async def InitAttackStep(call: types.CallbackQuery):
         keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"collectorUlta:{player.chatId}_{player.userId}"))
         keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"collectorDefence:{player.chatId}_{player.userId}"))
 
-        media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/fight/' + random.choice(os.listdir('./static/fight'))), caption=replyText, parse_mode='HTML')
+        media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/fight/' / random.choice(os.listdir(ROOT / 'static/fight'))), caption=replyText, parse_mode='HTML')
         await call.message.edit_media(media, reply_markup=keyboard)
         await st.set_state(CollectorState.Ready)
     else:
@@ -148,7 +152,7 @@ async def InitAttackStep(call: types.CallbackQuery):
             player.money += money
             await AchievementHandler.AddHistory(chatId = call.message.chat.id, userId = call.message.from_user.id, totalMoney=money, totalExp=exp, totalWinCollector=1)
             replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
-            media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/win/' + random.choice(os.listdir('./static/win'))), caption=replyText, parse_mode='HTML')
+            media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/win/' / random.choice(os.listdir(ROOT / 'static/win'))), caption=replyText, parse_mode='HTML')
         elif std.get("cHealth") > 0 and  std.get("health") <= 0:
             replyText += f'Победитель: Коллектор!!\nЕще один должник получил по заслугам!\n'
             money = int(std.get('cMoney'))
@@ -157,10 +161,10 @@ async def InitAttackStep(call: types.CallbackQuery):
             else:
                 player.money -= money
             replyText += f'Коллектор забрал {money} денег, еще и покалечил...'
-            media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/lose/' + random.choice(os.listdir('./static/lose'))), caption=replyText, parse_mode='HTML')
+            media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/lose/' / random.choice(os.listdir(ROOT / 'static/lose'))), caption=replyText, parse_mode='HTML')
         else:      
             replyText += f'Победителя нет! Оба бойца ушатали друг друга!\nНикогда такого не было и вот опять...'
-            media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/lose/' + random.choice(os.listdir('./static/lose'))), caption=replyText, parse_mode='HTML')
+            media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/lose/' / random.choice(os.listdir(ROOT / 'static/lose'))), caption=replyText, parse_mode='HTML')
         player.hp -= HPCut
         fightsDelete(player.chatId, player.userId)
 
@@ -223,14 +227,14 @@ async def fightCollector(call: types.CallbackQuery, state: FSMContext):
     
     media = types.MediaGroup()
     media.attach_photo(types.InputFile(player.photo), 'Битва этих двух ронинов начинается!!!')
-    media.attach_photo(types.InputFile('./static/collector/T801.jpg'))
+    media.attach_photo(types.InputFile(ROOT / 'static/collector/T801.jpg'))
 
     collectorHp = collectorFighter['cHealth']
     replyText = f'<b>Здоровье бойцов</b>:\n{player.name}: {round(player.hp)}\nКоллектор: {round(collectorHp)}\n'
     replyText += f'<b>Заряд бойцов</b>:\n{player.name}: {0}\\{UltaCharge}\nКоллектор: {0}\\{UltaCharge}\n'
 
     await call.message.answer_media_group(media)
-    await call.message.answer_photo(photo=open('./static/fight/' + random.choice(os.listdir('./static/fight')), 'rb'),
+    await call.message.answer_photo(photo=open(ROOT / 'static/fight/' / random.choice(os.listdir(ROOT / 'static/fight')), 'rb'),
                                     caption=replyText,
                                     reply_markup=keyboard, 
                                     parse_mode='HTML')

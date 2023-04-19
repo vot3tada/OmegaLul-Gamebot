@@ -4,6 +4,10 @@ import Classes.Player as Player
 import Classes.Achievement as Achievement
 import Classes.History as History
 from utils.create_bot import bot, dp
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 async def AddHistory(chatId: int, userId: int, totalMoney = 0, totalExp = 0, totalQuestions = 0, totalFights = 0, totalWinFights = 0, totalWinBoss = 0,
                        totalItem = 0, totalTakenTasks = 0, totalEndedTasks = 0, totalFallTasks = 0, totalWinCollector = 0,
@@ -17,7 +21,7 @@ async def SendAchievement(chatId: int, userId: int, achievementsId: list[int]):
     for i in achievementsId:
         achievement = Achievement.GetAchievement(i)
         player = Player.GetPlayer(chatId, userId)
-        photo = open('./static/achiv/'+achievement.image,'rb')
+        photo = open(ROOT / 'static/achiv/' / achievement.image,'rb')
         await bot.send_photo(chat_id=chatId, caption=f'<b>{player.name}</b> зарабатывает достижение:\n<b>{achievement.name}</b>\n{achievement.description}',
             photo=photo, parse_mode='HTML')
 
@@ -41,7 +45,7 @@ async def GetAchievements(message : types.Message):
     keyboard.row(*buttons)
     await message.answer_photo(
         caption=replytext,
-        photo=open('./static/achiv/'+achievement.image, 'rb'),
+        photo=open(ROOT / 'static/achiv/' /achievement.image, 'rb'),
         reply_markup=keyboard,
         parse_mode='HTML'
     )
@@ -75,7 +79,7 @@ async def GetAchievementsPages(call: types.CallbackQuery):
         buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
     keyboard = types.InlineKeyboardMarkup()
     keyboard.row(*buttons)
-    media = types.input_media.InputMediaPhoto(media=types.InputFile('./static/achiv/'+achievement.image), caption=replytext, parse_mode='HTML')
+    media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/achiv/' /achievement.image), caption=replytext, parse_mode='HTML')
     await call.message.edit_media(media, reply_markup=keyboard)
 
 

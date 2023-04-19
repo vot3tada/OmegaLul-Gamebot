@@ -1,6 +1,10 @@
 from aiogram.dispatcher import Dispatcher
 from aiogram import types
 import os, random
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 async def welcomeMessage(message: types.Message):
 
@@ -71,7 +75,7 @@ async def getCommands(message: types.Message):
         <i>Другие</i>:
         /shop - вызвать магазинчик для закупа""",
         parse_mode='HTMl',
-        photo=open('./static/info/' + random.choice(os.listdir('./static/info')) ,'rb')
+        photo=open(ROOT / 'static/info/' / random.choice(os.listdir(ROOT / 'static/info')) ,'rb')
     )
 
 def register_handlers_info(dp: Dispatcher):
