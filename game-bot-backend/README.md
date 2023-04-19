@@ -375,6 +375,30 @@ Body выглядит следующим образом, обратите вни
         "answer":"fsddfg",
         "quizId":12
       }
+
+# Achievements
+1. Получение ачивки по айди: GET: **localhost:8080/api/achievement/id/{id}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
+2. Получение ачивок персона: GET: **localhost:8080/api/achievement/person/{chatId}/{userId}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
+3. Добавление ачивки персону(см. пример): POST: **localhost:8080/api/achievement/person/add**
+   >Success: Status 201
+
+   >Fail: Status 400, 404, 500
+
+### Пример
+**Добавление ачивки персона**
+
+      {
+      "achievementId":"totalMoney",
+      "chatId":3,
+      "userId":3
+      }
+
 ## !!!ВАЖНО!!!
 После каждого git pull репы, запуск контейнера будет таким: docker compose up -d --build
 
