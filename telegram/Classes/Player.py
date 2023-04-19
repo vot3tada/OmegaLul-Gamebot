@@ -3,7 +3,6 @@ from typing import Any, Union
 from utils.scheduler import scheduler
 import apscheduler.job
 import requests
-from dateutil import tz
 
 levelLuckFactor = 0.005
 levelDamageFactor = 1
