@@ -12,3 +12,4 @@ config.ini
 *.pkl
 /venv
 *.json
+.idea

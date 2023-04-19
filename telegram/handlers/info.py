@@ -6,8 +6,8 @@ from pathlib import Path
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
 
-async def welcomeMessage(message: types.Message):
 
+async def welcomeMessage(message: types.Message):
     text = f'''<b>Приветсвую тебя!</b>
 
 Я - <b>Омехалюль</b>, игровой бот в стиле нейронного стимпанка
@@ -32,9 +32,10 @@ async def welcomeMessage(message: types.Message):
 
     await message.answer(text=text, parse_mode='HTML')
 
+
 async def getCommands(message: types.Message):
     await message.reply_photo(
-        caption =
+        caption=
         """<b>Команды игрового Омехалюля</b>:
 
         <i>Персонаж</i>:
@@ -75,8 +76,9 @@ async def getCommands(message: types.Message):
         <i>Другие</i>:
         /shop - вызвать магазинчик для закупа""",
         parse_mode='HTMl',
-        photo=open(ROOT / 'static/info/' / random.choice(os.listdir(ROOT / 'static/info')) ,'rb')
+        photo=open(ROOT / 'static/info/' / random.choice(os.listdir(ROOT / 'static/info')), 'rb')
     )
+
 
 def register_handlers_info(dp: Dispatcher):
     dp.register_message_handler(getCommands, commands='help', state='*')

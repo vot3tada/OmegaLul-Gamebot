@@ -7,18 +7,21 @@ import sys
 import os
 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[0] 
+ROOT = FILE.parents[0]
 if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT)) 
+    sys.path.append(str(ROOT))
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
+
 
 async def StartUp(dp):
     scheduler.print_jobs()
 
+
 async def Shutdown(dp):
     scheduler.shutdown()
+
 
 handlers.register_handlers(dp)
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates = True, on_startup=StartUp ,on_shutdown=Shutdown)
+    executor.start_polling(dp, skip_updates=True, on_startup=StartUp, on_shutdown=Shutdown)
