@@ -176,7 +176,7 @@ class Player():
         return self._photo
     
     @property
-    def inventory(self):
+    def inventory(self) -> list[Good.Good, int]:
         return self._inventory.copy()
     
     def FindItem(self, item : Good.Good) -> bool:

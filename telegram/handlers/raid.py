@@ -22,7 +22,6 @@ class RaidState(StatesGroup):
     attack = State()
     dead = State()
     runOut = State()
-    reward = State()
 
 
 async def getRaidsList(message: types.Message):

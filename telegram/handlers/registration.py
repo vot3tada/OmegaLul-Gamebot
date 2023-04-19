@@ -21,7 +21,7 @@ class FSMRegistation(StatesGroup):
 
 async def regStart(message : types.Message):
     if Player.FindPlayer(message.chat.id, message.from_user.id):
-        await message.reply('Ты уже зареган(а)')
+        await message.reply('Вы уже зареганы')
         return
     await FSMRegistation.name.set()
     await message.reply('Напиши имя')
