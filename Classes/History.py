@@ -4,7 +4,7 @@ import requests
 
 class History():
 
-    def __init__(self, chatId, userId, totalMoney, totalExp, totalQuestions = 0, totalFights = 0, totalWinFights = 0, totalWinBoss = 0,
+    def __init__(self, chatId, userId, totalMoney = 0, totalExp = 0, totalQuestions = 0, totalFights = 0, totalWinFights = 0, totalWinBoss = 0,
                        totalItem = 0, totalTakenTasks = 0, totalEndedTasks = 0, totalFallTasks = 0, totalWinCollector = 0,
                          totalCreateEvent = 0, totalEnterEvent = 0, totalKickEvent = 0, totalLeaveFights = 0):
         self.chatId = chatId
@@ -51,12 +51,9 @@ class History():
                        totalItem = 0, totalTakenTasks = 0, totalEndedTasks = 0, totalFallTasks = 0, totalWinCollector = 0,
                          totalCreateEvent = 0, totalEnterEvent = 0, totalKickEvent = 0, totalLeaveFights = 0):
         checkAchId = []
-        def Updater(i: int, total: int):
-            if (Achiv.Check(i, total) and i not in [j.achId for j in Achiv.GetUserAchivs(self.chatId, self.userId)]):
-                u = Achiv.UserAchievement()
-                u.achId = i
-                u.chatId = self.chatId
-                u.userId = self.userId
+        def Updater(i: str, total: int):
+            if (Achiv.Check(i, total) and i not in [j.id for j in Achiv.GetUserAchivs(self.chatId, self.userId)]):
+                u = Achiv.UserAchievement(i, self.chatId, self.userId)
                 Achiv.AddUserAchiv(u)
                 checkAchId.append(i)
 
@@ -70,11 +67,11 @@ class History():
         for i, (value, attribute) in enumerate(updates):
             if value:
                 setattr(self, attribute, getattr(self, attribute) + value)
-                Updater(i, getattr(self, attribute))
-            responce:requests.Response = requests.put(
-                    url=f'http://localhost:8080/api/history/update',
-                    json = self.to_json(),
-                    headers={"Content-Type": "application/json"})
+                Updater(attribute, getattr(self, attribute))
+        responce:requests.Response = requests.put(
+                url=f'http://localhost:8080/api/history/update',
+                json = self.to_json(),
+                headers={"Content-Type": "application/json"})
         return checkAchId
 
 def GetHistory(chatId: int, userId: int) -> Union[History, None]:

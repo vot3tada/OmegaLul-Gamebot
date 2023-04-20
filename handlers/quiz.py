@@ -289,7 +289,7 @@ async def CreateQuizPhoto(message: types.Message, state: FSMContext):
 
 async def CreateQuizCreateWithoutPhoto(message: types.Message, state: FSMContext):
     folder = Path('./static/quizes')
-    id = len(list(folder.iterdir()))
+    id = len(list(folder.iterdir())) + 1
     async with state.proxy() as data:
         quiz = Quiz.Quiz(id, data['createQuizName'], '')
         quiz = Quiz.AddQuiz(quiz)
@@ -299,7 +299,7 @@ async def CreateQuizCreateWithoutPhoto(message: types.Message, state: FSMContext
 
 async def CreateQuizCreateWithPhoto(message: types.Message, state: FSMContext):
     folder = Path('./static/quizes')
-    id = len(list(folder.iterdir()))
+    id = len(list(folder.iterdir())) + 1
     orig = f'./static/quizes/{id}.png'
     await message.photo[-1].download(orig)
     async with state.proxy() as data:
@@ -330,7 +330,7 @@ async def QuestionCreateWithoutPhoto(message: types.Message, state: FSMContext):
 
 async def QuestionCreateWithPhoto(message: types.Message, state: FSMContext):
     folder = Path('./static/quizes')
-    id = len(list(folder.iterdir()))
+    id = len(list(folder.iterdir())) + 1
     orig = f'./static/quizes/{id}.png'
     await message.photo[-1].download(orig)
     async with state.proxy() as data:

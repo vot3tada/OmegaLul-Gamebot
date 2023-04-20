@@ -25,11 +25,11 @@ async def GetAchievements(message : types.Message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Нужно зарегаться для такого')
         return
-    userAchiv: list[Achievement.UserAchievement] = Achievement.GetUserAchivs(message.chat.id, message.from_user.id)
+    userAchiv: list[Achievement.Achievement] = Achievement.GetUserAchivs(message.chat.id, message.from_user.id)
     if len(userAchiv) == 0:
         await message.reply('У вас нет ачивок😓')
         return
-    achievement = Achievement.GetAchievement(userAchiv[0].achId)
+    achievement = userAchiv[0]
     replytext = f'<b>{achievement.name}</b>:\n{achievement.description}\n'
     buttons: list[types.InlineKeyboardButton] = []
     buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
@@ -58,9 +58,9 @@ async def GetAchievementsPages(call: types.CallbackQuery):
         return
     
     
-    userAchiv: list[Achievement.UserAchievement] = Achievement.GetUserAchivs(call.message.chat.id, call.from_user.id)
+    userAchiv: list[Achievement.Achievement] = Achievement.GetUserAchivs(call.message.chat.id, call.from_user.id)
 
-    achievement = Achievement.GetAchievement(userAchiv[page].achId)
+    achievement = userAchiv[page]
     replytext = f'<b>{achievement.name}</b>:\n{achievement.description}\n'
 
     replytext = f'<b>{achievement.name}</b>:\n{achievement.description}\n'

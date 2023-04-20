@@ -1,5 +1,5 @@
 from Classes.Player import Player
-from typing import Any, Union
+from typing import Any
 import requests
 
 class Quiz():

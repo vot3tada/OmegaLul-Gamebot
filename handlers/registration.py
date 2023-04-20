@@ -4,6 +4,8 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import utils.avatarCreator as ac
 import Classes.Player as Player
+from utils.scheduler import scheduler
+import handlers.randomEvent as RE
 
 reRegMoney: int = 150
 
@@ -113,6 +115,7 @@ async def endRegistation(call: types.CallbackQuery, state: FSMContext):
         await state.finish()
         Player.AddPlayer(newPlayer)
         await call.message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
+        scheduler.add_job(RE.RandomEvent, trigger='interval', seconds=86400, args=[call.message.chat.id, call.from_user.id], coalesce=True, id=f'RE:{call.message.chat.id}_{call.message.from_user.id}') 
 
 async def cancelRegistration(message: types.Message, state: FSMContext):
     await state.finish()
@@ -156,7 +159,6 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_message_handler(getPhoto, content_types=['photo'], state=FSMRegistation.photoSend)
     dp.register_callback_query_handler(getAnotherPhoto, regexp="^ava0:*", state=FSMRegistation.acceptPhoto)
     dp.register_callback_query_handler(endRegistation, regexp="^ava1:*", state=FSMRegistation.acceptPhoto)
-
     dp.register_message_handler(changeAvatar, commands='avatar_change', state=None)
     dp.register_callback_query_handler(reRegStart, regexp="^reRegistration", state=None)
     
