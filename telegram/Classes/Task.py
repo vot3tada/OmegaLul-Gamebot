@@ -4,6 +4,16 @@ from dateutil import tz
 import Classes.Player as Player
 from utils.scheduler import scheduler
 import requests
+from pathlib import Path
+import configparser
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 class Task():
 
@@ -23,7 +33,7 @@ def FindTask(taskId: int) -> bool:
 
 def GetAllTasks() -> list[Task]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/task/all',
+        url=f'http://{backhost}:{backport}/api/task/all',
         headers={"Content-Type": "application/json"})
     
     data: list[dict[str, Any]] = responce.json()
@@ -33,7 +43,7 @@ def GetAllTasks() -> list[Task]:
 
 def GetFreeTasks() -> list[Task]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/task/free',
+        url=f'http://{backhost}:{backport}/api/task/free',
         headers={"Content-Type": "application/json"})
 
     data: list[dict[str, Any]] = responce.json()
@@ -43,7 +53,7 @@ def GetFreeTasks() -> list[Task]:
 
 def GetPlayerGivenTasks(chatId: int, userId: int) -> list[Task]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/task/person/{userId}/{chatId}',
+        url=f'http://{backhost}:{backport}/api/task/person/{userId}/{chatId}',
         headers={"Content-Type": "application/json"})
 
     data: list[dict[str, Any]] = responce.json()
@@ -53,7 +63,7 @@ def GetPlayerGivenTasks(chatId: int, userId: int) -> list[Task]:
 
 def GetPlayerTakenTasks(chatId: int, userId: int) -> list[Task]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/task/taken/{userId}/{chatId}',
+        url=f'http://{backhost}:{backport}/api/task/taken/{userId}/{chatId}',
         headers={"Content-Type": "application/json"})
 
     data: list[dict[str, Any]] = responce.json()
@@ -75,7 +85,7 @@ def TakeTask(player: Player.Player, task: Task, punish_job):
     deadline = f"{deadline.year}-{deadline.month}-{deadline.day} {deadline.hour}:{deadline.minute}:{deadline.second}"
 
     response: requests.Response = requests.put(
-        url=f'http://localhost:8080/api/task/update',
+        url=f'http://{backhost}:{backport}/api/task/update',
         json = {
             "id":task.id,
             "workerUserId":player.userId,
@@ -94,7 +104,7 @@ def RefuseTask(player: Player.Player, task: Task) -> bool:
         scheduler.remove_job(f'punish_{task.chatId}_{task.workerUserId}_{task.id}')
 
     response: requests.Response = requests.put(
-        url=f'http://localhost:8080/api/task/update',
+        url=f'http://{backhost}:{backport}/api/task/update',
         json = {
             "id":task.id,
             "workerUserId":None,
@@ -108,7 +118,7 @@ def RefuseTask(player: Player.Player, task: Task) -> bool:
 
 def FreeTask(task: Task):
     response: requests.Response = requests.put(
-        url=f'http://localhost:8080/api/task/update',
+        url=f'http://{backhost}:{backport}/api/task/update',
         json = {
             "id":task.id,
             "workerUserId":None,
@@ -122,7 +132,7 @@ def FreeTask(task: Task):
 def AddTask(task: Task):
 
     response: requests.Response = requests.post(
-        url=f'http://localhost:8080/api/task/create',
+        url=f'http://{backhost}:{backport}/api/task/create',
         json = {
             "name":task.name,
             "money":task.money,
@@ -135,7 +145,7 @@ def AddTask(task: Task):
 def DeleteTask(task: Task):
 
     responce:requests.Response = requests.delete(
-        url=f'http://localhost:8080/api/task/delete/{task.id}',
+        url=f'http://{backhost}:{backport}/api/task/delete/{task.id}',
         headers={"Content-Type": "application/json"})
 
 def AcceptTask(task: Task):

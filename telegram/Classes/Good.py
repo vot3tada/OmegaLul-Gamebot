@@ -1,5 +1,15 @@
 from typing import Any, Union
 import requests
+from pathlib import Path
+import configparser
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 class Good():
     
@@ -9,7 +19,8 @@ class Good():
                  price: int,
                  description: str,
                  effects: list[dict[str, Any]],
-                 duration: int = 10
+                 duration: int,
+                 type: str
                  ) -> None:
         self.name = name
         self.id = id
@@ -17,11 +28,12 @@ class Good():
         self.description = description
         self.effects = effects
         self.duration = duration
+        self.type = type
 
 def GetAllItems() -> Union[list[Good], None]:
 
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/item/all',
+        url=f'http://{backhost}:{backport}/api/item/all',
         headers={"Content-Type": "application/json"})
 
     if not responce.ok:
@@ -40,7 +52,7 @@ def FindItem(id: str) -> bool:
         
 def GetItem(id: int) -> Union[Good,None]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/item/id/{id}',
+        url=f'http://{backhost}:{backport}/api/item/id/{id}',
         headers={"Content-Type": "application/json"})
 
     if not responce.ok:
@@ -50,5 +62,19 @@ def GetItem(id: int) -> Union[Good,None]:
     good = Good(**data)
 
     return good
+
+def GetClassItem(type: str) -> list[Good]:
+
+    responce:requests.Response = requests.get(
+        url=f'http://{backhost}:{backport}/api/item/type/{type}',
+        headers={"Content-Type": "application/json"})
+
+    if not responce.ok:
+        return []
+    
+    data: list[dict[str, Any]] = responce.json()
+    goods = [Good(**good) for good in data]
+
+    return goods
 
 

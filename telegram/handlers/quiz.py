@@ -2,7 +2,6 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-from utils.scheduler import scheduler
 import Classes.Player as Player
 from utils.create_bot import bot, dp
 import Classes.Quiz as Quiz
@@ -360,7 +359,7 @@ async def CancelQuizCreate(message: types.Message, state: FSMContext):
 
 
 def register_handlers_quiz(dp: Dispatcher):
-    dp.register_message_handler(QuizMenuStart, commands='quiz_list')
+    dp.register_message_handler(QuizMenuStart, commands='quiz')
     dp.register_callback_query_handler(QuizPages, regexp='^myQuizPage:*')
     dp.register_callback_query_handler(StartQuiz, regexp='^quizStart:*', state=None)
     dp.register_callback_query_handler(ChoiceQuiz, regexp='^quiz:*')

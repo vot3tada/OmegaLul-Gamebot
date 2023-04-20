@@ -8,6 +8,7 @@ import random
 import os
 import handlers.achievement as AchievementHandler
 from pathlib import Path
+from utils import ParseSeconds
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
@@ -22,21 +23,14 @@ async def shop_start(message : types.Message):
 
     text = 'Добро пожаловать в магазин!\nУ нас есть:\n'
     keyboard = types.InlineKeyboardMarkup()
-    Items = Good.GetAllItems()
+    Items = Good.GetClassItem('shop')
     for i in Items:
-        time = ''
-        if i.duration // 86400:
-            time += f'{i.duration // 86400} д. '
-        if  (i.duration % 86400)// 3600:
-            time += f'{(i.duration % 86400)// 3600} ч. '
-        if (i.duration % 3600)// 60:
-            time += f'{(i.duration % 3600)// 60} м. '
-        text+=f'''
-        <b>{i.name}</b>
-        {i.description}
-        Цена: {i.price} монет
-        Длительность: {time}
-        '''
+        text+=f'''<b>{i.name}</b>   
+Цена: {i.price} монет
+{i.description}
+Длительность: {ParseSeconds(i.duration)}
+
+'''
         keyboard.add(types.InlineKeyboardButton(text = f'Купить  {i.name}', callback_data=f"buy:{i.id}"))
 
     await message.reply_photo(

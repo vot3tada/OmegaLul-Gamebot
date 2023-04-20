@@ -12,3 +12,6 @@ config.ini
 *.pkl
 /venv
 *.json
+.idea
+/Bot2Env
+/BotVenv
