@@ -1,11 +1,14 @@
-from aiogram import Bot, types
+from aiogram import Bot
 from aiogram.dispatcher import Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import configparser
+from pathlib import Path
 
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(ROOT /'config.ini')
 
 storage = MemoryStorage()
 
