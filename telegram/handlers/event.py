@@ -262,18 +262,10 @@ async def event_get_all_pages(call: types.CallbackQuery):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.row(*buttons)
     await call.message.edit_text(text=replytext, reply_markup=keyboard, parse_mode='HTML')
-
-
     
 
-     
-     
-
-
-
-
 def register_handlers_registration(dp: Dispatcher):
-    dp.register_message_handler(event_get_all, commands='events_list')
+    dp.register_message_handler(event_get_all, commands='event')
     dp.register_callback_query_handler(event_get_all_pages, regexp='^eventPages:*')
     dp.register_message_handler(event_start, commands='event_create')
     dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name, FSMEvent.delete], commands='event_cancel')
