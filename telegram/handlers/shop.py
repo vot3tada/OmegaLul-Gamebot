@@ -22,7 +22,7 @@ async def shop_start(message : types.Message):
 
     text = 'Добро пожаловать в магазин!\nУ нас есть:\n'
     keyboard = types.InlineKeyboardMarkup()
-    Items = Good.GetAllItems()
+    Items = Good.GetClassItem('shop')
     for i in Items:
         time = ''
         if i.duration // 86400:
