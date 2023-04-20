@@ -23,6 +23,7 @@ class RaidState(StatesGroup):
     dead = State()
     runOut = State()
 
+bossHPCut: int = 15
 
 async def getRaidsList(message: types.Message):
     boss: Raid.Boss = Raid.GetBosses()[0]
@@ -252,7 +253,7 @@ async def endRecr(chatId: int):
                 await st.set_state(RaidState.ready)
                 await st.set_data(getFighterData(player))
                 text += f'<b>{player.name}</b>:  ({player.hp})   [0/{UltaCharge}]\n'
-                player.hp -= 15
+                player.hp -= bossHPCut
             keyboard = types.InlineKeyboardMarkup()
             keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"bossFightR:{chatRaid.id}"))
             keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"bossFightD:{chatRaid.id}"))

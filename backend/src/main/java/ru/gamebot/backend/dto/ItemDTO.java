@@ -12,6 +12,7 @@ public class ItemDTO {
 
     private Integer id;
     private Set<Effect> effects;
+    private String type;
     private String name;
     private Integer price;
     private String description;

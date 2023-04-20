@@ -5,6 +5,7 @@ from aiogram import types
 import utils.avatarCreator as ac
 import Classes.Player as Player
 from pathlib import Path
+import handlers.leaderboard as Leaderboard
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
@@ -121,6 +122,7 @@ async def endRegistation(call: types.CallbackQuery, state: FSMContext):
         )
         await state.finish()
         Player.AddPlayer(newPlayer)
+        Leaderboard.AddLeaderBoardInChat(call.message.chat.id)
         await call.message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
 
 async def cancelRegistration(message: types.Message, state: FSMContext):

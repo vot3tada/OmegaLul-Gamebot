@@ -293,7 +293,7 @@ def GetAllPlayers(chatId : int) -> list[Player]:
         headers={"Content-Type": "application/json"})
 
     if responce.status_code == 404:
-        return False
+        return []
     
     data: list[dict[str, Any]] = responce.json()
     Players = [Player(**person) for person in data]
