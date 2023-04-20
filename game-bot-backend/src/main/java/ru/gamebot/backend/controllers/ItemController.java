@@ -30,6 +30,10 @@ public class ItemController {
         return itemService.getItemById(id);
     }
 
+    @GetMapping("/type/{type}")
+    public List<ItemDTO> getItemsByType(@PathVariable("type") String type){
+        return itemService.getItemsByType(type);
+    }
     @PostMapping("/create")
     public ResponseEntity<HttpStatus> createItem(@RequestBody ItemDTO itemDTO){
         itemService.addItemAndEffect(itemDTO);
