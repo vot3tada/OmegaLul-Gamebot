@@ -2,14 +2,18 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from ..Classes import Player
-from ..utils.create_bot import dp, bot
-from ..Classes import Task
-from ..utils.scheduler import scheduler
+import Classes.Player as Player
+from utils.create_bot import dp, bot
+import Classes.Task as Task
+from utils.scheduler import scheduler
 import random
 import os
-from ..handlers.collector import CollectorState
-from ..handlers import achievement as AchievementHandler
+from handlers.collector import CollectorState
+import handlers.achievement as AchievementHandler
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 
 class TaskState(StatesGroup):
@@ -52,7 +56,7 @@ async def taskList(message: types.Message):
         keyboard.row(*buttons)
 
     await message.answer_photo(
-        photo= open('./static/tasklist/' + random.choice(os.listdir('./static/tasklist')) ,'rb'),
+        photo= open(ROOT / 'static/tasklist/' / random.choice(os.listdir(ROOT / 'static/tasklist')) ,'rb'),
         caption=replytext,
         parse_mode='HTMl',
         reply_markup=keyboard
@@ -237,7 +241,7 @@ async def acceptTask(call: types.CallbackQuery):
     Task.AcceptTask(task)
     await AchievementHandler.AddHistory(chatId = worker.chatId, userId = worker.userId, totalMoney=task.money, totalExp=40 + (task.money * 0.7), totalEndedTasks=1)
     await call.message.answer_photo(
-        photo=open('./static/taskcomplete/' + random.choice(os.listdir('./static/taskcomplete')) ,'rb'),
+        photo=open(ROOT / 'static/taskcomplete/' / random.choice(os.listdir(ROOT / 'static/taskcomplete')) ,'rb'),
         caption=f'{worker.name} успешно выполняет задание от {owner.name}\n<b>Получено:</b>\nОпыт: {40 + (task.money * 0.7)}\nДеньги: {task.money}',
         parse_mode='HTML'
     )
@@ -493,7 +497,7 @@ async def setTaskDeadline(message: types.Message, state: FSMContext):
     await state.finish()
     
     await message.reply_photo(
-        photo=open('./static/taskadd/' + random.choice(os.listdir('./static/taskadd')) ,'rb'),
+        photo=open(ROOT / 'static/taskadd/' / random.choice(os.listdir(ROOT / 'static/taskadd')) ,'rb'),
         caption=f'Задание от {player.name} успешно добавлено на доску')
     
 async def cancelAddingTask(message: types.Message, state: FSMContext):
@@ -517,7 +521,7 @@ async def remind(chatId: int, userId: int, taskId: int):
     await bot.send_photo(
         chat_id=userId,
         parse_mode='HTML',
-        photo=open('./static/remind/' + random.choice(os.listdir('./static/remind')) ,'rb'),
+        photo=open(ROOT / 'static/remind/' / random.choice(os.listdir(ROOT / 'static/remind')) ,'rb'),
         caption=f'Надеюсь вы не забыли про ваше задание <i>{task.name}</i> ?\nУ вас осталось {time} времени на выполнение.'
     )
 
@@ -549,7 +553,7 @@ async def punish(chatId: int, userId: int, taskId: int):
     message = await bot.send_photo(chat_id=chatId,
                      parse_mode='HTML',
                      reply_markup=keyboard,
-                     photo = open('./static/collector/T801.jpg','rb'),
+                     photo = open(ROOT / 'static/collector/T801.jpg','rb'),
                      caption=f'''<i>Он пришел...</i>
                      
 Коллектор пришел по твою душу, {player.name}, и взял тебя в заложники!

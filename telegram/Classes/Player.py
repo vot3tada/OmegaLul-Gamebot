@@ -1,9 +1,8 @@
-from . import Good
+import Classes.Good as Good
 from typing import Any, Union
-from ..utils.scheduler import scheduler
+from utils.scheduler import scheduler
 import apscheduler.job
 import requests
-from dateutil import tz
 
 levelLuckFactor = 0.005
 levelDamageFactor = 1
@@ -177,7 +176,7 @@ class Player():
         return self._photo
     
     @property
-    def inventory(self):
+    def inventory(self) -> list[Good.Good, int]:
         return self._inventory.copy()
     
     def FindItem(self, item : Good.Good) -> bool:
@@ -294,7 +293,7 @@ def GetAllPlayers(chatId : int) -> list[Player]:
         headers={"Content-Type": "application/json"})
 
     if responce.status_code == 404:
-        return False
+        return []
     
     data: list[dict[str, Any]] = responce.json()
     Players = [Player(**person) for person in data]

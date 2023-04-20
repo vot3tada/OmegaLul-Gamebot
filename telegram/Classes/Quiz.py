@@ -1,5 +1,10 @@
+<<<<<<< .mine
 from . import Player
 from typing import Any
+=======
+import Classes.Player as Player
+from typing import Any
+>>>>>>> .theirs
 import requests
 
 class Quiz():

@@ -2,15 +2,15 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-from ..Classes import Player
-from ..Classes import Good
+import Classes.Player as Player
+import Classes.Good as Good
 import random
 import os
-from ..handlers import achievement as AchievementHandler
+import handlers.achievement as AchievementHandler
+from pathlib import Path
 
-#keyboard = types.InlineKeyboardMarkup()
-#keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))
-#keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"fightD:{fights[index][0]}_{fights[index][1]}"))
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 class FSMShop(StatesGroup):
     isShopping = State()
@@ -40,7 +40,7 @@ async def shop_start(message : types.Message):
         keyboard.add(types.InlineKeyboardButton(text = f'Купить  {i.name}', callback_data=f"buy:{i.id}"))
 
     await message.reply_photo(
-        photo= open('./static/shop/' + random.choice(os.listdir('./static/shop')) ,'rb'),
+        photo= open(ROOT / 'static/shop/' / random.choice(os.listdir(ROOT / 'static/shop')) ,'rb'),
         caption=text, 
         reply_markup=keyboard,
         parse_mode='HTML')

@@ -1,5 +1,5 @@
 import requests
-from typing import Any, Union
+from typing import Any
 
 class Work():
 

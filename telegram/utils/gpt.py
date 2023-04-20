@@ -1,9 +1,15 @@
 import openai
 import configparser
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(ROOT / 'config.ini')
 token=config['DEFAULT']['CHATGPTTOKEN']
 openai.api_key = token
+
 
 def talk_to_bot1(messagetext: str):
     

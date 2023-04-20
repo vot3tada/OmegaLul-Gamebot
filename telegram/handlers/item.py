@@ -1,15 +1,22 @@
 from aiogram.dispatcher import Dispatcher
 from aiogram import types
-from ..Classes import Player
-from ..Classes import Good
+import Classes.Player as Player
+import Classes.Good as Good
+from pathlib import Path
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
 
 
 async def useItem(call : types.CallbackQuery):
-    if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
-        await call.answer('Нужно зарегаться для такого')
+    itemId, userId = call.data.replace("item:",'').split('_')
+    itemId, userId = int(itemId), int(userId)
+    if call.from_user.id != userId:
+        await call.answer('Это не ваш инвентарь')
         return
     player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
-    itemId: str = call.data.replace("item:",'')
+    
+    
     good : Good.Good  = Good.GetItem(itemId)
     if not player.FindItem(good):
         await call.answer('Нет такого предмета')
