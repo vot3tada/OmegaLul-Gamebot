@@ -71,7 +71,11 @@ Body выглядит следующим образом, обратите вни
    >Success: Status 204
 
    >Fail: Status 400,404,500
+5. Получение предметов по их типу: GET: **localhost:8080/api/item/type/{type}**
 
+   >Success: Status 200
+
+   >Fail: Status 400,404,500
 ### Пример
 Body выглядит следующим образом, обратите внимание как вводятся свойства предмета.
 
@@ -79,6 +83,7 @@ Body выглядит следующим образом, обратите вни
         "name":"aboba",
         "price":12,
         "description":"rgdfgfdg",
+        "type":"aboba",
         "duration":12,
         "effects":[{
             "property":"hp",

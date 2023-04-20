@@ -21,6 +21,7 @@ public class Item{
     )
     private Set<Effect> effects;
     private String name;
+    private String type;
     private Integer price;
     private String description;
     private Integer duration;

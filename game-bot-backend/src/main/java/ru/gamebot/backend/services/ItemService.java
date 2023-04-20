@@ -28,6 +28,10 @@ public class ItemService {
         return itemMapper.itemToItemDTO(item);
     }
 
+    public List<ItemDTO> getItemsByType(String type){
+        return itemRepository.findAllByType(type).stream().map(itemMapper::itemToItemDTO).toList();
+    }
+
     public List<ItemDTO> getAllItems(){
         var items = itemRepository.findAll();
         var itemsDTO = new ArrayList<ItemDTO>();
