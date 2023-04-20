@@ -95,5 +95,5 @@ async def GetAchievementsPages(call: types.CallbackQuery):
 
 
 def register_handlers_achievement(dp: Dispatcher):
-    dp.register_message_handler(GetAchievements, commands='achiv_list')
+    dp.register_message_handler(GetAchievements, commands='achiv')
     dp.register_callback_query_handler(GetAchievementsPages, regexp='^achiv:*')
