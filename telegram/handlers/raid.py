@@ -2,13 +2,13 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import Classes.Raid as Raid
-from utils.scheduler import scheduler
+from ..Classes import Raid
+from ..utils.scheduler import scheduler
 import os, random
-import Classes.Player as Player
-from utils.create_bot import dp, bot
-from Classes.Fighter import *
-import handlers.achievement as AchievementHandler
+from ..Classes import Player
+from ..utils.create_bot import dp, bot
+from ..Classes.Fighter import *
+from ..handlers import achievement as AchievementHandler
 
 class RaidState(StatesGroup):
     awaiting = State()

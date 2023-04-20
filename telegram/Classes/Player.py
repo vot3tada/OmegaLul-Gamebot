@@ -1,7 +1,6 @@
-import Classes.Good as Good
+from . import Good
 from typing import Any, Union
-from utils.scheduler import scheduler
-from datetime import timedelta, datetime
+from ..utils.scheduler import scheduler
 import apscheduler.job
 import requests
 from dateutil import tz

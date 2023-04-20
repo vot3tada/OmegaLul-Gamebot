@@ -1,8 +1,8 @@
 from ctypes import Union
 from datetime import datetime, date, time
 from typing import Any, Union
-from utils.scheduler import scheduler
-import Classes.Player as Player
+from ..utils.scheduler import scheduler
+from . import Player
 import requests
 from dateutil import tz
 

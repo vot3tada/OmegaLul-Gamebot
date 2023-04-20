@@ -2,8 +2,8 @@ import os
 import random
 from aiogram.dispatcher import Dispatcher
 from aiogram import types
-import Classes.Player as Player
-import handlers.achievement as AchievementHandler
+from ..Classes import Player
+from ..handlers import achievement as AchievementHandler
 
 async def getAvatar(message : types.Message):
     if not Player.FindPlayer(message.chat.id, message.from_user.id):

@@ -2,8 +2,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import utils.avatarCreator as ac
-import Classes.Player as Player
+from ..utils import avatarCreator as ac
+from ..Classes import Player
 from utils.scheduler import scheduler
 import handlers.randomEvent as RE
 
@@ -86,7 +86,12 @@ async def getAnotherPhoto(call: types.CallbackQuery, state: FSMContext):
     keyboard.add(types.InlineKeyboardButton(text = 'Беру!', callback_data=f"ava1:{call.message.chat.id}_{call.from_user.id}"))
     keyboard.add(types.InlineKeyboardButton(text = 'Давай другую...', callback_data=f"ava0:{call.message.chat.id}_{call.from_user.id}"))
     
-    await call.message.answer_photo(photo, caption='А этот как ?', reply_markup=keyboard)
+    media = types.input_media.InputMediaPhoto(media=types.InputFile(f'./static/player/{call.message.chat.id}_{call.from_user.id}.jpg'), caption='А этот как ?', parse_mode='HTML') 
+    await call.message.edit_media(
+        media=media,
+        reply_markup=call.message.reply_markup
+    )
+    #await call.message.answer_photo(photo, caption=, reply_markup=keyboard)
 
 async def endRegistation(call: types.CallbackQuery, state: FSMContext):
 

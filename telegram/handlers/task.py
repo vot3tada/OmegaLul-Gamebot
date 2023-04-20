@@ -2,14 +2,14 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-import Classes.Player as Player
-from utils.create_bot import dp, bot
-import Classes.Task as Task
-from utils.scheduler import scheduler
+from ..Classes import Player
+from ..utils.create_bot import dp, bot
+from ..Classes import Task
+from ..utils.scheduler import scheduler
 import random
 import os
-from handlers.collector import CollectorState
-import handlers.achievement as AchievementHandler
+from ..handlers.collector import CollectorState
+from ..handlers import achievement as AchievementHandler
 
 
 class TaskState(StatesGroup):
@@ -298,6 +298,7 @@ async def takeTask(message: types.Message):
     owner = Player.GetPlayer(task.chatId, task.ownerUserId)
     await message.answer(f'{worker.name} успешно берет задание от {owner.name}')
     await AchievementHandler.AddHistory(chatId = worker.chatId, userId = worker.userId, totalTakenTasks=1)
+    scheduler.add_job(remind, trigger='interval', seconds=round(task.duration/3), args=[worker.chatId,worker.userId,task.id], id=f'remember_{worker.chatId}_{worker.userId}_{task.id}')
 
 async def myTakenTaskList(message: types.Message):
 
@@ -422,6 +423,8 @@ async def refuseTask(call: types.CallbackQuery):
         await call.message.answer(f'{player.name} получает наказание за столь позднюю отмену задания...')
         await AchievementHandler.AddHistory(chatId = player.chatId, userId = player.userId, totalFallTasks=1)
     call.data = f'myTakenTaskPage:{player.chatId}_{player.userId}_0'
+    if scheduler.get_job(job_id=f'remember_{player.chatId}_{player.userId}_{task.id}'):
+        scheduler.remove_job(f'remember_{player.chatId}_{player.userId}_{task.id}')
     await pageMyTakenTaskList(call)
 
 async def startAddTask(message: types.Message):
@@ -450,6 +453,9 @@ async def setTaskMoney(message: types.Message, state: FSMContext):
         await message.reply(text='Цыферками денюшки надо ввести')
         return
     player: Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
+    if money < 0:
+        await message.reply(text='Награда не может быть отрицательная, но Коллектор оценил')
+        return
     if money > player.money:
         await message.reply(text='У вас нет столько денежек')
         return
@@ -505,12 +511,14 @@ async def remind(chatId: int, userId: int, taskId: int):
         time += f'{(durationLeft % 86400)// 3600} ч. '
     if (durationLeft % 3600)// 60:
         time += f'{(durationLeft % 3600)// 60} м. '
+    if (durationLeft % 60):
+        time += f'{durationLeft % 60} c. '
 
     await bot.send_photo(
         chat_id=userId,
         parse_mode='HTML',
         photo=open('./static/remind/' + random.choice(os.listdir('./static/remind')) ,'rb'),
-
+        caption=f'Надеюсь вы не забыли про ваше задание <i>{task.name}</i> ?\nУ вас осталось {time} времени на выполнение.'
     )
 
 async def punish(chatId: int, userId: int, taskId: int):

@@ -1,5 +1,5 @@
 from typing import Union
-from Classes.Player import Player, GetPlayer
+from .Player import Player, GetPlayer
 import copy
 import datetime
 from dateutil import tz

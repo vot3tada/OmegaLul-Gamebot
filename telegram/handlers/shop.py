@@ -2,11 +2,11 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-import Classes.Player as Player
-import Classes.Good as Good
+from ..Classes import Player
+from ..Classes import Good
 import random
 import os
-import handlers.achievement as AchievementHandler
+from ..handlers import achievement as AchievementHandler
 
 #keyboard = types.InlineKeyboardMarkup()
 #keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"fightR:{fights[index][0]}_{fights[index][1]}"))

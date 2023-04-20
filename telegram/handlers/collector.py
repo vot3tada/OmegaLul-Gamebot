@@ -3,13 +3,13 @@ from aiogram import types
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
-from utils.scheduler import scheduler
-from utils.create_bot import dp, bot
-from Classes.Fighter import *
+from ..utils.scheduler import scheduler
+from ..utils.create_bot import dp, bot
+from ..Classes.Fighter import *
 import random
 import os
-import handlers.achievement as AchievementHandler
-import Classes.Player as Player
+from ..handlers import achievement as AchievementHandler
+from ..Classes import Player
 
 collectorFight: list[Player.Player] = []
 
