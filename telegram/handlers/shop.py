@@ -23,14 +23,14 @@ async def shop_start(message : types.Message):
 
     text = 'Добро пожаловать в магазин!\nУ нас есть:\n'
     keyboard = types.InlineKeyboardMarkup()
-    Items = Good.GetClassItem('event')
+    Items = Good.GetClassItem('shop')
     for i in Items:
-        text+=f'''
-        <b>{i.name}</b>
-        {i.description}
-        Цена: {i.price} монет
-        Длительность: {ParseSeconds(i.duration)}
-        '''
+        text+=f'''<b>{i.name}</b>   
+Цена: {i.price} монет
+{i.description}
+Длительность: {ParseSeconds(i.duration)}
+
+'''
         keyboard.add(types.InlineKeyboardButton(text = f'Купить  {i.name}', callback_data=f"buy:{i.id}"))
 
     await message.reply_photo(

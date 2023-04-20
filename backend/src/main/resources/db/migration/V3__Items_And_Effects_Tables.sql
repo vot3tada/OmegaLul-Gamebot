@@ -1,6 +1,6 @@
 CREATE TABLE item(
     id integer PRIMARY KEY,
-    name varchar(30),
+    name varchar(255),
     price integer,
     description varchar (255),
     duration  integer

@@ -51,18 +51,18 @@ class Boss:
 
 Bosses: list[Boss] = [
     Boss(
-        0,
-        'Батя Коллектора',
-        'father.jpg',
-        750,
-        47,
-        0.3,
-        1000,
-        850,
-        5,
-        0.35,
-        0.5,
-        -1
+        id=0,
+        name='Батя Коллектора',
+        photo='father.jpg',
+        hp=750,
+        damage=47,
+        luck=0.3,
+        moneyReward=1000,
+        expReward=850,
+        ultaCharge=5,
+        cleaveRate=0.35,
+        ultaRate=0.5,
+        itemId=33
     ),
     Boss(
         1,
@@ -76,7 +76,7 @@ Bosses: list[Boss] = [
         2,
         0.51,
         0.1,
-        -1
+        34
     ),
     Boss(
         2,
@@ -90,7 +90,7 @@ Bosses: list[Boss] = [
         6,
         0.7,
         0.9,
-        -1
+        35
     ),
     Boss(
         3,
@@ -104,7 +104,7 @@ Bosses: list[Boss] = [
         7,
         0.51,
         0.4,
-        -1
+        36
     )
 ]
 
