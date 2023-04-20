@@ -1,6 +1,16 @@
 import Classes.Player as Player
 from typing import Any
 import requests
+from pathlib import Path
+import configparser
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 class Quiz():
     def __init__(self, id: int, name: str, photo: str):
@@ -61,7 +71,7 @@ def RemoveQuizInChat(quiz: QuizInChat):
 
 def AddQuiz(quiz: Quiz):
     responce:requests.Response = requests.post(
-        url=f'http://localhost:8080/api/quiz/create',
+        url=f'http://{backhost}:{backport}/api/quiz/create',
         json = quiz.to_json(),
         headers={"Content-Type": "application/json"})
     
@@ -73,7 +83,7 @@ def AddQuiz(quiz: Quiz):
 
 def GetQuiz(id: int):
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/quiz/id/{id}',
+        url=f'http://{backhost}:{backport}/api/quiz/id/{id}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
@@ -84,7 +94,7 @@ def GetQuiz(id: int):
 
 def addQuestion(question: Question):
     responce:requests.Response = requests.post(
-        url=f'http://localhost:8080/api/quiz/add/question',
+        url=f'http://{backhost}:{backport}/api/quiz/add/question',
         json = question.to_json(),
         headers={"Content-Type": "application/json"})
     
@@ -93,7 +103,7 @@ def addQuestion(question: Question):
 
 def GetAllQuizes() -> list[Quiz]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/quiz/all',
+        url=f'http://{backhost}:{backport}/api/quiz/all',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
@@ -105,7 +115,7 @@ def GetAllQuizes() -> list[Quiz]:
 
 def GetQuestions(quizId: int):
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/quiz/id/{quizId}',
+        url=f'http://{backhost}:{backport}/api/quiz/id/{quizId}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
@@ -118,7 +128,7 @@ def GetQuestions(quizId: int):
 
 def RemoveQuiz(quizId: int):
     responce:requests.Response = requests.delete(
-        url=f'http://localhost:8080/api/quiz/delete/{quizId}',
+        url=f'http://{backhost}:{backport}/api/quiz/delete/{quizId}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
