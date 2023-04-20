@@ -47,7 +47,7 @@ Bosses: list[Boss] = [
     Boss(
         0,
         'Батя Коллектора',
-        (ROOT / 'static/boss/father.jpg').__str__(),
+        'father.jpg',
         100,
         10,
         0.3,
@@ -61,7 +61,7 @@ Bosses: list[Boss] = [
     Boss(
         1,
         'Жаба',
-        (ROOT / 'static/boss/frog.jpg').__str__(),
+        'frog.jpg',
         2000,
         15,
         0.1,
