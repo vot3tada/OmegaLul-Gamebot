@@ -4,6 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 import Classes.Player as Player
 from utils.create_bot import bot, dp
+from utils.scheduler import scheduler
 import Classes.Quiz as Quiz
 import random
 import handlers.achievement as AchievementHandler
@@ -30,6 +31,9 @@ async def QuizMenuStart(message : types.Message):
         return
 
     quizes: list[Quiz.Quizes] = Quiz.GetAllQuizes()
+    if len(quizes) == 0:
+        await message.reply('Ой, квизов нет😣')
+        return
     replytext = f'<b>Список квизов</b>:\n'
     keyboard = types.InlineKeyboardMarkup()
     for quiz in quizes[:5]:
@@ -105,7 +109,7 @@ async def ChoiceQuiz(call: types.CallbackQuery):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text='Начать', callback_data=f'quizStart:{id}'))
     if (quiz.image != ''):
-        photo = open('./static/quizes/'+quiz.image, 'rb')
+        photo = open(ROOT / 'static/quizes/' / quiz.image, 'rb')
         await call.message.answer_photo(
             caption=replyText,
             photo=photo,
@@ -127,10 +131,10 @@ async def NextQuestion(ChatId: int):
     if (quiz.number < len(quiz.questions)):
         question: Quiz.Question = quiz.questions[quiz.number]
         if (question.image != ''):
-            photo = open('./static/quizes/' / question.image, 'rb')
-            await bot.send_photo(chat_id=ChatId, caption=f'Минута на вопрос: {question.text}',photo=photo)
+            photo = open(ROOT / 'static/quizes/' / question.image, 'rb')
+            await bot.send_photo(chat_id=ChatId, caption=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'),photo=photo)
         else:
-            await bot.send_message(chat_id=ChatId, text=f'Минута на вопрос: {question.text}')
+            await bot.send_message(chat_id=ChatId, text=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'))
         return
     
     text = 'Квиз закончен!\nТоп игроков по количеству ответов:'
@@ -146,7 +150,7 @@ async def NextQuestion(ChatId: int):
     top.sort(key=lambda x:x[1])
     for i in top[::-1]:
         text += f'\n{i[0]} - {i[1]}'
-    await bot.send_photo(chat_id=ChatId, caption=text, photo=open('./static/quizWin/' / random.choice(os.listdir('./static/quizWin')) ,'rb'))
+    await bot.send_photo(chat_id=ChatId, caption=text, photo=open(ROOT / 'static/quizWin/' / random.choice(os.listdir(ROOT / 'static/quizWin')) ,'rb'))
     scheduler.remove_job(f'quiz:{ChatId}')
 
 async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
@@ -184,7 +188,7 @@ async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
         if (qq.image != ''):
             await bot.send_photo(chat_id=i.userId, 
                                 caption=f'Сейчас проходит квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
-                                photo=InputFile('./static/quizes/' / qq.image),
+                                photo=InputFile(ROOT / 'static/quizes/' / qq.image),
                                 parse_mode='HTML')
         else:
             await bot.send_message(chat_id=i.userId, 
@@ -195,10 +199,10 @@ async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
     
     
     if (question.image != ''):
-        photo = InputFile('./static/quizes/' / question.image)
-        await call.message.answer_photo(caption=f'Минута на вопрос: {question.text}',photo=photo)
+        photo = InputFile(ROOT / 'static/quizes/' / question.image)
+        await call.message.answer_photo(caption=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'),photo=photo)
     else:   
-        await call.message.answer(text=f'Минута на вопрос: {question.text}')
+        await call.message.answer(text=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'))
     
     
     
@@ -220,10 +224,10 @@ async def AnswerQuestion(message: types.Message, state: FSMContext):
         if (quiz.number < len(quiz.questions)):
             question: Quiz.Question = quiz.questions[quiz.number]
             if (question.image != ''):
-                photo = open('./static/quizes/' / question.image, 'rb')
-                await message.answer_photo(caption=f'Минута на вопрос: {question.text}',photo=photo)
+                photo = open(ROOT / 'static/quizes/' / question.image, 'rb')
+                await message.answer_photo(caption=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'),photo=photo)
             else:
-                await message.answer(text=f'Минута на вопрос: {question.text}')
+                await message.answer(text=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'))
             return
         
         text = 'Квиз закончен!\nТоп игроков по ответам:'
@@ -240,15 +244,15 @@ async def AnswerQuestion(message: types.Message, state: FSMContext):
         top.sort(key=lambda x:x[1])
         for i in top[::-1]:
             text += f'\n{i[0]} - {i[1]}'
-        await message.answer_photo(caption = text, photo=open('./static/quizWin/' / random.choice(os.listdir('./static/quizWin')) ,'rb'))
+        await message.answer_photo(caption = text, photo=open(ROOT / 'static/quizWin/' / random.choice(os.listdir(ROOT / 'static/quizWin')) ,'rb'))
         scheduler.remove_job(f'quiz:{message.chat.id}')
     else:
         question: Quiz.Question = quiz.questions[quiz.number]
         if (question.image != ''):
-                photo = open('./static/quizes/' / question.image, 'rb')
-                await message.reply_photo(caption=f'Ответ неправильный😥\nВопрос: {question.text}', photo=photo)
+                photo = open(ROOT / 'static/quizes/' / question.image, 'rb')
+                await message.reply_photo(caption='Ответ неправильный😥\nВопрос:\n'+question.text.replace('\\n', '\n'), photo=photo)
         else:
-            await message.reply(f'Ответ неправильный😥\nВопрос: {question.text}')
+            await message.reply('Ответ неправильный😥\nВопрос:\n'+question.text.replace('\\n', '\n'))
         
 
 async def TakePartQuiz(message: types.Message, state: FSMContext):
@@ -290,7 +294,7 @@ async def CreateQuizPhoto(message: types.Message, state: FSMContext):
     await message.answer('Отправь фото, если не хочешь фото, просто ответь что-нибудь')
 
 async def CreateQuizCreateWithoutPhoto(message: types.Message, state: FSMContext):
-    folder = Path('./static/quizes')
+    folder = Path(ROOT / 'static/quizes')
     id = len(list(folder.iterdir())) + 1
     async with state.proxy() as data:
         quiz = Quiz.Quiz(id, data['createQuizName'], '')
@@ -300,9 +304,9 @@ async def CreateQuizCreateWithoutPhoto(message: types.Message, state: FSMContext
     await message.answer('Напиши текст первого вопроса')
 
 async def CreateQuizCreateWithPhoto(message: types.Message, state: FSMContext):
-    folder = Path('./static/quizes')
+    folder = Path(ROOT / 'static/quizes')
     id = len(list(folder.iterdir())) + 1
-    orig = f'./static/quizes/{id}.png'
+    orig = ROOT / f'static/quizes/{id}.png'
     await message.photo[-1].download(orig)
     async with state.proxy() as data:
         quiz = Quiz.Quiz(id, data['createQuizName'], f'{id}.png')
@@ -331,9 +335,9 @@ async def QuestionCreateWithoutPhoto(message: types.Message, state: FSMContext):
     await message.answer('Напиши + если хочешь ещё вопрос. Если нет, просто ответь что-нибудь')
 
 async def QuestionCreateWithPhoto(message: types.Message, state: FSMContext):
-    folder = Path('./static/quizes')
+    folder = Path(ROOT / 'static/quizes')
     id = len(list(folder.iterdir())) + 1
-    orig = f'./static/quizes/{id}.png'
+    orig = ROOT / f'static/quizes/{id}.png'
     await message.photo[-1].download(orig)
     async with state.proxy() as data:
         question = Quiz.Question(0, data['questionText'], data['questionAnswer'], f'{id}.png', data['createQuizName'].id)

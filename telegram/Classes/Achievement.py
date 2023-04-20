@@ -1,10 +1,7 @@
-<<<<<<< .mine
 import requests
 from typing import Any
-=======
 from pathlib import Path
 
->>>>>>> .theirs
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]

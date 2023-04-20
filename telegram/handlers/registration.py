@@ -125,8 +125,8 @@ async def endRegistation(call: types.CallbackQuery, state: FSMContext):
         await state.finish()
         Player.AddPlayer(newPlayer)
         Leaderboard.AddLeaderBoardInChat(call.message.chat.id)
+        RE.AddRandomEventInChat(call.message.chat.id)
         await call.message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
-        scheduler.add_job(RE.RandomEvent, trigger='interval', seconds=86400, args=[call.message.chat.id, call.from_user.id], coalesce=True, id=f'RE:{call.message.chat.id}_{call.message.from_user.id}') 
 
 async def cancelRegistration(message: types.Message, state: FSMContext):
     await state.finish()
