@@ -8,7 +8,7 @@ CREATE TABLE item(
 
 CREATE TABLE effect(
     id integer PRIMARY KEY,
-    property varchar(20),
+    property varchar(30),
     value integer,
     item_id integer REFERENCES item(id) ON DELETE CASCADE
 );
