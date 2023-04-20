@@ -13,3 +13,5 @@ config.ini
 /venv
 *.json
 .idea
+/Bot2Env
+/BotVenv
