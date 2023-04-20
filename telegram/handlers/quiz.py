@@ -2,12 +2,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
-from utils.scheduler import scheduler
-import Classes.Player as Player
-from utils.create_bot import bot, dp
-import Classes.Quiz as Quiz
+from ..utils.scheduler import scheduler
+from ..Classes import Player
+from ..utils.create_bot import bot, dp
+from ..Classes import Quiz
 import random
-import handlers.achievement as AchievementHandler
+from ..handlers import achievement as AchievementHandler
 from aiogram.types import InputFile
 import os
 from pathlib import Path

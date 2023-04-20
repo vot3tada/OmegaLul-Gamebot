@@ -1,4 +1,4 @@
-import Classes.Achievement as Achiv
+from . import Achievement as Achiv
 from typing import Any, Union
 import requests
 

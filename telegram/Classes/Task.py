@@ -1,8 +1,8 @@
 import datetime
 from typing import Any
 from dateutil import tz
-import Classes.Player as Player
-from utils.scheduler import scheduler
+from . import Player
+from ..utils.scheduler import scheduler
 import requests
 
 class Task():
