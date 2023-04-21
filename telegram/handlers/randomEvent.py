@@ -9,9 +9,8 @@ import aiogram
 
 async def RandomEvent(chatId: int):
     try:
-        players:list[Player.Player] = Player.GetAllPlayers(chatId)
         events: list[Item.Good] = Item.GetRandomEventItems()
-        player = random.choice(players)
+        player = Player.GetRandomPlayer(chatId, True)
         event = random.choice(events)
         player.BuffByItem(event)
         history = History.GetHistory(player.chatId, player.userId)
