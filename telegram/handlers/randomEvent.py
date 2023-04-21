@@ -31,4 +31,4 @@ async def RandomEvent(chatId: int):
 def AddRandomEventInChat(chatId: int):
     job = scheduler.get_job(f'RE:{chatId}')
     if (job == None):
-        scheduler.add_job(RandomEvent, trigger='interval', seconds=86400, args=[chatId], coalesce=True, id=f'RE:{chatId}') 
+        scheduler.add_job(RandomEvent, trigger='cron', day_of_week='mon-fri', hour=10, minute=30, args=[chatId], coalesce=True, id=f'RE:{chatId}') 
