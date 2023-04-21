@@ -15,6 +15,7 @@ class Good():
     
     def __init__(self, 
                  name: str,
+                 type: str,
                  id: int,
                  price: int,
                  description: str,
@@ -34,6 +35,20 @@ def GetAllItems() -> Union[list[Good], None]:
 
     responce:requests.Response = requests.get(
         url=f'http://{backhost}:{backport}/api/item/all',
+        headers={"Content-Type": "application/json"})
+
+    if not responce.ok:
+        return None
+    
+    data: list[dict[str, Any]] = responce.json()
+    goods = [Good(**good) for good in data]
+
+    return goods
+
+def GetRandomEventItems() -> Union[list[Good], None]:
+
+    responce:requests.Response = requests.get(
+        url=f'http://localhost:8080/api/item/type/event',
         headers={"Content-Type": "application/json"})
 
     if not responce.ok:

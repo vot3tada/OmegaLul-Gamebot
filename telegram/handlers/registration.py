@@ -6,6 +6,8 @@ import utils.avatarCreator as ac
 import Classes.Player as Player
 from pathlib import Path
 import handlers.leaderboard as Leaderboard
+from utils.scheduler import scheduler
+import handlers.randomEvent as RE
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
@@ -123,6 +125,7 @@ async def endRegistation(call: types.CallbackQuery, state: FSMContext):
         await state.finish()
         Player.AddPlayer(newPlayer)
         Leaderboard.AddLeaderBoardInChat(call.message.chat.id)
+        RE.AddRandomEventInChat(call.message.chat.id)
         await call.message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
 
 async def cancelRegistration(message: types.Message, state: FSMContext):
@@ -167,7 +170,6 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_message_handler(getPhoto, content_types=['photo'], state=FSMRegistation.photoSend)
     dp.register_callback_query_handler(getAnotherPhoto, regexp="^ava0:*", state=FSMRegistation.acceptPhoto)
     dp.register_callback_query_handler(endRegistation, regexp="^ava1:*", state=FSMRegistation.acceptPhoto)
-
     dp.register_message_handler(changeAvatar, commands='avatar_change', state=None)
     dp.register_callback_query_handler(reRegStart, regexp="^reRegistration", state=None)
     

@@ -216,12 +216,12 @@ async def event_get_all(message : types.Message):
         await message.reply('Нужно зарегаться для такого')
         return
     events = Event.GetAllEvents(message.chat.id)
+    if len(events) == 0:
+        await message.reply('Нет эвентов в этом чате🤔')
+        return
     replytext = 'Список эвентов:'
     for i in events[:9]:
         replytext += f'\n<b>#{i.id}</b> - {i.name} - {i.datetime}'
-    if (len == 0):
-        message.answer('Нет эвентов в этом чате🤔')
-        return
     buttons: list[types.InlineKeyboardButton] = []
     buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
     if (len(events) > 10):
