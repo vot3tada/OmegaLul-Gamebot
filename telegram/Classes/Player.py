@@ -349,14 +349,14 @@ def AddPlayer(player : Player):
     if response.status_code != 201:
         raise RuntimeError(f'Добавление пользователя: {response.status_code}')
 
-def GetRandomPlayer(chatId: int):
+def GetRandomPlayer(chatId: int, positively: bool):
     players = GetAllPlayers(chatId)
     if len(players) == 0: return None
-    sumLuck = sum(i.fullLuck for i in players)
+    sumLuck = sum(i.fullLuck for i in players) if positively else sum(abs(1 - i.fullLuck) for i in players)
     index = random.random() * sumLuck
     total_luck = 0
     for player in players:
-        total_luck += player.fullLuck
+        total_luck += player.fullLuck if positively else abs(1 - player.fullLuck)
         if total_luck >= index:
             return player
     return players[len(players) - 1]
