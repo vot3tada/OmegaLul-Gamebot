@@ -3,6 +3,7 @@ from typing import Any, Union
 from utils.scheduler import scheduler
 import apscheduler.job
 import requests
+import random
 
 levelLuckFactor = 0.005
 levelDamageFactor = 1
@@ -159,6 +160,10 @@ class Player():
             raise ValueError('Множитель не может быть отрицательным')
         self._luckMultiply = x
         self._updatePlayer()
+
+    @property
+    def fullLuck(self):
+        return (self._luck + levelLuckFactor * self.level) * self._luckMultiply
 
     @property
     def expMultiply(self):
@@ -343,5 +348,10 @@ def AddPlayer(player : Player):
     
     if response.status_code != 201:
         raise RuntimeError(f'Добавление пользователя: {response.status_code}')
+
+def GetRandomPlayer(chatId: int):
+    players = GetAllPlayers(chatId)
+    sumLuck = sum(i.fullLuck for i in players)
+    index = random.randint(0, sumLuck)
 
     
