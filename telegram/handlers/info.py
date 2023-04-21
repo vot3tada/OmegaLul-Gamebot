@@ -157,7 +157,7 @@ async def getHelp(message: types.Message):
             types.InlineKeyboardButton(text=helpSection, callback_data=f'help:{helpSection}')
         )
     await message.reply_photo(
-        caption='<b>Какой раздел Омехалюля вас интересует ?</b>',
+        caption='<b>Какой раздел Омехалюля вас интересует?</b>',
         parse_mode='HTMl',
         photo=open(ROOT / 'static/info/' / random.choice(os.listdir(ROOT / 'static/info')), 'rb'),
         reply_markup=keyboard

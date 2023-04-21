@@ -1,4 +1,3 @@
-
 def ParseSeconds(seconds: int) -> str:
     time = ''
     if seconds // 86400:

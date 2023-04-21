@@ -131,7 +131,7 @@ class ChatRaid:
                 random.random() > self.boss.ultaRate + (0.075 * (self.boss.ulta - self.boss.ultaCharge))):
             self.boss.ulta = 0
             return 1
-        else:
+        else:#убирай else
             return 0
 
 
