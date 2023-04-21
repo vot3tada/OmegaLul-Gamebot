@@ -244,44 +244,45 @@ async def instantEndRecr(call: types.CallbackQuery):
 async def endRecr(chatId: int):
     chatRaid = Raid.GetChatRaidByChat(chatId)
     scheduler.remove_job(f'raidRecr:{chatId}')
-    if chatRaid:#меняй, чтобы не было табов для большого количества кода
+    if not chatRaid:
+        return
 
-        if len(chatRaid.players) > 1:#Это тоже
-            text = f'<b>{chatRaid.boss.name}</b>:  ({chatRaid.boss.hp})   [0/{chatRaid.boss.ultaCharge}]\n'
-            for player in chatRaid.players:
-                st: FSMContext = dp.current_state(chat=player.chatId, user=player.userId)
-                await st.set_state(RaidState.ready)
-                await st.set_data(getFighterData(player))
-                text += f'<b>{player.name}</b>:  ({player.hp})   [0/{UltaCharge}]\n'
-                player.hp -= bossHPCut
-            keyboard = types.InlineKeyboardMarkup()
-            keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"bossFightR:{chatRaid.id}"))
-            keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"bossFightD:{chatRaid.id}"))
-            keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"bossUlta:{chatRaid.id}"))
-            keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"bossDefence:{chatRaid.id}"))
+    if len(chatRaid.players) <= 1:
+        await bot.send_message(chat_id=chatId, text='Один в поле не войн, рейд не начат...')
+        for player in chatRaid.players:
+            st: FSMContext = dp.current_state(chat=player.chatId, user=player.userId)
+            await st.set_state(None)
+            Raid.EndRaidInChat(chatRaid)
+        return
 
-            await bot.send_message(chat_id=chatId, text='НАЧИНАЕМ РЕЙД!')
-            battleMessage = await bot.send_photo(chat_id=chatId,
-                                                 photo=open(ROOT / 'static/bossFight/' / random.choice(
-                                                     os.listdir(ROOT / 'static/bossFight')), 'rb'),
-                                                 caption=text,
-                                                 parse_mode='HTML',
-                                                 reply_markup=keyboard
-                                                 )
-            actionMessage = await bot.send_message(chat_id=chatId, text='Действия бойцов:\n')
-            chatRaid.AcceptRaid(actionMessage, battleMessage)
-
-            extraSec = 0
-            if len(chatRaid.players) > 5:
-                extraSec = (len(chatRaid.players) - 5) * 3
-            scheduler.add_job(outOfTime, trigger='interval', jobstore='local', args=[chatRaid.id],
-                              seconds=35 + extraSec, id=f'boss_{chatRaid.id}')
-        else:
-            await bot.send_message(chat_id=chatId, text='Один в поле не войн, рейд не начат...')
-            for player in chatRaid.players:
-                st: FSMContext = dp.current_state(chat=player.chatId, user=player.userId)
-                await st.set_state(None)
-                Raid.EndRaidInChat(chatRaid)
+    text = f'<b>{chatRaid.boss.name}</b>:  ({chatRaid.boss.hp})   [0/{chatRaid.boss.ultaCharge}]\n'
+    for player in chatRaid.players:
+        st: FSMContext = dp.current_state(chat=player.chatId, user=player.userId)
+        await st.set_state(RaidState.ready)
+        await st.set_data(getFighterData(player))
+        text += f'<b>{player.name}</b>:  ({player.hp})   [0/{UltaCharge}]\n'
+        player.hp -= bossHPCut
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text="Драться яростно", callback_data=f"bossFightR:{chatRaid.id}"))
+    keyboard.add(types.InlineKeyboardButton(text="Драться ловко", callback_data=f"bossFightD:{chatRaid.id}"))
+    keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"bossUlta:{chatRaid.id}"))
+    keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"bossDefence:{chatRaid.id}"))
+    await bot.send_message(chat_id=chatId, text='НАЧИНАЕМ РЕЙД!')
+    battleMessage = await bot.send_photo(chat_id=chatId,
+                                         photo=open(ROOT / 'static/bossFight/' / random.choice(
+                                             os.listdir(ROOT / 'static/bossFight')), 'rb'),
+                                         caption=text,
+                                         parse_mode='HTML',
+                                         reply_markup=keyboard
+                                         )
+    actionMessage = await bot.send_message(chat_id=chatId, text='Действия бойцов:\n')
+    chatRaid.AcceptRaid(actionMessage, battleMessage)
+    extraSec = 0
+    if len(chatRaid.players) > 5:
+        extraSec = (len(chatRaid.players) - 5) * 3
+    scheduler.add_job(outOfTime, trigger='interval', jobstore='local', args=[chatRaid.id],
+                      seconds=35 + extraSec, id=f'boss_{chatRaid.id}')
+        
 
 
 async def InitAttackStep(chatRaidId: int, player: Player.Player, choice: str):

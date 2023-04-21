@@ -33,13 +33,7 @@ async def taskList(message: types.Message):
     keyboard = None
     for task in tasks[:4]:
         player = Player.GetPlayer(task.chatId, task.ownerUserId)
-        time = ''
-        if task.duration // 86400:
-            time += f'{task.duration // 86400} д. '
-        if  (task.duration % 86400)// 3600:
-            time += f'{(task.duration % 86400)// 3600} ч. '
-        if (task.duration % 3600)// 60:
-            time += f'{(task.duration % 3600)// 60} м. '
+        time = ParseSeconds(task.duration)
         
         replytext += f"""
         Задание:  <i>{task.name}</i>
@@ -189,15 +183,7 @@ async def choiceMyGivenTask(call: types.CallbackQuery):
     if call.message.chat.id != task.chatId or call.from_user.id != task.ownerUserId:
         await call.answer('Это не ваш список')
         return
-    time = ''
-        #Ну сам понимаещь
-        #time: int = 86400 * timetext[0] + 3600 * time[1] + 60 * time[2]
-    if task.duration // 86400:
-        time += f'{task.duration // 86400} д. '
-    if  (task.duration % 86400)// 3600:
-        time += f'{(task.duration % 86400)// 3600} ч. '
-    if (task.duration % 3600)// 60:
-        time += f'{(task.duration % 3600)// 60} м. '
+    time = ParseSeconds(task.duration)
         
     replyText = f'<b>{task.name}</b>\nНаграда: {task.money} монет\nВремя на выполнение: {time}'
     keyboard = types.InlineKeyboardMarkup()
@@ -382,14 +368,7 @@ async def choiceMyTakenTask(call: types.CallbackQuery):
     if call.message.chat.id != task.chatId or call.from_user.id != task.workerUserId:
         await call.answer('Это не ваш список')
         return
-    time = ''
-    #Ещё также
-    if task.duration // 86400:
-        time += f'{task.duration // 86400} д. '
-    if  (task.duration % 86400)// 3600:
-        time += f'{(task.duration % 86400)// 3600} ч. '
-    if (task.duration % 3600)// 60:
-        time += f'{(task.duration % 3600)// 60} м. '
+    time = ParseSeconds(task.duration)
         
     replyText = f'<b>{task.name}</b>\nНаграда: {task.money} монет\nВремя на выполнение: {time}'
     keyboard = types.InlineKeyboardMarkup()
@@ -505,15 +484,7 @@ async def remind(chatId: int, userId: int, taskId: int):
     scheduler.remove_job(f'remember_{chatId}_{userId}_{taskId}')
     task = Task.GetTask(taskId)
     durationLeft = task.duration / 3
-    time = ''#same
-    if durationLeft // 86400:
-        time += f'{durationLeft // 86400} д. '
-    if  (durationLeft % 86400)// 3600:
-        time += f'{(durationLeft % 86400)// 3600} ч. '
-    if (durationLeft % 3600)// 60:
-        time += f'{(durationLeft % 3600)// 60} м. '
-    if (durationLeft % 60):
-        time += f'{durationLeft % 60} c. '
+    time = ParseSeconds(durationLeft)
 
     await bot.send_photo(
         chat_id=userId,

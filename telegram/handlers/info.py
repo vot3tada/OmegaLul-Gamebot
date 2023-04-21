@@ -40,7 +40,7 @@ async def welcomeMessage(message: types.Message):
     
 
 helpSections: dict[str, str] = {
-    "Общий": '<b>Какой разел Омехалюля вас интересует ?</b>',
+    "Общий": '<b>Какой разел Омехалюля вас интересует?</b>',
     "Персонаж": f"""
 <b>Персонаж</b>
 Команды:
