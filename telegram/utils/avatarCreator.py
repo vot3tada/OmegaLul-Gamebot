@@ -1,5 +1,5 @@
 import cv2
-import dlib
+#import dlib
 import numpy as np
 import random
 import os

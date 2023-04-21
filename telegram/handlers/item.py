@@ -15,8 +15,6 @@ async def useItem(call : types.CallbackQuery):
         await call.answer('Это не ваш инвентарь')
         return
     player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
-    
-    
     good : Good.Good  = Good.GetItem(itemId)
     if not player.FindItem(good):
         await call.answer('Нет такого предмета')

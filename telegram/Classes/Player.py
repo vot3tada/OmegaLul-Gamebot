@@ -54,7 +54,7 @@ class Player():
         else:
             self._inventory: list[Good.Good, int] = [[Good.GetItem(good['itemId']), good['count']] for good in data]
 
-        scheduler
+        scheduler#Это че
 
 
     def to_json(self, withIds = True) -> dict[str, Any]:

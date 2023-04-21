@@ -190,6 +190,7 @@ async def choiceMyGivenTask(call: types.CallbackQuery):
         await call.answer('Это не ваш список')
         return
     time = ''
+        #Ну сам понимаещь
         #time: int = 86400 * timetext[0] + 3600 * time[1] + 60 * time[2]
     if task.duration // 86400:
         time += f'{task.duration // 86400} д. '
@@ -382,6 +383,7 @@ async def choiceMyTakenTask(call: types.CallbackQuery):
         await call.answer('Это не ваш список')
         return
     time = ''
+    #Ещё также
     if task.duration // 86400:
         time += f'{task.duration // 86400} д. '
     if  (task.duration % 86400)// 3600:
@@ -503,7 +505,7 @@ async def remind(chatId: int, userId: int, taskId: int):
     scheduler.remove_job(f'remember_{chatId}_{userId}_{taskId}')
     task = Task.GetTask(taskId)
     durationLeft = task.duration / 3
-    time = ''
+    time = ''#same
     if durationLeft // 86400:
         time += f'{durationLeft // 86400} д. '
     if  (durationLeft % 86400)// 3600:
@@ -534,7 +536,7 @@ async def punish(chatId: int, userId: int, taskId: int):
     player: Player.Player = Player.GetPlayer(chatId, userId)
     keyboard = types.InlineKeyboardMarkup()
     
-    if player.money >= (task.money // 2):
+    if player.money >= (task.money // 2):#Можно и в одну строчку
         payText =  'Заплатить'  
     else:
         payText = 'Заплатить что есть'

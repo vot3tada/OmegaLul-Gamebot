@@ -32,7 +32,7 @@ def LeaderFormula(his: History.History) -> int:
     )
 
 
-def AddLeaderBoardInChat(chatId: int):
+def AddLeaderBoardInChat(chatId: int):#Сделать каждое воскресенье
     players = Player.GetAllPlayers(chatId)
     job = scheduler.get_job(f'leaderboard:{chatId}')
     if len(players) and not job:
@@ -69,7 +69,7 @@ async def SendLeaderBoard(chatId: int):
         scheduler.remove_job(f'leaderboard:{chatId}')
 
 
-async def GetLeaderBoard(message: types.Message):
+async def GetLeaderBoard(message: types.Message):#????? Почему 
     await SendLeaderBoard(message.chat.id)
 
 def register_handlers_leaderboard(dp: Dispatcher):

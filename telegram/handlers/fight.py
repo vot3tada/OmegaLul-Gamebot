@@ -28,7 +28,7 @@ class Fight(StatesGroup):
     Ready = State()
     Attack = State()
 
-def fightsFind(chat_id:int, player_id : int):
+def fightsFind(chat_id:int, player_id : int):#false 
     for i in range(len(fights[chat_id])):
         if fights[chat_id][i][0] == player_id or fights[chat_id][i][1] == player_id:
             return i
@@ -127,7 +127,7 @@ async def InitAttackStep(message: types.CallbackQuery):
                 await AchievementHandler.AddHistory(chatId = player1.chatId, userId = player1.userId, totalMoney=money, totalExp=exp, totalWinFights=1)
                 replyText += f'<b>Получено</b>:\nОпыт: {exp}\nДеньги: {money}'
                 media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/win/' / random.choice(os.listdir(ROOT / 'static/win'))), caption=replyText, parse_mode='HTML')
-            elif st2d.get("health") > 0 and  st1d.get("health") <= 0:   
+            elif st2d.get("health") > 0 and  st1d.get("health") <= 0:#Пробельчик лишний   
                 replyText += f'Победитель: {name2}!!\nХвала чемпиону зверей!\n'
                 exp = ExpReward(player2.hp)
                 money = MoneyReward(player2.hp)
@@ -157,7 +157,7 @@ async def fightCall(message : types.Message):
         await message.reply('Твое здоровье на нуле, боец')
         return
 
-    if not message.reply_to_message is None:
+    if not message.reply_to_message is None: #Сделай другую проверку, чтобы else не было
         if message.reply_to_message.from_user.id == (await bot.get_me()).id:
             await message.answer('Омегалюль вам не по зубам, салага')
             return
@@ -191,7 +191,7 @@ async def fightRefuse(message: types.Message, state :FSMContext):
         fights[message.chat.id] = []
     index = fightsFind(message.chat.id, message.from_user.id)
     if index == -1:
-        await message.answer("Нечего отменять")
+        await message.answer("Нечего отменять")#сука
     else:
         user1 = Player.GetPlayer(message.chat.id, message.from_user.id)
         if await state.get_state() == 'Fight:Ready' or await state.get_state() == 'Fight:Attack':

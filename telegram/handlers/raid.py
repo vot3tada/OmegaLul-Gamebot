@@ -244,9 +244,9 @@ async def instantEndRecr(call: types.CallbackQuery):
 async def endRecr(chatId: int):
     chatRaid = Raid.GetChatRaidByChat(chatId)
     scheduler.remove_job(f'raidRecr:{chatId}')
-    if chatRaid:
+    if chatRaid:#меняй, чтобы не было табов для большого количества кода
 
-        if len(chatRaid.players) > 1:
+        if len(chatRaid.players) > 1:#Это тоже
             text = f'<b>{chatRaid.boss.name}</b>:  ({chatRaid.boss.hp})   [0/{chatRaid.boss.ultaCharge}]\n'
             for player in chatRaid.players:
                 st: FSMContext = dp.current_state(chat=player.chatId, user=player.userId)
