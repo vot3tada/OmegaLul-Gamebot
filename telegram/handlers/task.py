@@ -11,6 +11,7 @@ import os
 from handlers.collector import CollectorState
 import handlers.achievement as AchievementHandler
 from pathlib import Path
+from utils import ParseSeconds
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
@@ -76,13 +77,7 @@ async def pageTaskList(call: types.CallbackQuery):
     keyboard = None
     for task in tasks[page*4:page*4+4]:
         player = Player.GetPlayer(task.chatId, task.ownerUserId)
-        time = ''
-        if task.duration // 86400:
-            time += f'{task.duration // 86400} д. '
-        if  (task.duration % 86400)// 3600:
-            time += f'{(task.duration % 86400)// 3600} ч. '
-        if (task.duration % 3600)// 60:
-            time += f'{(task.duration % 3600)// 60} м. '
+        time = ParseSeconds(task.duration)
         
         replytext += f"""
         Задание:  <i>{task.name}</i>

@@ -8,19 +8,18 @@ import aiogram
 
 
 async def RandomEvent(chatId: int):
+    players:list[Player.Player] = Player.GetAllPlayers(chatId)
+    events: list[Item.Good] = Item.GetRandomEventItems()
+    player = random.choice(players)
+    event = random.choice(events)
+    player.BuffByItem(event)
+    history = History.GetHistory(player.chatId, player.userId)
+    if event.effects[0]['property'] == 'exp':
+            history.UpdateHistory(totalExp=event.effects[0]['value'])
+    elif event.effects[0]['property'] == 'money':
+        if event.effects[0]['value'] > 0:
+            history.UpdateHistory(totalMoney=event.effects[0]['value'])
     try:
-        players:list[Player.Player] = Player.GetAllPlayers(chatId)
-        events: list[Item.Good] = Item.GetRandomEventItems()
-        player = random.choice(players)
-        event = random.choice(events)
-        player.BuffByItem(event)
-        history = History.GetHistory(player.chatId, player.userId)
-        match event.effects[0]['property']:
-            case 'exp':
-                history.UpdateHistory(totalExp=event.effects[0]['value'])
-            case 'money':
-                if event.effects[0]['value'] > 0:
-                    history.UpdateHistory(totalMoney=event.effects[0]['value'])
         await bot.send_message(chat_id=chatId, text=f'{player.name} попал под событие:\n<b>{event.name}</b>\n{event.description}', parse_mode='HTML')
     except aiogram.exceptions.ChatNotFound:
         print(f'chat: {chatId} removed')
