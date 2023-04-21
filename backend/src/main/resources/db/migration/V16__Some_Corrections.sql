@@ -66,28 +66,28 @@ VALUES('hp',-20),
       ('money',-100),
       ('hp',50),
       ('hp',-50),
-      ('experience',20),
+      ('exp',20),
       ('hp',10),
-      ('damage_multiply',-2),
+      ('damageMultiply',-2),
       ('experience',50),
-      ('luck_multiply',2),
-      ('luck_multiply',-2),
-      ('damage_multiply',2),
+      ('luckMultiply',2),
+      ('luckMultiply',-2),
+      ('damageMultiply',2),
       ('hp',-15),
-      ('experience',30),
-      ('experience',50),
+      ('exp',30),
+      ('exp',50),
       ('money',-100),
       ('money',200),
       ('hp',30),
       ('hp',-30),
-      ('experience',50),
+      ('exp',50),
       ('hp',-20),
       ('money',100),
       ('money',-50),
-      ('experience',30),
+      ('exp',30),
       ('hp',-40),
       ('hp',-25),
-      ('experience',30);
+      ('exp',30);
 
 INSERT INTO item_effects(item_id,effect_id)
 VALUES (1,1),
@@ -117,8 +117,3 @@ VALUES (1,1),
        (25,25),
        (26,26),
        (27,27);
-
-
-
-
-
