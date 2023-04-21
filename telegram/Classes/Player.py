@@ -351,7 +351,14 @@ def AddPlayer(player : Player):
 
 def GetRandomPlayer(chatId: int):
     players = GetAllPlayers(chatId)
+    if len(players) == 0: return None
     sumLuck = sum(i.fullLuck for i in players)
-    index = random.randint(0, sumLuck)
+    index = random.random() * sumLuck
+    total_luck = 0
+    for player in players:
+        total_luck += player.fullLuck
+        if total_luck >= index:
+            return player
+    return players[len(players) - 1]
 
     
