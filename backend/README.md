@@ -404,6 +404,15 @@ Body выглядит следующим образом, обратите вни
       "userId":3
       }
 
+# Boss
+1. Получение босса по айди: GET: **localhost:8080/api/boss/id/{id}**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
+2. Получение всех боссов: GET: **localhost:8080/api/boss/all**
+   >Success: Status 200
+
+   >Fail: Status 400, 404, 500
 ## !!!ВАЖНО!!!
 После каждого git pull репы, запуск контейнера будет таким: docker compose up -d --build
 
