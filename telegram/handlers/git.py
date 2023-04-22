@@ -12,7 +12,12 @@ FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
 
 def GitFormula(git: Git.GitHistory) -> int:
-    pass
+    return (
+        git.ApprovedMergeRequests * 0.2 +
+        git.OpenedMergeRequests * 0.2 + 
+        git.AcceptedMergeRequests * 0.2 +
+        git.PushedCommits * 0.1
+    )
 
 async def AddGitInChat(chatId: int):
     players = Player.GetAllPlayers(chatId)
