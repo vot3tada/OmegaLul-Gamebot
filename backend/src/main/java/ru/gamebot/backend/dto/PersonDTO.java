@@ -2,7 +2,6 @@ package ru.gamebot.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -19,26 +18,17 @@ public class PersonDTO {
 
     @NotEmpty(groups = Create.class)
     private String name;
-
     private Integer experience;
-
-
     private Integer experienceMultiply;
-
     private Integer money;
-
     @NotEmpty(groups = Create.class)
     private String photo;
-    @Nullable
     private Float luck;
-    @Nullable
     private Integer luckMultiply;
-    @Nullable
     private Integer hp;
-    @Nullable
     private Integer damage;
-    @Nullable
     private Integer damageMultiply;
+    private String gitlabUserName;
 
     @Data
     public static class PersonPKDTO {
