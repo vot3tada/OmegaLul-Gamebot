@@ -21,7 +21,6 @@ class Good():
                  description: str,
                  effects: list[dict[str, Any]],
                  duration: int,
-                 type: str
                  ) -> None:
         self.name = name
         self.id = id

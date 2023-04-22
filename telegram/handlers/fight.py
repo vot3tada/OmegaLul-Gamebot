@@ -28,7 +28,7 @@ class Fight(StatesGroup):
     Ready = State()
     Attack = State()
 
-def fightsFind(chat_id:int, player_id : int):#false 
+def fightsFind(chat_id:int, player_id : int) -> int: 
     for i in range(len(fights[chat_id])):
         if fights[chat_id][i][0] == player_id or fights[chat_id][i][1] == player_id:
             return i
@@ -109,7 +109,6 @@ async def InitAttackStep(message: types.CallbackQuery):
             keyboard.add(types.InlineKeyboardButton(text="УЛЬТАНУТЬ", callback_data=f"ulta:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             keyboard.add(types.InlineKeyboardButton(text="Защищаться", callback_data=f"defence:{fights[message.message.chat.id][index][0]}_{fights[message.message.chat.id][index][1]}"))
             
-            #await message.message.answer_photo(photo, caption=replyText, reply_markup=keyboard, parse_mode='HTML')
             media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/fight/' / random.choice(os.listdir(ROOT / 'static/fight'))), caption=replyText, parse_mode='HTML')
             await message.message.edit_media(media, reply_markup=keyboard)
         else:
@@ -191,30 +190,31 @@ async def fightRefuse(message: types.Message, state :FSMContext):
         fights[message.chat.id] = []
     index = fightsFind(message.chat.id, message.from_user.id)
     if index == -1:
-        await message.answer("Нечего отменять")#сука
+        await message.answer("Нечего отменять")
+        return
+    user1 = Player.GetPlayer(message.chat.id, message.from_user.id)
+    if await state.get_state() == 'Fight:Ready' or await state.get_state() == 'Fight:Attack':
+        st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][0])
+        await st.finish()
+        st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][1])
+        user2 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][1])
+        await st.finish()
+        
+        user1.hp -= HPCut
+        user2.hp -= HPCut
+        exp = ExpReward(user2.hp)
+        money = MoneyReward(user2.hp)
+        user2.exp += exp
+        user2.money += money
+        await AchievementHandler.AddHistory(chatId = user1.chatId, userId = user1.userId, totalFights=1, totalLeaveFights=1)
+        await AchievementHandler.AddHistory(chatId = user2.chatId, userId = user2.userId, totalMoney=money, totalExp=exp, totalFights=1, totalWinFights=1)
+        reply_text = f'{user1.name} позорно бежит с поля боя!\n{user2.name} - победитель!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}'
+        scheduler.remove_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
     else:
-        user1 = Player.GetPlayer(message.chat.id, message.from_user.id)
-        if await state.get_state() == 'Fight:Ready' or await state.get_state() == 'Fight:Attack':
-            st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][0])
-            await st.finish()
-            st = dp.current_state(chat= message.chat.id, user=fights[message.chat.id][index][1])
-            user2 = Player.GetPlayer(message.chat.id, fights[message.chat.id][index][1])
-            await st.finish()
-            
-            user1.hp -= HPCut
-            user2.hp -= HPCut
-            exp = ExpReward(user2.hp)
-            money = MoneyReward(user2.hp)
-            user2.exp += exp
-            user2.money += money
-            await AchievementHandler.AddHistory(chatId = user1.chatId, userId = user1.userId, totalFights=1, totalLeaveFights=1)
-            await AchievementHandler.AddHistory(chatId = user2.chatId, userId = user2.userId, totalMoney=money, totalExp=exp, totalFights=1, totalWinFights=1)
-            reply_text = f'{user1.name} позорно бежит с поля боя!\n{user2.name} - победитель!\n<b>Получено:</b>\nОпыт: {exp}\nДеньги: {money}'
-            scheduler.remove_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
-        else:
-            reply_text = f'{user1.name} отказался от дуэли!\n'
-        fights[message.chat.id].pop(index)
-        await message.answer(reply_text, parse_mode='HTML')
+        reply_text = f'{user1.name} отказался от дуэли!\n'
+        scheduler.remove_job(f'fight_{message.chat.id}_{fights[message.chat.id][index][0]}_{fights[message.chat.id][index][1]}')
+    fights[message.chat.id].pop(index)
+    await message.answer(reply_text, parse_mode='HTML')
 
 async def accept(message: types. Message, index: int):
     st : FSMContext = dp.current_state(chat=message.chat.id, user=fights[message.chat.id][index][0])

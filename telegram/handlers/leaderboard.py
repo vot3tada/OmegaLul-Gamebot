@@ -32,11 +32,12 @@ def LeaderFormula(his: History.History) -> int:
     )
 
 
-def AddLeaderBoardInChat(chatId: int):#Сделать каждое воскресенье
+def AddLeaderBoardInChat(chatId: int):
     players = Player.GetAllPlayers(chatId)
     job = scheduler.get_job(f'leaderboard:{chatId}')
     if len(players) and not job:
-        scheduler.add_job(SendLeaderBoard, trigger='interval', weeks=1, args=[chatId], id=f'leaderboard:{chatId}')
+        scheduler.add_job(SendLeaderBoard, trigger='cron', day_of_week='fri', hour=19, args=[chatId], id=f'leaderboard:{chatId}')
+        #scheduler.add_job(SendLeaderBoard, trigger='interval', weeks=1, args=[chatId], id=f'leaderboard:{chatId}')
 
 
 async def SendLeaderBoard(chatId: int):
@@ -73,4 +74,5 @@ async def GetLeaderBoard(message: types.Message):#????? Почему
     await SendLeaderBoard(message.chat.id)
 
 def register_handlers_leaderboard(dp: Dispatcher):
-    dp.register_message_handler(GetLeaderBoard, commands='leader_board', state=None)
+    pass
+    #dp.register_message_handler(GetLeaderBoard, commands='leader_board', state=None)

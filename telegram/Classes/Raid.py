@@ -157,16 +157,14 @@ class ChatRaid:
     def bossTarget(self) -> Union[Player, None]:
         if random.random() <= self.boss.cleaveRate:
             return None
-        else:
-            return random.choice(self.alives)
+        return random.choice(self.alives)
 
     def boosUlta(self) -> int:
         if (self.boss.ulta >= self.boss.ultaCharge and
                 random.random() > self.boss.ultaRate + (0.075 * (self.boss.ulta - self.boss.ultaCharge))):
             self.boss.ulta = 0
             return 1
-        else:#убирай else
-            return 0
+        return 0
 
 
 ChatRaids: list[ChatRaid] = []

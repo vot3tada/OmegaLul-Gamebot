@@ -1,4 +1,4 @@
-from . import avatar, registration, shop, fight, talk, work, event, item, info, task, collector, quiz, raid, achievement, leaderboard
+from . import avatar, registration, shop, fight, talk, work, event, item, info, task, collector, quiz, raid, achievement, leaderboard, dice
 from aiogram.dispatcher import Dispatcher
 
 def register_handlers(dp : Dispatcher):
@@ -17,5 +17,6 @@ def register_handlers(dp : Dispatcher):
     raid.register_handlers_raid(dp)                    #
     achievement.register_handlers_achievement(dp) #
     leaderboard.register_handlers_leaderboard(dp)
+    dice.register_handlers_dice(dp)
 
     

@@ -3,9 +3,9 @@ from typing import Any, Union
 from utils.scheduler import scheduler
 import apscheduler.job
 import requests
-import random
 import configparser
 from pathlib import Path
+import random
 
 levelLuckFactor = 0.005
 levelDamageFactor = 1
@@ -31,7 +31,8 @@ class Player():
                  luckMultiply : int = 1,
                  hp : int = 100,
                  damage : int = 20,
-                 damageMultiply : int = 1,):
+                 damageMultiply : int = 1,
+                 git: int = -1):
         self._chatId = personPk['chatId']
         self._userId = personPk['userId']
         self._name = name
@@ -44,6 +45,7 @@ class Player():
         self._hp = hp
         self._damage = damage
         self._damageMultiply = damageMultiply
+        self._git = git
 
         responce: requests.Response = requests.get(
             url=f'http://{backhost}:{backport}/api/inventory/id/{self._chatId}/{self._userId}',
@@ -53,8 +55,6 @@ class Player():
             self._inventory = []
         else:
             self._inventory: list[Good.Good, int] = [[Good.GetItem(good['itemId']), good['count']] for good in data]
-
-        scheduler#Это че
 
 
     def to_json(self, withIds = True) -> dict[str, Any]:
@@ -93,6 +93,15 @@ class Player():
     @name.setter
     def name(self, x: str):
         self._name = x
+        self._updatePlayer()
+
+    @property
+    def git(self):
+        return self._git
+    
+    @git.setter
+    def git(self, x: int):
+        self._git = x
         self._updatePlayer()
 
     @property
@@ -350,7 +359,7 @@ def GetPlayer(chatId: int, userId: int) -> Union[Player, None]:
             return player
     return None 
 
-def AddPlayer(player : Player):
+def AddPlayer(player : Player) -> int:
 
     response: requests.Response = requests.post(
         url=f'http://{backhost}:{backport}/api/person/create',
