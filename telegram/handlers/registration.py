@@ -6,8 +6,8 @@ import utils.avatarCreator as ac
 import Classes.Player as Player
 from pathlib import Path
 import handlers.leaderboard as Leaderboard
-from utils.scheduler import scheduler
 import handlers.randomEvent as RE
+import handlers.git as git
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
@@ -21,12 +21,15 @@ class FSMRegistation(StatesGroup):
     photoClass = State()
     photoSend = State()
     acceptPhoto = State()
+    GitLabSend = State()
 
-async def regStart(message : types.Message):
+async def regStart(message : types.Message, state: FSMContext):
     if Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Вы уже зареганы')
         return
     await FSMRegistation.name.set()
+    with state.proxy() as e:
+        e['error'] = 0
     await message.reply('Напиши имя')
 
 async def getName(message : types.Message, state: FSMContext):
@@ -52,14 +55,12 @@ async def changePhoto(message : types.Message):
     await message.reply('Выбери пол:' / text)
 
 async def getPhotoclass(call: types.CallbackQuery, state : FSMContext):
-    try:
-        photoClass = call.data.replace("class:",'')
-        async with state.proxy() as data:
-            data['photoclass'] = photoClass.lower()
-        await FSMRegistation.photoSend.set()
-        await call.message.reply('Добавь фото')
-    except:
-        await call.answer('Неправильный класс фото')    
+
+    photoClass = call.data.replace("class:",'')
+    async with state.proxy() as data:
+        data['photoclass'] = photoClass.lower()
+    await FSMRegistation.photoSend.set()
+    await call.message.reply('Добавь фото')   
 
 async def getPhoto(message : types.Message, state: FSMContext):
     orig = ROOT / f'static/user/{message.chat.id}_{message.from_user.id}.jpg'
@@ -85,48 +86,77 @@ async def getAnotherPhoto(call: types.CallbackQuery, state: FSMContext):
         return
 
     ac.getAvatar(call.message.chat.id, call.from_user.id, (await state.get_data())['photoclass'])
-
-    photo=open(ROOT / f'static/player/{call.message.chat.id}_{call.from_user.id}.jpg', "rb")
-    keyboard = types.InlineKeyboardMarkup()
-    keyboard.add(types.InlineKeyboardButton(text = 'Беру!', callback_data=f"ava1:{call.message.chat.id}_{call.from_user.id}"))
-    keyboard.add(types.InlineKeyboardButton(text = 'Давай другую...', callback_data=f"ava0:{call.message.chat.id}_{call.from_user.id}"))
     
     media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / f'static/player/{call.message.chat.id}_{call.from_user.id}.jpg'), caption='А этот как ?', parse_mode='HTML') 
     await call.message.edit_media(
         media=media,
         reply_markup=call.message.reply_markup
     )
-    #await call.message.answer_photo(photo, caption=, reply_markup=keyboard)
 
-async def endRegistation(call: types.CallbackQuery, state: FSMContext):
+async def choiceGit(call: types.CallbackQuery, state: FSMContext):
 
     chat, user = call.data.replace("ava1:",'').split('_')
 
     if str(call.from_user.id) != user and str(call.message.chat.id) != chat:
         await call.answer("Это не ваша личико...")
-        return
+        return  
     
-    orig = ROOT / f'static/player/{call.message.chat.id}_{call.from_user.id}.jpg'
-    photo=open(orig, "rb")
-    if Player.FindPlayer(call.message.chat.id, call.from_user.id):
-        player:Player.Player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
-        player.name = (await state.get_data())['name'] 
-        await state.finish()
-        await call.message.answer_photo(photo, caption=f'{call.from_user.mention} меняет своего аватара, теперь это {player.name} !!')
-    else:
-        newPlayer = Player.Player(
-            {
-                'chatId':call.message.chat.id,
-                'userId':call.from_user.id,
-            },
-            (await state.get_data())['name'],
-            str(orig)
+    await getGit(call.message, state)
+    
+
+async def getGit(message: types.Message, state: FSMContext):
+    await FSMRegistation.GitLabSend.set()
+
+    with state.proxy() as e:
+        error = e['error']
+
+    if error == 200:
+        await message.answer(
+            text='Бот награждает инженеров-программистов!\nСкажите ваш GitLab username для получение бонусов за работу.\nИли напишите \'-\' для пропсуска',
         )
+    elif error == 400:
+        await message.answer(
+            text='Введеный гитлаб не верен, попробуйте еще раз.\nИли напишите \'-\' для пропуска.',
+        )
+    else:
+        await message.answer(
+            text='Технические шоколадки со стороны GitLab\'а.\nМожете попробовать ввести username еще раз.\nИли напишите \'-\' для пропуска.',
+        )
+
+async def endRegistation(message: types.Message, state: FSMContext):
+
+    orig = ROOT / f'static/player/{message.chat.id}_{message.from_user.id}.jpg'
+    photo=open(orig, "rb")
+    if Player.FindPlayer(message.chat.id, message.from_user.id):
+        player:Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
+        player.name = (await state.get_data())['name'] 
+        if message.text != '-':
+            player.git = message.text
         await state.finish()
-        Player.AddPlayer(newPlayer)
-        Leaderboard.AddLeaderBoardInChat(call.message.chat.id)
-        RE.AddRandomEventInChat(call.message.chat.id)
-        await call.message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
+        await message.answer_photo(photo, caption=f'{message.from_user.mention} меняет своего аватара, теперь это {player.name} !!')
+        return
+
+    newPlayer = Player.Player(
+        {
+            'chatId':message.chat.id,
+            'userId':message.from_user.id,
+        },
+        (await state.get_data())['name'],
+        str(orig)
+    )
+    if message.text != '-':
+        newPlayer.git = message.text
+    status = Player.AddPlayer(newPlayer) 
+    if status != 200:
+        with state.proxy() as e:
+            e['error'] = status
+        await getGit(message, state)
+        return
+    await state.finish()
+    Leaderboard.AddLeaderBoardInChat(message.chat.id)
+    RE.AddRandomEventInChat(message.chat.id)
+    git.AddGitInChat(message.chat.id)
+    await message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
 
 async def cancelRegistration(message: types.Message, state: FSMContext):
     await state.finish()

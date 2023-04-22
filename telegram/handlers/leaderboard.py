@@ -32,11 +32,11 @@ def LeaderFormula(his: History.History) -> int:
     )
 
 
-def AddLeaderBoardInChat(chatId: int):#Сделать каждое воскресенье
+def AddLeaderBoardInChat(chatId: int):
     players = Player.GetAllPlayers(chatId)
     job = scheduler.get_job(f'leaderboard:{chatId}')
     if len(players) and not job:
-        scheduler.add_job(SendLeaderBoard, trigger='cron', day_of_week='fri', hour=18, minute=30, args=[chatId], id=f'leaderboard:{chatId}')
+        scheduler.add_job(SendLeaderBoard, trigger='cron', day_of_week='fri', hour=19, args=[chatId], id=f'leaderboard:{chatId}')
         #scheduler.add_job(SendLeaderBoard, trigger='interval', weeks=1, args=[chatId], id=f'leaderboard:{chatId}')
 
 

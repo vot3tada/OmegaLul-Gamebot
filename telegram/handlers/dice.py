@@ -65,8 +65,7 @@ async def SetBet(call: types.CallbackQuery):
         return
     
     keyboard = GetBetKeyboard(50, player)
-    #TODO: спросить мем у Данича
-    text='Все просто как #.\nКидаем кости по очереди, у кого больше - тот и забирает ставку.\nЕсли ничья - остаемся при своем.'
+    text='Все просто как ООП в Питоне.\nКидаем кости по очереди, у кого больше - тот и забирает ставку.\nЕсли ничья - остаемся при своем.'
 
     await call.message.answer_photo(
         photo=open(ROOT / 'static/dice/' / random.choice(os.listdir(ROOT / 'static/dice')), 'rb'),
