@@ -4,6 +4,7 @@ from pathlib import Path
 import Classes.Git as Git
 from utils.scheduler import scheduler
 from utils.create_bot import bot
+import handlers.achievement as Achievement
 import random
 import os
 
@@ -33,12 +34,18 @@ async def SendGit(chatId: int):
 
     playerGit.sort(key = lambda x: GitFormula(x[0]))
 
+    for history, player in playerGit:
+        history: Git.GitHistory
+        player: Player.Player
+        Achievement.AddHistory(player.chatId, player.userId, totalCommits=history.PushedCommits, totalMerges=history.AcceptedMergeRequests)
+
     for history, player in playerGit[:4]:
         history: Git.GitHistory
         player: Player.Player
         score = round(GitFormula(history),2)
         exp = round(score * 1.5)
         player.exp += exp
+        Achievement.AddHistory(player.chatId, player.userId, totalExp=exp)
         text += f"""
         <i>{player.name}</i>
                 Создал merge request: {history.ApprovedMergeRequests}
