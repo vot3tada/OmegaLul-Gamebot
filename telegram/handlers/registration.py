@@ -146,12 +146,12 @@ async def endRegistation(message: types.Message, state: FSMContext):
     )
     if message.text != '-':
         newPlayer.git = message.text
-    #status = Player.AddPlayer(newPlayer) 
-    #if status != 200:
-        #async with state.proxy() as e:
-            #e['error'] = status
-        #await getGit(message, state)
-        #return
+    status = Player.AddPlayer(newPlayer) 
+    if status != 200:
+        async with state.proxy() as e:
+            e['error'] = status
+        await getGit(message, state)
+        return
     await state.finish()
     Leaderboard.AddLeaderBoardInChat(message.chat.id)
     RE.AddRandomEventInChat(message.chat.id)

@@ -368,6 +368,9 @@ def AddPlayer(player : Player) -> int:
     
     if response.status_code != 201:
         raise RuntimeError(f'Добавление пользователя: {response.status_code}')
+    if response.json()['message'] == 909:
+        return 400
+    return 200
 
 def GetRandomPlayer(chatId: int, positively: bool):
     players = GetAllPlayers(chatId)

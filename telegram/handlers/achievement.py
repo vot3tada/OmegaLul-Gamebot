@@ -13,14 +13,15 @@ ROOT: Path = FILE.parents[1]
 async def AddHistory(chatId: int, userId: int, totalMoney=0, totalExp=0, totalQuestions=0, totalFights=0,
                      totalWinFights=0, totalWinBoss=0,
                      totalItem=0, totalTakenTasks=0, totalEndedTasks=0, totalFallTasks=0, totalWinCollector=0,
-                     totalCreateEvent=0, totalEnterEvent=0, totalKickEvent=0, totalLeaveFights=0):
+                     totalCreateEvent=0, totalEnterEvent=0, totalKickEvent=0, totalLeaveFights=0, totalCommits = 0, totalMerges = 0):
     history = History.GetHistory(chatId, userId)
     await SendAchievement(chatId, userId,
                           history.UpdateHistory(totalMoney, totalExp, totalQuestions, totalFights, totalWinFights,
                                                 totalWinBoss,
                                                 totalItem, totalTakenTasks, totalEndedTasks, totalFallTasks,
                                                 totalWinCollector,
-                                                totalCreateEvent, totalEnterEvent, totalKickEvent, totalLeaveFights))
+                                                totalCreateEvent, totalEnterEvent, totalKickEvent, totalLeaveFights, 
+                                                totalCommits, totalMerges))
 
 
 async def SendAchievement(chatId: int, userId: int, achievementsId: list[int]):
