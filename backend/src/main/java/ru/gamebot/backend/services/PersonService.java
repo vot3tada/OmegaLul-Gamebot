@@ -53,7 +53,9 @@ public class PersonService {
     @Transactional
     public void createPerson(PersonDTO personDTO) throws PersonAlreadyExistsException {
         var person = personMapper.personDtoToPerson(personDTO);
-        person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
+        if(personDTO.getGitlabUserName()!=null){
+            person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
+        }
         if (personRepository.existsById(person.getPersonPk())) {
             throw new PersonAlreadyExistsException();
         }

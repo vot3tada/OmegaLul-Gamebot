@@ -37,6 +37,7 @@ Body выглядит следующим образом, обратите вни
          "photo": "qwert",
          "luck": 1.0,
          "luckMultiply": 2,
+         "gitlabUserName":"aboba",
          "hp": 100,
          "damage": 200,
          "damageMultiply": 10,
