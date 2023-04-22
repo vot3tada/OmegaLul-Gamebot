@@ -28,8 +28,8 @@ async def regStart(message : types.Message, state: FSMContext):
         await message.reply('Вы уже зареганы')
         return
     await FSMRegistation.name.set()
-    with state.proxy() as e:
-        e['error'] = 0
+    async with state.proxy() as e:
+        e['error'] = 200
     await message.reply('Напиши имя')
 
 async def getName(message : types.Message, state: FSMContext):
@@ -107,7 +107,7 @@ async def choiceGit(call: types.CallbackQuery, state: FSMContext):
 async def getGit(message: types.Message, state: FSMContext):
     await FSMRegistation.GitLabSend.set()
 
-    with state.proxy() as e:
+    async with state.proxy() as e:
         error = e['error']
 
     if error == 200:
@@ -116,7 +116,7 @@ async def getGit(message: types.Message, state: FSMContext):
         )
     elif error == 400:
         await message.answer(
-            text='Введеный гитлаб не верен, попробуйте еще раз.\nИли напишите \'-\' для пропуска.',
+            text='Введеный гитлаб не верен, попробуйте еще раз.\nИли напишите - для пропуска.',
         )
     else:
         await message.answer(
@@ -146,16 +146,16 @@ async def endRegistation(message: types.Message, state: FSMContext):
     )
     if message.text != '-':
         newPlayer.git = message.text
-    status = Player.AddPlayer(newPlayer) 
-    if status != 200:
-        with state.proxy() as e:
-            e['error'] = status
-        await getGit(message, state)
-        return
+    #status = Player.AddPlayer(newPlayer) 
+    #if status != 200:
+        #async with state.proxy() as e:
+            #e['error'] = status
+        #await getGit(message, state)
+        #return
     await state.finish()
     Leaderboard.AddLeaderBoardInChat(message.chat.id)
     RE.AddRandomEventInChat(message.chat.id)
-    git.AddGitInChat(message.chat.id)
+    #git.AddGitInChat(message.chat.id)
     await message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
 
 async def cancelRegistration(message: types.Message, state: FSMContext):
@@ -199,7 +199,8 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_callback_query_handler(getPhotoclass, state=FSMRegistation.photoClass, regexp='^class:*')
     dp.register_message_handler(getPhoto, content_types=['photo'], state=FSMRegistation.photoSend)
     dp.register_callback_query_handler(getAnotherPhoto, regexp="^ava0:*", state=FSMRegistation.acceptPhoto)
-    dp.register_callback_query_handler(endRegistation, regexp="^ava1:*", state=FSMRegistation.acceptPhoto)
+    dp.register_callback_query_handler(choiceGit, regexp="^ava1:*", state=FSMRegistation.acceptPhoto)
+    dp.register_message_handler(endRegistation, state=FSMRegistation.GitLabSend)
     dp.register_message_handler(changeAvatar, commands='avatar_change', state=None)
     dp.register_callback_query_handler(reRegStart, regexp="^reRegistration", state=None)
     
