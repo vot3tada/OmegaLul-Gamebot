@@ -9,7 +9,7 @@ VALUES ('totalCommits','Коммит Гитовский','totalCommits.jpg',1000
        ('totalMerges','Слияние ООО','totalMerges.jpg',100,'Сделять 100 мерджей');
 
 INSERT INTO quiz(name,photo)
-VALUES ('Программисткий','2_jpg');
+VALUES ('Программисткий','2_.png');
 
 INSERT INTO question(text,answer,photo,quiz_id)
 VALUES ('Что означает аббревиатура ООП?', 'объектно-ориентированное программирование', NULL, 2),
