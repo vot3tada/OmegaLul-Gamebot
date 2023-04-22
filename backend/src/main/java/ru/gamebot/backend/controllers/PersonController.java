@@ -12,6 +12,7 @@ import ru.gamebot.backend.dto.Create;
 import ru.gamebot.backend.dto.PersonDTO;
 import ru.gamebot.backend.services.PersonService;
 import ru.gamebot.backend.util.exceptions.ErrorResponse;
+import ru.gamebot.backend.util.exceptions.GitlabCleintExceptions.GitlabUserNotFound;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.*;
 
 import java.util.List;
@@ -97,8 +98,9 @@ public class PersonController {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-
-
-
-
+    @ExceptionHandler
+    private ResponseEntity<ErrorResponse> handleException (GitlabUserNotFound e){
+        ErrorResponse response = new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
 }

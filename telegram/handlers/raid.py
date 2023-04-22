@@ -48,7 +48,7 @@ async def getRaidsList(message: types.Message):
     )
 
     await message.answer_photo(
-        photo=open(boss.photo, 'rb'),
+        photo=open(ROOT / 'static/boss' / boss.photo, 'rb'),
         caption=text,
         reply_markup=keyboard,
         parse_mode='HTML'
@@ -91,7 +91,7 @@ async def pageRaidsList(call: types.CallbackQuery):
         types.InlineKeyboardButton(text=f'Собрать команду на этого босса',
                                    callback_data=f'startRecr:{call.message.chat.id}_{call.from_user.id}_{boss.id}')
     )
-    media = types.input_media.InputMediaPhoto(media=types.InputFile(boss.photo), caption=text, parse_mode='HTML')
+    media = types.input_media.InputMediaPhoto(media=types.InputFile(ROOT / 'static/boss' / boss.photo), caption=text, parse_mode='HTML')
     await call.message.edit_media(
         media=media,
         reply_markup=keyboard

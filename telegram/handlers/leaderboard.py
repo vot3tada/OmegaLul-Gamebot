@@ -6,10 +6,7 @@ import aiogram
 from pathlib import Path
 import os
 import random
-
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher import Dispatcher
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 
 FILE = Path(__file__).resolve()

@@ -29,6 +29,7 @@ public class Person {
     private Integer hp;
     private Integer damage;
     private Integer damageMultiply;
+    private Long gitlabId;
     public PersonDTO.PersonPKDTO toPersonDTOPK () {return new PersonDTO.PersonPKDTO(personPk.getChatId(),personPk.getUserId());}
 
 

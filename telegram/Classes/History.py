@@ -1,6 +1,16 @@
 import Classes.Achievement as Achiv
 from typing import Any, Union
 import requests
+from pathlib import Path
+import configparser
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 class History():
 
@@ -68,15 +78,15 @@ class History():
             if value:
                 setattr(self, attribute, getattr(self, attribute) + value)
                 Updater(attribute, getattr(self, attribute))
-        responce:requests.Response = requests.put(
-                url=f'http://localhost:8080/api/history/update',
-                json = self.to_json(),
-                headers={"Content-Type": "application/json"})
+            responce:requests.Response = requests.put(
+                    url=f'http://{backhost}:{backport}/api/history/update',
+                    json = self.to_json(),
+                    headers={"Content-Type": "application/json"})
         return checkAchId
 
 def GetHistory(chatId: int, userId: int) -> Union[History, None]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/history/id/{chatId}/{userId}',
+        url=f'http://{backhost}:{backport}/api/history/id/{chatId}/{userId}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:

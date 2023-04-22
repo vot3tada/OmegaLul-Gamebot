@@ -4,9 +4,20 @@ from utils.scheduler import scheduler
 import apscheduler.job
 import requests
 import random
+import configparser
+from pathlib import Path
 
 levelLuckFactor = 0.005
 levelDamageFactor = 1
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
+
 
 class Player():
     def __init__(self, 
@@ -35,7 +46,7 @@ class Player():
         self._damageMultiply = damageMultiply
 
         responce: requests.Response = requests.get(
-            url=f'http://localhost:8080/api/inventory/id/{self._chatId}/{self._userId}',
+            url=f'http://{backhost}:{backport}/api/inventory/id/{self._chatId}/{self._userId}',
             headers={"Content-Type": "application/json"})
         data: list[dict[str, Any]] = responce.json()
         if responce.status_code == 404:
@@ -202,7 +213,7 @@ class Player():
             self._inventory.append(good)
         
         response: requests.Response = requests.put(
-            url=f'http://localhost:8080/api/inventory/update',
+            url=f'http://{backhost}:{backport}/api/inventory/update',
             json = {
                 "itemId":item.id,
                 "count": good[1],
@@ -227,7 +238,7 @@ class Player():
                     break
             
             response: requests.Response = requests.delete(
-                url=f'http://localhost:8080/api/inventory/delete',
+                url=f'http://{backhost}:{backport}/api/inventory/delete',
                 json = {
                     "itemId":_item[0].id,
                     "chatId": self._chatId,
@@ -238,7 +249,7 @@ class Player():
                 raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
         else:
             response: requests.Response = requests.put(
-                url=f'http://localhost:8080/api/inventory/update',
+                url=f'http://{backhost}:{backport}/api/inventory/update',
                 json = {
                     "itemId":_item[0].id,
                     "count": _item[1],
@@ -277,7 +288,7 @@ class Player():
     def _updatePlayer(self):
 
         response = requests.put(
-            url=f'http://localhost:8080/api/person/update?userId={self._userId}&chatId={self._chatId}',
+            url=f'http://{backhost}:{backport}/api/person/update?userId={self._userId}&chatId={self._chatId}',
             headers={"Content-Type": "application/json"},
             json=self.to_json(False)
             )
@@ -294,7 +305,7 @@ def _debuffByItem(chatId: int, userId: int, item: Good.Good):
 def GetAllPlayers(chatId : int) -> list[Player]:
 
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/person/id/{chatId}',
+        url=f'http://{backhost}:{backport}/api/person/id/{chatId}',
         headers={"Content-Type": "application/json"})
 
     if responce.status_code == 404:
@@ -308,7 +319,7 @@ def GetAllPlayers(chatId : int) -> list[Player]:
 def FindPlayer(chatId: int, userId: int) -> bool:
 
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/person/id/{chatId}',
+        url=f'http://{backhost}:{backport}/api/person/id/{chatId}',
         headers={"Content-Type": "application/json"})
 
     if responce.status_code == 404:
@@ -325,7 +336,7 @@ def FindPlayer(chatId: int, userId: int) -> bool:
 def GetPlayer(chatId: int, userId: int) -> Union[Player, None]:
 
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/person/id/{chatId}',
+        url=f'http://{backhost}:{backport}/api/person/id/{chatId}',
         headers={"Content-Type": "application/json"})
 
     if not responce.ok:
@@ -342,7 +353,7 @@ def GetPlayer(chatId: int, userId: int) -> Union[Player, None]:
 def AddPlayer(player : Player):
 
     response: requests.Response = requests.post(
-        url=f'http://localhost:8080/api/person/create',
+        url=f'http://{backhost}:{backport}/api/person/create',
         json = player.to_json(),
         headers={"Content-Type": "application/json"})
     

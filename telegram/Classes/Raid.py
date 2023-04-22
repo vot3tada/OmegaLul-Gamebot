@@ -6,9 +6,15 @@ from dateutil import tz
 import random
 from aiogram.types import Message
 from pathlib import Path
+import configparser
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 
 class Boss:
@@ -45,32 +51,60 @@ class Boss:
 
 Bosses: list[Boss] = [
     Boss(
-        0,
-        'Батя Коллектора',
-        (ROOT / 'static/boss/father.jpg').__str__(),
-        100,
-        10,
-        0.3,
-        450,
-        600,
-        5,
-        0.5,
-        0.5,
-        1
+        id=0,
+        name='Батя Коллектора',
+        photo='father.jpg',
+        hp=750,
+        damage=47,
+        luck=0.3,
+        moneyReward=1000,
+        expReward=850,
+        ultaCharge=5,
+        cleaveRate=0.35,
+        ultaRate=0.5,
+        itemId=33
     ),
     Boss(
         1,
-        'Жаба',
-        (ROOT / 'static/boss/frog.jpg').__str__(),
-        2000,
-        15,
+        'Кыксик',
+        'kiksik.jpg',
+        690,
+        49,
+        0.65,
+        1200,
+        1050,
+        2,
+        0.51,
         0.1,
-        700,
-        800,
-        8,
-        0.3,
-        0.3,
-        1
+        34
+    ),
+    Boss(
+        2,
+        'Жаба',
+        'frog.jpg',
+        1200,
+        30,
+        0.1,
+        1500,
+        1300,
+        6,
+        0.7,
+        0.9,
+        35
+    ),
+    Boss(
+        3,
+        'Местный Каламит',
+        'dragon.jpg',
+        1500,
+        46,
+        0.45,
+        2000,
+        1800,
+        7,
+        0.51,
+        0.4,
+        36
     )
 ]
 

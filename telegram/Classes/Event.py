@@ -4,6 +4,16 @@ from utils.scheduler import scheduler
 import  Classes.Player as Player
 import requests
 from dateutil import tz
+from pathlib import Path
+import configparser
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 class Member():
         def __init__(self, creator: bool, chatId: int, userId: int) -> None:
@@ -50,7 +60,7 @@ Events: list[Event] = []
 
 def GetEvent(id: int):
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/event/id/{id}',
+        url=f'http://{backhost}:{backport}/api/event/id/{id}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
@@ -65,7 +75,7 @@ def GetCount() -> int:
 
 def GetAllEvents(chatId) -> list[Event]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/event/chat/{chatId}',
+        url=f'http://{backhost}:{backport}/api/event/chat/{chatId}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
@@ -77,7 +87,7 @@ def GetAllEvents(chatId) -> list[Event]:
 
 def AddEvent(event : Event):
     responce:requests.Response = requests.post(
-        url=f'http://localhost:8080/api/event/create',
+        url=f'http://{backhost}:{backport}/api/event/create',
         json = event.to_json(),
         headers={"Content-Type": "application/json"})
     
@@ -94,7 +104,7 @@ def AddUser(eventId: int, userId: int, chatId: int):
         'userId' : userId
     }
     responce:requests.Response = requests.post(
-        url=f'http://localhost:8080/api/event/add-member',
+        url=f'http://{backhost}:{backport}/api/event/add-member',
         json = member,
         headers={"Content-Type": "application/json"})
 
@@ -105,11 +115,11 @@ def KickUser(eventId: int, userId: int, chatId: int):
         'userId' : userId
     }
     responce:requests.Response = requests.delete(
-        url=f'http://localhost:8080/api/event/delete-member',
+        url=f'http://{backhost}:{backport}/api/event/delete-member',
         json = member,
         headers={"Content-Type": "application/json"})
     
 def RemoveEvent(eventId: int):
     responce:requests.Response = requests.delete(
-        url=f'http://localhost:8080/api/event/delete/{eventId}',
+        url=f'http://{backhost}:{backport}/api/event/delete/{eventId}',
         headers={"Content-Type": "application/json"})

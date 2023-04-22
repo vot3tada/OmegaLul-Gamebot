@@ -1,5 +1,15 @@
 import requests
 from typing import Any
+from pathlib import Path
+import configparser
+
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 class Work():
 
@@ -13,7 +23,7 @@ class Work():
 
 def GetAllWork() -> list[Work]:
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/work/all',
+        url=f'http://{backhost}:{backport}/api/work/all',
         headers={"Content-Type": "application/json"})
 
     if not responce.ok:
@@ -39,7 +49,7 @@ Works : list[Work] = [
      ),
      Work( 
         1,
-        'Подрабатывать у Задорожного плюсовиком',
+        'Подрабатывать у препода плюсовиком',
         4,
         120,
         80
