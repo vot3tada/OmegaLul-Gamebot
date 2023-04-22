@@ -15,6 +15,7 @@ import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonChatIdNotFound;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotUpdateException;
 import ru.gamebot.backend.util.mappers.PersonMapper.PersonMapper;
+import ru.gamebot.backend.consumingrest.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PersonService {
     private final PersonRepository personRepository;
+    private final GitlabRestClient gitlabRestClient;
     private final HistoryRepository historyRepository;
     private final PersonMapper personMapper;
 
@@ -51,6 +53,7 @@ public class PersonService {
     @Transactional
     public void createPerson(PersonDTO personDTO) throws PersonAlreadyExistsException {
         var person = personMapper.personDtoToPerson(personDTO);
+        person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
         if (personRepository.existsById(person.getPersonPk())) {
             throw new PersonAlreadyExistsException();
         }
@@ -60,13 +63,15 @@ public class PersonService {
 
     @Transactional
     public void updatePerson(PersonDTO personDTO, Integer chatId, Integer userId) throws PersonNotUpdateException {
-        var personPK = new PersonPK(chatId, userId);
         personDTO.setPersonPKDTO(new PersonDTO.PersonPKDTO(chatId, userId));
-        var foundPerson = personRepository.findById(personPK).orElseThrow(PersonNotFoundException::new);
-        if (personDTO.getExperience() != null && foundPerson.getExperience() != null && foundPerson.getExperience() > personDTO.getExperience()) {
+        var foundPerson = personRepository.findById(new PersonPK(chatId, userId))
+                                            .orElseThrow(PersonNotFoundException::new);
+        if (personDTO.getExperience() != null && foundPerson.getExperience() != null
+                                            && foundPerson.getExperience() > personDTO.getExperience()) {
             throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
         }
         var person = personMapper.personDtoToPerson(personDTO);
+        person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
         personRepository.save(person);
     }
 

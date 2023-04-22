@@ -12,4 +12,6 @@ public interface PersonRepository  extends JpaRepository<Person, PersonPK> {
     List<Person> findByPersonPkChatId(int chatId);
     long deletePersonByPersonPkChatId(int chatId);
 
+    List<Person> findByPersonPkChatIdAndGitlabIdIsNotNull(Integer chatId);
+
 }
