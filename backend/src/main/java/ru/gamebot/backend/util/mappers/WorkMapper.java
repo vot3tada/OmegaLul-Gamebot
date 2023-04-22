@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util.mappers.WorkMapper;
+package ru.gamebot.backend.util.mappers;
 
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;

@@ -8,7 +8,7 @@ import ru.gamebot.backend.models.HistoryPK;
 import ru.gamebot.backend.repository.HistoryRepository;
 import ru.gamebot.backend.util.exceptions.HistoryExceptions.HistoryNotExistsException;
 import ru.gamebot.backend.util.exceptions.HistoryExceptions.HistoryNotFoundException;
-import ru.gamebot.backend.util.mappers.HistoryMapper.HistoryMapper;
+import ru.gamebot.backend.util.mappers.HistoryMapper;
 
 @Service
 @Transactional(readOnly = true)

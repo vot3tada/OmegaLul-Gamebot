@@ -30,7 +30,6 @@ public class InventoryController {
     @GetMapping("/id/{chatId}/{userId}")
     public List<InventoryDTO> getInventory(@PathVariable("chatId") Integer chatId,
                                            @PathVariable("userId") Integer userId){
-
         return inventoryService.getAllItemsInInventory(chatId, userId);
     }
 

@@ -25,6 +25,8 @@ public class History {
     private Integer totalEnterEvent=0;
     private Integer totalKickEvent=0;
     private Integer totalLeaveFights=0;
+    private Integer totalCommits=0;
+    private Integer totalMerges=0;
     @OneToOne
     @JoinColumns({@JoinColumn(name = "person_user_id", referencedColumnName = "user_id"), @JoinColumn(name="person_chat_id", referencedColumnName = "chat_id")})
     private Person person;

@@ -37,6 +37,7 @@ Body выглядит следующим образом, обратите вни
          "photo": "qwert",
          "luck": 1.0,
          "luckMultiply": 2,
+         "gitlabUserName":"aboba",
          "hp": 100,
          "damage": 200,
          "damageMultiply": 10,
@@ -240,7 +241,9 @@ Body выглядит следующим образом, обратите вни
             "totalCreateEvent": 200,
             "totalEnterEvent": 200,
             "totalKickEvent": 200,
-            "totalLeaveFights": 200
+            "totalLeaveFights": 200,
+            "totalCommits":200,
+            "totalMerges":200
          }
 
 # Event

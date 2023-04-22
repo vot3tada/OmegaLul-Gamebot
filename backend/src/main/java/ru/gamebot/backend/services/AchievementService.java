@@ -10,7 +10,7 @@ import ru.gamebot.backend.repository.AchievementRepository;
 import ru.gamebot.backend.repository.PersonRepository;
 import ru.gamebot.backend.util.exceptions.AchievementExceptions.AchievementNotFoundException;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
-import ru.gamebot.backend.util.mappers.AchievementMapper.AchievementMapper;
+import ru.gamebot.backend.util.mappers.AchievementMapper;
 
 import java.util.List;
 
@@ -25,9 +25,8 @@ public class AchievementService {
     private final PersonRepository personRepository;
 
     public AchievementDTO getAchievementById(String id){
-        return achievementMapper.achievementToAchievementDTO(
-                                achievementRepository.findById(id).
-                                orElseThrow(AchievementNotFoundException::new));
+        return achievementMapper.achievementToAchievementDTO(achievementRepository.findById(id)
+                                                .orElseThrow(AchievementNotFoundException::new));
     }
 
     public List<AchievementDTO> getPersonAchievements(Integer chatId, Integer userId){
@@ -42,7 +41,7 @@ public class AchievementService {
                                             ,personAchievementDTO.getUserId()))
                                             .orElseThrow(PersonNotFoundException::new);
         person.getAchievements().add(achievementRepository.findById(personAchievementDTO.getAchievementId())
-                                    .orElseThrow(AchievementNotFoundException::new));
+                                                           .orElseThrow(AchievementNotFoundException::new));
         personRepository.save(person);
     }
 }

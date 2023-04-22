@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.gamebot.backend.dto.BossDTO;
 import ru.gamebot.backend.repository.BossRepository;
 import ru.gamebot.backend.util.exceptions.BossExceptions.BossNotFoundException;
-import ru.gamebot.backend.util.mappers.BossMapper.BossMapper;
+import ru.gamebot.backend.util.mappers.BossMapper;
 
 import java.util.List;
 
