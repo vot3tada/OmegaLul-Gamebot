@@ -28,6 +28,7 @@ public class HistoryController {
     public HistoryDTO getHistory(@PathVariable("chatId") Integer chatId, @PathVariable("userId") Integer userId){
         return historyService.getHistory(chatId,userId);
     }
+
     @PutMapping("/update")
     public ResponseEntity<HttpStatus> updateHistory(@RequestBody @Validated HistoryDTO historyDTO
                                                     , BindingResult bindingResult){
@@ -60,9 +61,8 @@ public class HistoryController {
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(HistoryNotFoundException e){
         var response = new ErrorResponse("History with this id not found!");
-        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
     }
-
 }
 
 

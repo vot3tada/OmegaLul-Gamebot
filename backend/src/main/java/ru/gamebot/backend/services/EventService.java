@@ -15,7 +15,7 @@ import ru.gamebot.backend.util.exceptions.EventExceptions.ChatNotFoundException;
 import ru.gamebot.backend.util.exceptions.EventExceptions.EventAlreadyExistException;
 import ru.gamebot.backend.util.exceptions.EventExceptions.EventNotFoundException;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
-import ru.gamebot.backend.util.mappers.EventMapper.EventMapper;
+import ru.gamebot.backend.util.mappers.EventMapper;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ public class EventService {
 
     public GetEventDTO getEventById(Integer id){
         var event = eventRepository.findById(id).orElseThrow(EventNotFoundException::new);
-        var members = personEventsRepository.findAllByEvent(event);
-        return new GetEventDTO(event.getName(),event.getStartedAt(),convertToPersonEventsDTO(members), id);
+        return new GetEventDTO(event.getName(),event.getStartedAt()
+                ,convertToPersonEventsDTO(personEventsRepository.findAllByEvent(event)), id);
     }
 
     public List<GetEventDTO> getEventsByChatId(Integer chatId) throws ChatNotFoundException {
@@ -54,23 +54,27 @@ public class EventService {
         if(eventRepository.existsByNameAndStartedAt(event.getName(),event.getStartedAt())){
             throw new EventAlreadyExistException("This event already exists!");
         }
-        var person = personRepository.findById(new PersonPK(createEventDTO.getChatId(), createEventDTO.getUserId())).orElseThrow(PersonNotFoundException::new);
+        var person = personRepository.findById(new PersonPK(createEventDTO.getChatId(), createEventDTO.getUserId()))
+                                      .orElseThrow(PersonNotFoundException::new);
         var savedEvent = eventRepository.save(event);
         personEventsRepository.save(new PersonEvents(true, person,event));
         return new GetEventDTO(savedEvent.getName(),savedEvent.getStartedAt(),savedEvent.getId());
     }
     @Transactional
     public void addMember(CreateEventDTO eventDTO){
-        var event = eventRepository.findById(eventDTO.getId()).orElseThrow(EventNotFoundException::new);
-        var person = personRepository.findById(new PersonPK(eventDTO.getChatId(),eventDTO.getUserId())).orElseThrow(PersonNotFoundException::new);
-        personEventsRepository.save(new PersonEvents(false,person,event));
+        personEventsRepository.save(new PersonEvents(false
+                                ,personRepository.findById(new PersonPK(eventDTO.getChatId(),eventDTO.getUserId()))
+                                                    .orElseThrow(PersonNotFoundException::new)
+                                ,eventRepository.findById(eventDTO.getId())
+                                                    .orElseThrow(EventNotFoundException::new)));
     }
 
     @Transactional
     public void deleteMember(CreateEventDTO eventDTO){
-        var event = eventRepository.findById(eventDTO.getId()).orElseThrow(EventNotFoundException::new);
-        var person = personRepository.findById(new PersonPK(eventDTO.getChatId(),eventDTO.getUserId())).orElseThrow(PersonNotFoundException::new);
-        personEventsRepository.deleteByEventAndPerson(event, person);
+        personEventsRepository.deleteByEventAndPerson(eventRepository.findById(eventDTO.getId())
+                                                        .orElseThrow(EventNotFoundException::new)
+                                                    ,personRepository.findById(new PersonPK(eventDTO.getChatId(),eventDTO.getUserId()))
+                                                         .orElseThrow(PersonNotFoundException::new));
     }
 
     @Transactional
@@ -82,7 +86,8 @@ public class EventService {
     private List<PersonEventsDTO> convertToPersonEventsDTO(List<PersonEvents> personEvents){
         var personEventsDTO = new ArrayList<PersonEventsDTO>();
         for(PersonEvents pe : personEvents){
-            personEventsDTO.add(new PersonEventsDTO(pe.getCreator(),pe.getPerson().getPersonPk().getChatId(), pe.getPerson().getPersonPk().getUserId()));
+            personEventsDTO.add(new PersonEventsDTO(pe.getCreator(),pe.getPerson().getPersonPk().getChatId()
+                                                                    ,pe.getPerson().getPersonPk().getUserId()));
         }
         return personEventsDTO;
     }

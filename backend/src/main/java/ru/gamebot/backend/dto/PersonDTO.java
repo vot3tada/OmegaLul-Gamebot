@@ -2,26 +2,19 @@ package ru.gamebot.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.gamebot.backend.models.PersonPK;
 
 
 @Data
 public class PersonDTO {
-    @NotNull
     @JsonAlias({"personPk"})
     @JsonProperty("personPk")
     private PersonDTO.PersonPKDTO personPKDTO;
-
-
-    @NotEmpty(groups = Create.class)
     private String name;
     private Integer experience;
     private Integer experienceMultiply;
     private Integer money;
-    @NotEmpty(groups = Create.class)
     private String photo;
     private Float luck;
     private Integer luckMultiply;
@@ -32,9 +25,7 @@ public class PersonDTO {
 
     @Data
     public static class PersonPKDTO {
-        @NotNull(groups = Create.class)
         private Integer chatId;
-        @NotNull(groups = Create.class)
         private Integer userId;
 
         public PersonPKDTO() {

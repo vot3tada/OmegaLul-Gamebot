@@ -9,8 +9,8 @@ import ru.gamebot.backend.dto.QuizDTO;
 import ru.gamebot.backend.repository.QuestionRepository;
 import ru.gamebot.backend.repository.QuizRepository;
 import ru.gamebot.backend.util.exceptions.QuizExceptions.QuizNotFoundException;
-import ru.gamebot.backend.util.mappers.QuizMapper.QuestionMapper;
-import ru.gamebot.backend.util.mappers.QuizMapper.QuizMapper;
+import ru.gamebot.backend.util.mappers.QuestionMapper;
+import ru.gamebot.backend.util.mappers.QuizMapper;
 
 import java.util.List;
 
@@ -41,9 +41,9 @@ public class QuizService {
 
     @Transactional
     public QuestionDTO createQuestion(QuestionDTO questionDTO){
-        var quiz = quizRepository.findById(questionDTO.getQuizId()).orElseThrow(QuizNotFoundException::new);
         var question = questionMapper.questionDTOToQuestion(questionDTO);
-        question.setQuiz(quiz);
+        question.setQuiz(quizRepository.findById(questionDTO.getQuizId())
+                                        .orElseThrow(QuizNotFoundException::new));
         var saveQuestion = questionRepository.save(question);
         questionDTO.setId(saveQuestion.getId());
         return questionDTO;

@@ -241,7 +241,9 @@ Body выглядит следующим образом, обратите вни
             "totalCreateEvent": 200,
             "totalEnterEvent": 200,
             "totalKickEvent": 200,
-            "totalLeaveFights": 200
+            "totalLeaveFights": 200,
+            "totalCommits":200,
+            "totalMerges":200
          }
 
 # Event
