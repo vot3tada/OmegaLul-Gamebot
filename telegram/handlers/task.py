@@ -483,6 +483,8 @@ async def cancelAddingTask(message: types.Message, state: FSMContext):
 async def remind(chatId: int, userId: int, taskId: int):
     scheduler.remove_job(f'remember_{chatId}_{userId}_{taskId}')
     task = Task.GetTask(taskId)
+    if not task:
+        return
     durationLeft = task.duration / 3
     time = ParseSeconds(durationLeft)
 
