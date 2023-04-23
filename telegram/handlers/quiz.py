@@ -196,7 +196,7 @@ async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
         data['inQuiz'] = 0
     Quiz.AddQuizInChat(quiz)
     qq = Quiz.GetQuiz(id)
-    scheduler.add_job(StartQuizQuestionsByTrigger, jobstore='local', trigger='interval', minutes=2, args=[call.message.chat.id], id=f'quizStartTime:{call.message.chat.id}')
+    scheduler.add_job(StartQuizQuestionsByTrigger, jobstore='local', trigger='interval', seconds=10, args=[call.message.chat.id], id=f'quizStartTime:{call.message.chat.id}')
     if (qq.image != ''):
         await bot.send_photo(chat_id=call.message.chat.id, 
                             caption=f'Идет набор на квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
@@ -240,6 +240,7 @@ async def StartQuizQuestions(call: types.CallbackQuery, state: FSMContext):
 async def StartQuizQuestionsByTrigger(chatId: int):
     quiz = Quiz.GetQuizInChat(chatId)
     question: Quiz.Question = quiz.questions[0]
+    scheduler.remove_job(f'quizStartTime:{chatId}')
     scheduler.add_job(NextQuestion, trigger='interval', seconds=60, jobstore='local', args=[chatId], coalesce=True, id=f'quiz:{chatId}')
     if (question.image != ''):
         photo = InputFile(ROOT / 'static/quizes/' / question.image)
@@ -267,6 +268,8 @@ async def TakePartQuizCall(call: types.CallbackQuery, state: FSMContext):
     await call.answer('Вы участвуете в квизе')
     
 async def AnswerQuestion(message: types.Message, state: FSMContext):
+    if scheduler.get_job(f'quizStartTime:{message.chat.id}') != None:
+        return
     quiz: Quiz.QuizInChat = Quiz.GetQuizInChat(message.chat.id)
     if (message.text.lower() == quiz.questions[quiz.number].answer.lower()):
         scheduler.remove_job(f'quiz:{message.chat.id}')
