@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 public class CreateEventDTO {
@@ -19,5 +21,5 @@ public class CreateEventDTO {
     private String name;
     @Future(groups = Create.class)
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private java.util.Date startedAt;
+    private LocalDateTime startedAt;
 }

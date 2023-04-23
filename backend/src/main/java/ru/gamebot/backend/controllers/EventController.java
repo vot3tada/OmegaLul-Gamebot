@@ -20,6 +20,7 @@ import ru.gamebot.backend.util.exceptions.EventExceptions.EventNotFoundException
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/event")
@@ -34,7 +35,7 @@ public class EventController {
     }
 
     @GetMapping("/chat/{chatId}")
-    public List<GetEventDTO> getEvents(@PathVariable("chatId") Integer chatId){
+    public Set<GetEventDTO> getEvents(@PathVariable("chatId") Integer chatId){
         return eventService.getEventsByChatId(chatId);
     }
 
@@ -86,7 +87,7 @@ public class EventController {
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(EventAlreadyExistException e){
-        var response = new ErrorResponse("Event not found!");
+        var response = new ErrorResponse(e.getMessage());
         return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 

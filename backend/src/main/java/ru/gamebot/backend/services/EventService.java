@@ -17,9 +17,9 @@ import ru.gamebot.backend.util.exceptions.EventExceptions.EventNotFoundException
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 import ru.gamebot.backend.util.mappers.EventMapper;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -36,13 +36,12 @@ public class EventService {
                 ,convertToPersonEventsDTO(personEventsRepository.findAllByEvent(event)), id);
     }
 
-    public List<GetEventDTO> getEventsByChatId(Integer chatId) throws ChatNotFoundException {
-        var eventsDTO = new ArrayList<GetEventDTO>();
-        var personEvents = personEventsRepository.findAllEventByPersonPersonPkChatIdAndEventStartedAtAfterOrderByEventDesc(chatId, new Timestamp(System.currentTimeMillis()));
-        if(personEvents == null){
-            throw new ChatNotFoundException("Chat not found!");
-        }
-        for(PersonEvents personEvent : personEvents){
+    public Set<GetEventDTO> getEventsByChatId(Integer chatId) throws ChatNotFoundException {
+        var eventsDTO = new HashSet<GetEventDTO>();
+        var personEvents = personEventsRepository.findAllByPersonPersonPkChatId(chatId);
+        var penis =        personEvents.stream().filter(x -> !LocalDateTime.now().isAfter(x.getEvent().getStartedAt()))
+                .collect(Collectors.toSet());
+        for(PersonEvents personEvent : penis){
             var event  = personEvent.getEvent();
             eventsDTO.add(new GetEventDTO(event.getName(),event.getStartedAt(),event.getId()));
         }
