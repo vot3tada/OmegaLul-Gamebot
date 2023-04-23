@@ -11,6 +11,7 @@ import random
 import os
 import handlers.achievement as AchievementHandler
 from pathlib import Path
+from dateutil import tz
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
@@ -60,7 +61,7 @@ async def event_delete_end(message : types.Message, state: FSMContext):
     if (event.chatId != player.chatId or event.userId != player.userId):
         await message.answer('Вы не являетесь создателем этого эвента')
         return
-    if (event.datetime < datetime.now()):
+    if (event.datetime < datetime.now(tz.gettz("Europe/Moscow"))):
         await message.answer('Этот эвент уже давно прошел')
         return
     Event.RemoveEvent(event.id)
@@ -71,7 +72,7 @@ async def event_delete_end(message : types.Message, state: FSMContext):
     
 
 async def event_end(message : types.Message, state: FSMContext):
-    from dateutil import tz
+    
     async with state.proxy() as data:
         name = data['name']
     date = message.text.split('/')
