@@ -28,7 +28,9 @@ def LeaderFormula(his: History.History) -> int:
         his.totalCreateEvent  * 0.12 +
         his.totalEnterEvent   * 0.1  +
         his.totalKickEvent    * 0.05 +
-        his.totalLeaveFights  * -0.1
+        his.totalLeaveFights  * -0.1 +
+        his.totalCommits      * 0.15 +
+        his.totalMerges       * 0.18
     )
 
 
