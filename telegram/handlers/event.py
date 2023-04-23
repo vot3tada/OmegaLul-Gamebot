@@ -132,7 +132,7 @@ async def trigger_event(chatId: int, eventId: int):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(
         types.InlineKeyboardButton(
-            text='Присоединиться к квизу',
+            text='Завершить регистрацию',
             callback_data=f'eventEnd:{chatId}'
         ))
     await bot.send_photo(chat_id=chatId,  

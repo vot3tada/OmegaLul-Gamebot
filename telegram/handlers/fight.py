@@ -158,7 +158,7 @@ async def fightCall(message : types.Message):
 
     if not message.reply_to_message is None: #Сделай другую проверку, чтобы else не было
         if message.reply_to_message.from_user.id == (await bot.get_me()).id:
-            await message.answer('Омегалюль вам не по зубам, салага')
+            await message.answer('МеханоБот вам не по зубам, салага')
             return
         if not Player.FindPlayer(message.chat.id, message.reply_to_message.from_user.id):
             await message.reply('Этот боец не зареган')
