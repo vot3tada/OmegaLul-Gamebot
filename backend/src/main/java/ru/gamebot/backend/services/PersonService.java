@@ -71,7 +71,9 @@ public class PersonService {
                                             && foundPerson.getExperience() > personDTO.getExperience()) {
             throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
         }
-        var person = personMapper.personDtoToPerson(personDTO);
+        var person = personMapper.personDtoToPersonUpdate(personDTO);
+        person.setGitlabId(foundPerson.getGitlabId());
+        person.setAchievements(foundPerson.getAchievements());
         if(personDTO.getGitlabUserName()!=null){
             person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
         }

@@ -15,6 +15,11 @@ public interface PersonMapper {
     @Mapping(target = "personPk", expression  = "java(source.toPersonPK())")
     Person personDtoToPerson(PersonDTO source);
 
+    @Mapping(target = "gitlabId", ignore = true)
+    @Mapping(target = "personPk", expression  = "java(source.toPersonPK())")
+    @Mapping(target = "achievements", ignore = true)
+    Person personDtoToPersonUpdate(PersonDTO source);
+
     @Mapping(target = "personPKDTO", expression = "java(source.toPersonDTOPK())")
     PersonDTO personToPersonDTO(Person source);
 }
