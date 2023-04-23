@@ -12,7 +12,7 @@ public class Person {
 
     @EmbeddedId
     private PersonPK personPk;
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToMany
     @JoinTable(name = "person_achievement",
                 joinColumns ={
                         @JoinColumn(name = "person_user_id", referencedColumnName = "user_id"),
