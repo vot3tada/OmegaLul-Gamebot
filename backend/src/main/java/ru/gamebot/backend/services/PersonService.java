@@ -72,7 +72,9 @@ public class PersonService {
             throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
         }
         var person = personMapper.personDtoToPerson(personDTO);
-        person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
+        if(personDTO.getGitlabUserName()!=null){
+            person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
+        }
         personRepository.save(person);
     }
 }
