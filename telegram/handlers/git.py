@@ -13,13 +13,13 @@ ROOT = FILE.parents[1]
 
 def GitFormula(git: Git.GitHistory) -> int:
     return (
-        git.ApprovedMergeRequests * 0.2 +
-        git.OpenedMergeRequests * 0.2 + 
-        git.AcceptedMergeRequests * 0.2 +
-        git.PushedCommits * 0.1
+        git.ApprovedMergeRequests  * 2 +
+        git.OpenedMergeRequests    * 2 + 
+        git.AcceptedMergeRequests  * 2 +
+        git.PushedCommits          * 1
     )
 
-async def AddGitInChat(chatId: int):
+def AddGitInChat(chatId: int):
     players = Player.GetAllPlayers(chatId)
     job = scheduler.get_job(f'gitBoard:{chatId}')
     if len(players) and not job:
@@ -48,7 +48,7 @@ async def SendGit(chatId: int):
         history: Git.GitHistory
         player: Player.Player
         score = round(GitFormula(history),2)
-        exp = round(score * 1.5)
+        exp = round(score * 50)
         player.exp += exp
         Achievement.AddHistory(player.chatId, player.userId, totalExp=exp)
         text += f"""
@@ -61,6 +61,11 @@ async def SendGit(chatId: int):
                 Очки кодерского рейтинга: {score}
                 <b>Получено</b>: Опыт {exp}
                 """
+        
+    if not len(gits):
+        text += f"""
+        Похоже, сегодня никто не работал...
+"""
     try:
         await bot.send_photo(
             chatId,
