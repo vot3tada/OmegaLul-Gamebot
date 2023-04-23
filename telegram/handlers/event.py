@@ -275,7 +275,7 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_message_handler(event_get_all, commands='event')
     dp.register_callback_query_handler(event_get_all_pages, regexp='^eventPages:*')
     dp.register_message_handler(event_start, commands='event_create')
-    dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name, FSMEvent.delete], commands='event_cancel')
+    dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name, FSMEvent.delete], commands='cancel')
     dp.register_message_handler(event_set_date, state=FSMEvent.name)
     dp.register_message_handler(event_delete_start, commands='event_delete')
     dp.register_message_handler(event_delete_end, state=FSMEvent.delete)
