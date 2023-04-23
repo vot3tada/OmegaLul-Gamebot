@@ -229,14 +229,15 @@ async def event_get_all(message : types.Message):
     replytext = 'Список эвентов:'
     for i in events[:9]:
         replytext += f'\n<b>#{i.id}</b> - {i.name} - {i.datetime}'
-    buttons: list[types.InlineKeyboardButton] = []
-    buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
-    if (len(events) > 10):
-        buttons.append(types.InlineKeyboardButton(text='>', callback_data=f'eventPages:{message.chat.id}_{message.from_user.id}_2'))
-    else:
-        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
     keyboard = types.InlineKeyboardMarkup()
-    keyboard.row(*buttons)
+    if len(events) >= 10:
+        buttons: list[types.InlineKeyboardButton] = []
+        buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+        if (len(events) >= 10):
+            buttons.append(types.InlineKeyboardButton(text='>', callback_data=f'eventPages:{message.chat.id}_{message.from_user.id}_2'))
+        else:
+            buttons.append(types.InlineKeyboardButton(text=' ', callback_data=f'@$^'))
+        keyboard.row(*buttons)
     await message.answer(
         text=replytext,
         reply_markup=keyboard,

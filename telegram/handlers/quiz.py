@@ -166,6 +166,21 @@ async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
         await call.answer()
         return
     
+    
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(
+        types.InlineKeyboardButton(
+            text='Присоединиться к квизу',
+            callback_data=f'enterQuiz:{call.message.chat.id}'
+        )
+    )
+    keyboard.add(
+        types.InlineKeyboardButton(
+            text='Закончить набор',
+            callback_data=f'endEnterQuiz:{call.message.chat.id}'
+        )
+    )
+
     quiz: Quiz.QuizInChat = Quiz.QuizInChat
     quiz.chatId = call.message.chat.id
     quiz.number = 0
@@ -180,35 +195,81 @@ async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['inQuiz'] = 0
     Quiz.AddQuizInChat(quiz)
-    question: Quiz.Question = quiz.questions[0]
-    scheduler.add_job(NextQuestion, trigger='interval', seconds=60, jobstore='local', args=[call.message.chat.id], coalesce=True, id=f'quiz:{call.message.chat.id}')         
-    
     qq = Quiz.GetQuiz(id)
+    scheduler.add_job(StartQuizQuestionsByTrigger, jobstore='local', trigger='interval', seconds=10, args=[call.message.chat.id], id=f'quizStartTime:{call.message.chat.id}')
+    if (qq.image != ''):
+        await bot.send_photo(chat_id=call.message.chat.id, 
+                            caption=f'Идет набор на квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
+                            photo=InputFile(ROOT / 'static/quizes/' / qq.image),
+                            parse_mode='HTML',
+                            reply_markup=keyboard)
+    else:
+        await bot.send_message(chat_id=call.message.chat.id, 
+                            text=f'Идет набор на квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
+                            parse_mode='HTML',
+                            reply_markup=keyboard)
     for i in Player.GetAllPlayers(call.message.chat.id):
         if (qq.image != ''):
             await bot.send_photo(chat_id=i.userId, 
-                                caption=f'Сейчас проходит квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
+                                caption=f'Сейчас пройдет квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
                                 photo=InputFile(ROOT / 'static/quizes/' / qq.image),
                                 parse_mode='HTML')
         else:
             await bot.send_message(chat_id=i.userId, 
-                                text=f'Сейчас проходит квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
+                                text=f'Сейчас пройдет квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
                                 parse_mode='HTML')
     
+            
+#startQuiz
     
-    
-    
+async def StartQuizQuestions(call: types.CallbackQuery, state: FSMContext):
+    quiz = Quiz.GetQuizInChat(call.message.chat.id)
+    question: Quiz.Question = quiz.questions[0]
+    if scheduler.get_job(f'quizStartTime:{call.message.chat.id}') == None:
+        call.answer('Квиз уже стартовал')
+        return
+    scheduler.remove_job(f'quizStartTime:{call.message.chat.id}')
+    scheduler.add_job(NextQuestion, trigger='interval', seconds=60, jobstore='local', args=[call.message.chat.id], coalesce=True, id=f'quiz:{call.message.chat.id}')
     if (question.image != ''):
         photo = InputFile(ROOT / 'static/quizes/' / question.image)
-        await call.message.answer_photo(caption=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'),photo=photo)
+        await bot.send_photo(chat_id=call.message.chat.id, caption=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'),photo=photo)
     else:   
-        await call.message.answer(text=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'))
-    
-    
-    
-    await call.answer()
+        await bot.send_message(chat_id=call.message.chat.id, text=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'))
+
+
+async def StartQuizQuestionsByTrigger(chatId: int):
+    quiz = Quiz.GetQuizInChat(chatId)
+    question: Quiz.Question = quiz.questions[0]
+    scheduler.remove_job(f'quizStartTime:{chatId}')
+    scheduler.add_job(NextQuestion, trigger='interval', seconds=60, jobstore='local', args=[chatId], coalesce=True, id=f'quiz:{chatId}')
+    if (question.image != ''):
+        photo = InputFile(ROOT / 'static/quizes/' / question.image)
+        await bot.send_photo(chat_id=chatId, caption=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'),photo=photo)
+    else:   
+        await bot.send_message(chat_id=chatId, text=f'Минута на вопрос:\n'+question.text.replace('\\n', '\n'))
+
+
+async def TakePartQuizCall(call: types.CallbackQuery, state: FSMContext):
+    if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
+        await call.answer('Нужно зарегаться для такого')
+        return
+    quiz: Quiz.QuizInChat = Quiz.GetQuizInChat(call.message.chat.id)
+    if quiz == None:
+        await call.answer('Сейчас не проходит квиз в чате!')
+        return
+    player = Player.GetPlayer(call.message.chat.id, call.from_user.id)
+    if player in quiz.players:
+        await call.answer('Вы уже участвуете в квизе')
+        return
+    quiz.players.append(player)
+    await FSMQuiz.inQuiz.set()
+    async with state.proxy() as data:
+        data['inQuiz'] = 0
+    await call.answer('Вы участвуете в квизе')
     
 async def AnswerQuestion(message: types.Message, state: FSMContext):
+    if scheduler.get_job(f'quizStartTime:{message.chat.id}') != None:
+        return
     quiz: Quiz.QuizInChat = Quiz.GetQuizInChat(message.chat.id)
     if (message.text.lower() == quiz.questions[quiz.number].answer.lower()):
         scheduler.remove_job(f'quiz:{message.chat.id}')
@@ -366,6 +427,8 @@ def register_handlers_quiz(dp: Dispatcher):
     dp.register_message_handler(QuizMenuStart, commands='quiz')
     dp.register_callback_query_handler(QuizPages, regexp='^myQuizPage:*')
     dp.register_callback_query_handler(StartQuiz, regexp='^quizStart:*', state=None)
+    dp.register_callback_query_handler(TakePartQuizCall, regexp='^enterQuiz:*', state=None)
+    dp.register_callback_query_handler(StartQuizQuestions, regexp='^endEnterQuiz:*', state=FSMQuiz.inQuiz)
     dp.register_callback_query_handler(ChoiceQuiz, regexp='^quiz:*')
     dp.register_message_handler(LeaveQuiz, state=FSMQuiz.inQuiz, commands='quiz_leave')
     dp.register_message_handler(AnswerQuestion, state=FSMQuiz.inQuiz)
