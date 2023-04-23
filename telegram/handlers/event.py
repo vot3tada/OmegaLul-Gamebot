@@ -84,6 +84,9 @@ async def event_end(message : types.Message, state: FSMContext):
     if len([i for i in Event.GetAllEvents(message.chat.id) if abs((time-i.datetime).total_seconds()) < 600]) > 0:
         await message.reply('В это время уже существует эвент')
         return
+    if (time < datetime.now(tz.gettz("Europe/Moscow"))):
+        await message.answer('Эвент нельзя создать в прошлом')
+        return
     event = Event.Event(0, name, f'{date[0]}-{date[1]}-{date[2]} {date[3]}:{date[4]}:00', [])
     event.chatId = message.chat.id
     event.userId = message.from_user.id
