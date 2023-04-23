@@ -129,9 +129,16 @@ async def trigger_before_event(chatId: int, eventName: str):
 async def trigger_event(chatId: int, eventId: int):
     event = Event.GetEvent(eventId)
     photo = open(ROOT / 'static/meeting/' / random.choice(os.listdir(ROOT / 'static/meeting')) ,'rb')
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(
+        types.InlineKeyboardButton(
+            text='Присоединиться к квизу',
+            callback_data=f'eventEnd:{chatId}'
+        ))
     await bot.send_photo(chat_id=chatId,  
                             caption=f'Сейчас проходит эвент:\n<b>{event.name}</b>.\nУ вас есть пять минут проставить плюсики. Всем посетителям награда!', 
                             photo=photo,
+                            reply_markup=keyboard,
                             parse_mode='HTML')
       
     for i in Player.GetAllPlayers(chatId):
@@ -156,6 +163,27 @@ async def event_add_players(message : types.Message, state: FSMContext):
     Event.AddUser(eventId, chatId=message.chat.id, userId=message.from_user.id)
     await message.reply(f'{player.name} подключился')
     await FSMEvent.inEvent.set()
+
+async def admin_end_call(call: types.CallbackQuery, state: FSMContext):
+    for i in Player.GetAllPlayers(call.message.chat.id):
+        st : FSMContext = dp.current_state(chat = i.chatId, user = i.userId)
+        statePlayer = await st.get_state()
+        if statePlayer == FSMEvent.addplayers.state or statePlayer == FSMEvent.inEvent.state:
+            await st.set_data(None)
+            await dp.current_state(chat = i.chatId, user = i.userId).set_state(None)
+    eventId = await state.get_data()
+    event = Event.GetEvent(eventId)
+    text = 'Посетители эвента:'
+    for i in event.players:
+        i.money += 50
+        i.exp += 50
+        await AchievementHandler.AddHistory(chatId = i.chatId, userId = i.userId, totalMoney=50, totalExp=50, totalEnterEvent=1)
+        text += f'\n {i.name}'
+    await bot.send_message(chat_id=call.message.chat.id, text='Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
+    scheduler.remove_job(f'event:{eventId}end')
+    scheduler.remove_job(f'event:{eventId}reload')
+    await state.finish()
+
 
 async def admin_end(message : types.Message, state: FSMContext):
     for i in Player.GetAllPlayers(message.chat.id):
@@ -275,6 +303,7 @@ async def event_get_all_pages(call: types.CallbackQuery):
 def register_handlers_registration(dp: Dispatcher):
     dp.register_message_handler(event_get_all, commands='event')
     dp.register_callback_query_handler(event_get_all_pages, regexp='^eventPages:*')
+    dp.register_callback_query_handler(admin_end_call, regexp='^eventEnd:*', state=FSMEvent.admin)
     dp.register_message_handler(event_start, commands='event_create')
     dp.register_message_handler(event_cancel, state=[FSMEvent.date,FSMEvent.name, FSMEvent.delete], commands='event_cancel')
     dp.register_message_handler(event_set_date, state=FSMEvent.name)
