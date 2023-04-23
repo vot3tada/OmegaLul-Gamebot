@@ -60,6 +60,9 @@ async def event_delete_end(message : types.Message, state: FSMContext):
     if (event.chatId != player.chatId or event.userId != player.userId):
         await message.answer('Вы не являетесь создателем этого эвента')
         return
+    if (event.datetime < datetime.now()):
+        await message.answer('Этот эвент уже давно прошел')
+        return
     Event.RemoveEvent(event.id)
     scheduler.remove_job('e'+str(event.id)+'-')
     scheduler.remove_job('e'+str(event.id)+'--')
