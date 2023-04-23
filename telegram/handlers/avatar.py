@@ -50,7 +50,10 @@ async def getInventory(message : types.Message):
 async def getMoney(message: types.Message):
     player = Player.GetPlayer(message.chat.id, message.from_user.id)
     player.money+=2000
-    await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalMoney=2000)
+    await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalMoney=1000000, totalExp=1000000, totalQuestions=1000000, totalFights=1000000,
+                     totalWinFights=1000000, totalWinBoss=1000000,
+                     totalItem=1000000, totalTakenTasks=1000000, totalEndedTasks=1000000, totalFallTasks=1000000, totalWinCollector=1000000,
+                     totalCreateEvent=1000000, totalEnterEvent=1000000, totalKickEvent=1000000, totalLeaveFights=1000000, totalCommits = 1000000, totalMerges = 1000000)
 
 def register_handlers_user(dp: Dispatcher):
     dp.register_message_handler(getInventory, commands='inventory', state=None)
