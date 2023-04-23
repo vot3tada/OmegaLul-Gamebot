@@ -71,13 +71,25 @@ class History():
                 Achiv.AddUserAchiv(u)
                 checkAchId.append(i)
 
-        updates = [(totalMoney, 'totalMoney'), (totalExp, 'totalExp'), (totalQuestions, 'totalQuestions'),
-                    (totalFights, 'totalFights'), (totalWinFights, 'totalWinFights'), (totalWinBoss, 'totalWinBoss'),
-                      (totalItem, 'totalItem'), (totalTakenTasks, 'totalTakenTasks'), (totalEndedTasks, 'totalEndedTasks'),
-                        (totalFallTasks, 'totalFallTasks'), (totalWinCollector, 'totalWinCollector'),
-                          (totalCreateEvent, 'totalCreateEvent'), (totalEnterEvent, 'totalEnterEvent'),
-                            (totalKickEvent, 'totalKickEvent'), (totalLeaveFights, 'totalLeaveFights')
-                            (totalCommits,'totalCommits'),(totalMerges,'totalMerges')]
+        updates = [ 
+            (totalMoney, 'totalMoney'), 
+            (totalExp, 'totalExp'), 
+            (totalQuestions, 'totalQuestions'),
+            (totalFights, 'totalFights'), 
+            (totalWinFights, 'totalWinFights'), 
+            (totalWinBoss, 'totalWinBoss'),
+            (totalItem, 'totalItem'), 
+            (totalTakenTasks, 'totalTakenTasks'), 
+            (totalEndedTasks, 'totalEndedTasks'),
+            (totalFallTasks, 'totalFallTasks'), 
+            (totalWinCollector, 'totalWinCollector'),
+            (totalCreateEvent, 'totalCreateEvent'), 
+            (totalEnterEvent, 'totalEnterEvent'),
+            (totalKickEvent, 'totalKickEvent'), 
+            (totalLeaveFights, 'totalLeaveFights'),
+            (totalCommits,'totalCommits'),
+            (totalMerges,'totalMerges')
+            ]
 
         for i, (value, attribute) in enumerate(updates):
             if value:

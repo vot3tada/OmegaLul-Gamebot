@@ -88,16 +88,16 @@ async def event_end(message : types.Message, state: FSMContext):
     await AchievementHandler.AddHistory(chatId = message.chat.id, userId = message.from_user.id, totalCreateEvent=1)
     await message.reply(f'Мероприятие с #{event.id} создано')
     await bot.send_photo(chat_id=message.chat.id,  
-                        caption=f'<b>ВСЕ! ВСЕ! ВСЕ!</b>\nУслышьте! Этого числа <b>{time:%d.%m.%Y}</b> ' /
-                        f'в <b>{time:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' /
+                        caption=f'<b>ВСЕ! ВСЕ! ВСЕ!</b>\nУслышьте! Этого числа <b>{time:%d.%m.%Y}</b> ' +
+                        f'в <b>{time:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
                         'Не опаздывайте! Награда ждет посетителей!', 
                         photo=open(ROOT / 'static/anonce/' / random.choice(os.listdir(ROOT / 'static/anonce')) ,'rb'),
                         parse_mode='HTML')
     
     for i in Player.GetAllPlayers(message.chat.id):
         await bot.send_photo(chat_id=i.userId, 
-                               caption=f'Услышьте! Этого числа <b>{time:%d.%m.%Y}</b> ' /
-                                f'в <b>{time:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' /
+                               caption=f'Услышьте! Этого числа <b>{time:%d.%m.%Y}</b> ' +
+                                f'в <b>{time:%H:%M}</b> состоится эвент:\n<b>{event.name}</b>!\n' +
                                 'Не опаздывайте! Награда ждет посетителей!',
                                parse_mode='HTML',
                                photo=open(ROOT / 'static/meeting/' / random.choice(os.listdir(ROOT / 'static/meeting')) ,'rb'))
@@ -165,7 +165,7 @@ async def admin_end(message : types.Message, state: FSMContext):
         i.exp += 50
         await AchievementHandler.AddHistory(chatId = i.chatId, userId = i.userId, totalMoney=50, totalExp=50, totalEnterEvent=1)
         text += f'\n {i.name}'
-    await message.answer('Регистрация на эвент завершена\n' / text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
+    await message.answer('Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
     scheduler.remove_job(f'event:{eventId}end')
     scheduler.remove_job(f'event:{eventId}reload')
     await state.finish()
@@ -184,7 +184,7 @@ async def scheduler_end(chatId: int, eventId):
         i.exp += 50
         await AchievementHandler.AddHistory(chatId = i.chatId, userId = i.userId, totalMoney=50, totalExp=50)
         text += f'\n {i.name}'
-    await bot.send_message(chat_id=chatId, text='Регистрация на эвент завершена\n' / text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
+    await bot.send_message(chat_id=chatId, text='Регистрация на эвент завершена\n' + text + '\nКаждый посетитель получил:\n50 опыта\n50 монет')
     scheduler.remove_job(f'event:{eventId}end')
     scheduler.remove_job(f'event:{eventId}reload')
 
