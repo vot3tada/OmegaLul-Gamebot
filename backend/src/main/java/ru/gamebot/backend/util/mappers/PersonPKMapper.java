@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util.mappers.PersonMapper;
+package ru.gamebot.backend.util.mappers;
 
 import org.mapstruct.Mapper;
 import ru.gamebot.backend.dto.PersonDTO;

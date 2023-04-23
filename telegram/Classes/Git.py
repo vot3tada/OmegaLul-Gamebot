@@ -16,10 +16,10 @@ class Contribution:
 
     def __init__(
             self,
-            type: str,
+            action: str,
             count: int
             ) -> None:
-        self.type = type
+        self.action = action
         self.count = count
         
 
@@ -36,28 +36,28 @@ class GitHistory:
     @property
     def ApprovedMergeRequests(self) -> int:
         try:
-            return self.contributions[[e.type for e in self.contributions].index('approved')].count
+            return self.contributions[[e.action for e in self.contributions].index('Одобрил merge request')].count
         except ValueError:
             return 0
         
     @property
     def OpenedMergeRequests(self) -> int:
         try:
-            return self.contributions[[e.type for e in self.contributions].index('opened')].count
+            return self.contributions[[e.action for e in self.contributions].index('Создал merge request')].count
         except ValueError:
             return 0
 
     @property
     def AcceptedMergeRequests(self) -> int:
         try:
-            return self.contributions[[e.type for e in self.contributions].index('accepted')].count
+            return self.contributions[[e.action for e in self.contributions].index('Слил ветку')].count
         except ValueError:
             return 0
 
     @property
     def PushedCommits(self) -> int:
         try:
-            return self.contributions[[e.type for e in self.contributions].index('pushed')].count
+            return self.contributions[[e.action for e in self.contributions].index('Запушил commit')].count
         except ValueError:
             return 0
 
@@ -66,6 +66,7 @@ def GetChatGit(chatId: int):
     responce: requests.Response = requests.get(
         url=f'http://{backhost}:{backport}/api/gitlab/get/stats/{chatId}',
         headers={"Content-Type": "application/json"})
+    
     data: list[dict[str, Any]] = responce.json()
     gits: list[GitHistory] = [GitHistory(**e) for e in data]
     return gits

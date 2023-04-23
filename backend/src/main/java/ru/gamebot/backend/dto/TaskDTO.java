@@ -1,6 +1,7 @@
 package ru.gamebot.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -22,5 +23,6 @@ public class TaskDTO {
     private Integer ownerUserId;
     private Integer workerUserId;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @Future
     private java.util.Date deadline;
 }

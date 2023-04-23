@@ -7,7 +7,7 @@ import ru.gamebot.backend.dto.WorkDTO;
 import ru.gamebot.backend.models.Work;
 import ru.gamebot.backend.repository.WorkRepository;
 import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkAlreadyExistException;
-import ru.gamebot.backend.util.mappers.WorkMapper.WorkMapper;
+import ru.gamebot.backend.util.mappers.WorkMapper;
 import ru.gamebot.backend.util.exceptions.WorkExceptions.WorkNotFoundException;
 
 import java.util.ArrayList;

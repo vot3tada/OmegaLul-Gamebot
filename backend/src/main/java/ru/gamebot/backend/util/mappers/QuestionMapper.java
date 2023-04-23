@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util.mappers.QuizMapper;
+package ru.gamebot.backend.util.mappers;
 
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -12,5 +12,4 @@ import ru.gamebot.backend.models.Question;
 public interface QuestionMapper {
     Question questionDTOToQuestion(QuestionDTO questionDTO);
 
-    QuestionDTO questionToQuestionDTO(Question question);
 }

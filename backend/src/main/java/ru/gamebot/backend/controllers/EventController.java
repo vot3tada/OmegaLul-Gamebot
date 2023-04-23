@@ -93,7 +93,7 @@ public class EventController {
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(ChatNotFoundException e){
         var response = new ErrorResponse(e.getMessage());
-        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler

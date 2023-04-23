@@ -112,15 +112,11 @@ async def getGit(message: types.Message, state: FSMContext):
 
     if error == 200:
         await message.answer(
-            text='Бот награждает инженеров-программистов!\nСкажите ваш GitLab username для получение бонусов за работу.\nИли напишите \'-\' для пропсуска',
-        )
-    elif error == 400:
-        await message.answer(
-            text='Введеный гитлаб не верен, попробуйте еще раз.\nИли напишите - для пропуска.',
+            text='Бот награждает инженеров-программистов!\nСкажите ваш GitLab логин для получение бонусов за работу.\nИли напишите \' - \' для пропсуска',
         )
     else:
         await message.answer(
-            text='Технические шоколадки со стороны GitLab\'а.\nМожете попробовать ввести username еще раз.\nИли напишите \'-\' для пропуска.',
+            text='Введеный гитлаб не верен, попробуйте еще раз.\nИли напишите \' - \' для пропуска.',
         )
 
 async def endRegistation(message: types.Message, state: FSMContext):
@@ -145,8 +141,8 @@ async def endRegistation(message: types.Message, state: FSMContext):
         str(orig)
     )
     if message.text != '-':
-        newPlayer.git = message.text
-    status = Player.AddPlayer(newPlayer) 
+        newPlayer._gitlabUserName = message.text
+    status = Player.AddPlayer(newPlayer, ) 
     if status != 200:
         async with state.proxy() as e:
             e['error'] = status
@@ -155,7 +151,7 @@ async def endRegistation(message: types.Message, state: FSMContext):
     await state.finish()
     Leaderboard.AddLeaderBoardInChat(message.chat.id)
     RE.AddRandomEventInChat(message.chat.id)
-    #git.AddGitInChat(message.chat.id)
+    git.AddGitInChat(message.chat.id)
     await message.answer_photo(photo, caption=f'Ещё один шикарный механик с нами: {newPlayer.name} !!')
 
 async def cancelRegistration(message: types.Message, state: FSMContext):

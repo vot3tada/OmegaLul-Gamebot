@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util.mappers.QuizMapper;
+package ru.gamebot.backend.util.mappers;
 
 import org.mapstruct.*;
 import ru.gamebot.backend.dto.GetAllQuizDTO;

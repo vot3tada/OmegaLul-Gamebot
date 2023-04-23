@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.gamebot.backend.dto.PersonDTO;
 import ru.gamebot.backend.models.History;
 import ru.gamebot.backend.models.HistoryPK;
-import ru.gamebot.backend.models.Person;
 import ru.gamebot.backend.models.PersonPK;
 import ru.gamebot.backend.repository.HistoryRepository;
 import ru.gamebot.backend.repository.PersonRepository;
@@ -14,10 +13,9 @@ import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonAlreadyExistsEx
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonChatIdNotFound;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotFoundException;
 import ru.gamebot.backend.util.exceptions.PersonExceptions.PersonNotUpdateException;
-import ru.gamebot.backend.util.mappers.PersonMapper.PersonMapper;
+import ru.gamebot.backend.util.mappers.PersonMapper;
 import ru.gamebot.backend.consumingrest.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -35,15 +33,16 @@ public class PersonService {
         if (foundPersons.isEmpty()) {
             throw new PersonChatIdNotFound();
         }
-        return convertToListPersonDTO(foundPersons);
+        return foundPersons.stream().map(personMapper::personToPersonDTO).toList();
     }
 
     public List<PersonDTO> getAllPersons() {
-        return convertToListPersonDTO(personRepository.findAll());
+        return personRepository.findAll().stream().map(personMapper::personToPersonDTO).toList();
     }
 
     @Transactional
     public void deletePersonsByChatId(int chatId) throws PersonNotFoundException {
+        historyRepository.deleteAllByPersonPersonPkChatId(chatId);
         long result = personRepository.deletePersonByPersonPkChatId(chatId);
         if (result == 0) {
             throw new PersonChatIdNotFound();
@@ -53,7 +52,9 @@ public class PersonService {
     @Transactional
     public void createPerson(PersonDTO personDTO) throws PersonAlreadyExistsException {
         var person = personMapper.personDtoToPerson(personDTO);
-        person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
+        if(personDTO.getGitlabUserName()!=null){
+            person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
+        }
         if (personRepository.existsById(person.getPersonPk())) {
             throw new PersonAlreadyExistsException();
         }
@@ -71,16 +72,10 @@ public class PersonService {
             throw new PersonNotUpdateException("Experience cannot be less than what is already available!");
         }
         var person = personMapper.personDtoToPerson(personDTO);
-        person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
-        personRepository.save(person);
-    }
-
-    private List<PersonDTO> convertToListPersonDTO(List<Person> persons) {
-        List<PersonDTO> personDTOS = new ArrayList<>();
-        for (Person person : persons) {
-            personDTOS.add(personMapper.personToPersonDTO(person));
+        if(personDTO.getGitlabUserName()!=null){
+            person.setGitlabId(gitlabRestClient.getGitLabUserId(personDTO.getGitlabUserName()));
         }
-        return personDTOS;
+        personRepository.save(person);
     }
 }
 

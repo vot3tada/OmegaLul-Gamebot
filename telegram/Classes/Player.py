@@ -32,7 +32,7 @@ class Player():
                  hp : int = 100,
                  damage : int = 20,
                  damageMultiply : int = 1,
-                 git: int = -1):
+                 gitlabUserName: str = None):
         self._chatId = personPk['chatId']
         self._userId = personPk['userId']
         self._name = name
@@ -45,7 +45,7 @@ class Player():
         self._hp = hp
         self._damage = damage
         self._damageMultiply = damageMultiply
-        self._git = git
+        self._gitlabUserName = gitlabUserName
 
         responce: requests.Response = requests.get(
             url=f'http://{backhost}:{backport}/api/inventory/id/{self._chatId}/{self._userId}',
@@ -69,6 +69,7 @@ class Player():
             "hp": self._hp,
             "damage": self._damage,
             "damageMultiply": self._damageMultiply,
+            "gitlabUserName": self._gitlabUserName
         }
         if withIds:
             json['personPk'] = {
@@ -366,10 +367,10 @@ def AddPlayer(player : Player) -> int:
         json = player.to_json(),
         headers={"Content-Type": "application/json"})
     
+    if response.status_code == 404 and response.json()['message'] == '909':
+        return 400
     if response.status_code != 201:
         raise RuntimeError(f'Добавление пользователя: {response.status_code}')
-    if response.json()['message'] == 909:
-        return 400
     return 200
 
 def GetRandomPlayer(chatId: int, positively: bool):

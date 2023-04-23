@@ -1,4 +1,4 @@
-package ru.gamebot.backend.util.mappers.EventMapper;
+package ru.gamebot.backend.util.mappers;
 
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
@@ -11,6 +11,5 @@ import ru.gamebot.backend.models.Event;
 public interface EventMapper {
     Event eventDTOToEvent(CreateEventDTO createEventDTO);
 
-    CreateEventDTO eventToEventDTO(Event event);
     }
 

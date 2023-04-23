@@ -42,6 +42,10 @@ public class HistoryDTO {
     private Integer totalKickEvent;
     @NotNull
     private Integer totalLeaveFights;
+    @NotNull
+    private Integer totalCommits;
+    @NotNull
+    private Integer totalMerges;
 
     public HistoryPK toHistoryPK(){
         return new HistoryPK(this.userId,this.chatId);
