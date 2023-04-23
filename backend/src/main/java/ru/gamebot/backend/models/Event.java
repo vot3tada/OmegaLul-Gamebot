@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Data
@@ -16,5 +18,5 @@ public class Event {
     private String name;
     @Basic
     @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date startedAt;
+    private LocalDateTime startedAt;
 }
