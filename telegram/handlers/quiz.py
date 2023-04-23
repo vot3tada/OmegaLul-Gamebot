@@ -196,7 +196,7 @@ async def StartQuiz(call: types.CallbackQuery, state: FSMContext):
         data['inQuiz'] = 0
     Quiz.AddQuizInChat(quiz)
     qq = Quiz.GetQuiz(id)
-    scheduler.add_job(StartQuizQuestionsByTrigger, jobstore='local', trigger='interval', seconds=10, args=[call.message.chat.id], id=f'quizStartTime:{call.message.chat.id}')
+    scheduler.add_job(StartQuizQuestionsByTrigger, jobstore='local', trigger='interval', seconds=120, args=[call.message.chat.id], id=f'quizStartTime:{call.message.chat.id}')
     if (qq.image != ''):
         await bot.send_photo(chat_id=call.message.chat.id, 
                             caption=f'Идет набор на квиз:\n <b>{qq.name}</b>!\n Присоединяйтесь', 
