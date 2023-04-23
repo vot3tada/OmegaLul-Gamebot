@@ -42,7 +42,7 @@ async def SendGit(chatId: int):
     for history, player in playerGit:
         history: Git.GitHistory
         player: Player.Player
-        Achievement.AddHistory(player.chatId, player.userId, totalCommits=history.PushedCommits, totalMerges=history.AcceptedMergeRequests)
+        await Achievement.AddHistory(player.chatId, player.userId, totalCommits=history.PushedCommits, totalMerges=history.AcceptedMergeRequests)
 
     for history, player in playerGit[:4]:
         history: Git.GitHistory
@@ -50,7 +50,7 @@ async def SendGit(chatId: int):
         score = round(GitFormula(history),2)
         exp = round(score * 50)
         player.exp += exp
-        Achievement.AddHistory(player.chatId, player.userId, totalExp=exp)
+        await Achievement.AddHistory(player.chatId, player.userId, totalExp=exp)
         text += f"""
         <i>{player.name}</i>
                 Создал merge request: {history.ApprovedMergeRequests}
