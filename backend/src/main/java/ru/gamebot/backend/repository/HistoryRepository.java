@@ -7,4 +7,5 @@ import ru.gamebot.backend.models.HistoryPK;
 
 @Repository
 public interface HistoryRepository extends JpaRepository<History, HistoryPK> {
+    void deleteAllByPersonPersonPkChatId(Integer chatId);
 }

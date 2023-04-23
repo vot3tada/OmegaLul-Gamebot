@@ -42,6 +42,7 @@ public class PersonService {
 
     @Transactional
     public void deletePersonsByChatId(int chatId) throws PersonNotFoundException {
+        historyRepository.deleteAllByPersonPersonPkChatId(chatId);
         long result = personRepository.deletePersonByPersonPkChatId(chatId);
         if (result == 0) {
             throw new PersonChatIdNotFound();
