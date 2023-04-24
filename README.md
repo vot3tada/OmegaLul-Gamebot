@@ -8,4 +8,4 @@
 Приложение развернуто на сервере и скорее всего сейчас работает(если мы ничего не меням :) ). @Mehano_Bot тег бота, ему можно написать, и добавить в чат.
 
 Миграции подымались при помощи Flyway, и они лежат по пути:
->Omegabot/backend/src/main/resources/db/migration
+>/backend/src/main/resources/db/migration
