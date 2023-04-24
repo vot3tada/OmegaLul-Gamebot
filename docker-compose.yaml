@@ -25,9 +25,15 @@ services:
 
   gamebot-back:
     build: ./backend/
+    depends_on:
+      db:
+        condition: service_healthy
       
   telegram:
     build: ./telegram/
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   gamebot-db:
