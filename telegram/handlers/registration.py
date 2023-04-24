@@ -174,7 +174,7 @@ async def changeAvatar(message: types.Message):
         reply_markup=keyboard
     )
 
-async def reRegStart(call: types.CallbackQuery):
+async def reRegStart(call: types.CallbackQuery, state: FSMContext):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
         await call.answer('Нужно зарегаться для такого')
         return
@@ -186,6 +186,8 @@ async def reRegStart(call: types.CallbackQuery):
     player.money -= reRegMoney
     await FSMRegistation.name.set()
     await call.message.answer('Напиши имя')
+    async with state.proxy() as e:
+        e['error'] = 200
 
     
 def register_handlers_registration(dp: Dispatcher):
@@ -197,7 +199,7 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_callback_query_handler(getAnotherPhoto, regexp="^ava0:*", state=FSMRegistation.acceptPhoto)
     dp.register_callback_query_handler(choiceGit, regexp="^ava1:*", state=FSMRegistation.acceptPhoto)
     dp.register_message_handler(endRegistation, state=FSMRegistation.GitLabSend)
-    dp.register_message_handler(changeAvatar, commands='^re_registration', state=None)
-    #dp.register_callback_query_handler(reRegStart, commands="", state=None)
+    dp.register_message_handler(changeAvatar, commands='re_registration', state=None)
+    dp.register_callback_query_handler(reRegStart, regexp='^reRegistration', state=None)
     
     
