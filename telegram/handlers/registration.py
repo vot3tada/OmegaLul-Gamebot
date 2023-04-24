@@ -197,7 +197,7 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_callback_query_handler(getAnotherPhoto, regexp="^ava0:*", state=FSMRegistation.acceptPhoto)
     dp.register_callback_query_handler(choiceGit, regexp="^ava1:*", state=FSMRegistation.acceptPhoto)
     dp.register_message_handler(endRegistation, state=FSMRegistation.GitLabSend)
-    #dp.register_message_handler(changeAvatar, commands='avatar_change', state=None)
-    dp.register_callback_query_handler(reRegStart, regexp="^re_registration", state=None)
+    dp.register_message_handler(changeAvatar, commands='^re_registration', state=None)
+    #dp.register_callback_query_handler(reRegStart, commands="", state=None)
     
     
