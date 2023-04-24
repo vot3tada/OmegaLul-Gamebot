@@ -127,7 +127,12 @@ async def endRegistation(message: types.Message, state: FSMContext):
         player:Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
         player.name = (await state.get_data())['name'] 
         if message.text != '-':
-            player.git = message.text
+            status = player.changeGit(message.text)
+            if status != 200:
+                async with state.proxy() as e:
+                    e['error'] = status
+                await getGit(message, state)
+                return
         await state.finish()
         await message.answer_photo(photo, caption=f'{message.from_user.mention} меняет своего аватара, теперь это {player.name} !!')
         return
@@ -142,7 +147,7 @@ async def endRegistation(message: types.Message, state: FSMContext):
     )
     if message.text != '-':
         newPlayer._gitlabUserName = message.text
-    status = Player.AddPlayer(newPlayer, ) 
+    status = Player.AddPlayer(newPlayer) 
     if status != 200:
         async with state.proxy() as e:
             e['error'] = status
