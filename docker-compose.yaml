@@ -31,9 +31,6 @@ services:
       
   telegram:
     build: ./telegram/
-    depends_on:
-      postgres:
-        condition: service_healthy
 
 volumes:
   gamebot-db:

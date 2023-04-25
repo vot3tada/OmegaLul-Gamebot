@@ -13,5 +13,6 @@ RUN --mount=type=cache,target=/root/.cache \
     pip install -r requirements.txt
 
 COPY . /app
+RUN chmod a+x "./wait-for-it.sh"
 
-CMD ["python3", "bot_telegram.py"]
+CMD ["./wait-for-it.sh", "gamebot-back:8080", "--timeout=60", "--", "python3", "bot_telegram.py"]
