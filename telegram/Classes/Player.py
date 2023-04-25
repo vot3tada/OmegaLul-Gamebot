@@ -98,12 +98,13 @@ class Player():
 
     @property
     def git(self):
-        return self._git
+        return self._gitlabUserName
     
-    @git.setter
-    def git(self, x: int):
-        self._git = x
-        self._updatePlayer()
+    def changeGit(self, x: int) -> int:
+        self._gitlabUserName = x
+        return self._updatePlayer()
+
+        
 
     @property
     def hp(self):
@@ -302,8 +303,11 @@ class Player():
             headers={"Content-Type": "application/json"},
             json=self.to_json(False)
             )
+        if response.status_code == 404 and response.json()['message'] == '909':
+            return 400
         if response.status_code != 204:
             raise RuntimeError(f'Измененеие пользователя: {response.status_code}')
+        return 200
 
 def _debuffByItem(chatId: int, userId: int, item: Good.Good):
     buff_id = f'buff:{item.id}_{chatId}_{userId}'

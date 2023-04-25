@@ -127,7 +127,12 @@ async def endRegistation(message: types.Message, state: FSMContext):
         player:Player.Player = Player.GetPlayer(message.chat.id, message.from_user.id)
         player.name = (await state.get_data())['name'] 
         if message.text != '-':
-            player.git = message.text
+            status = player.changeGit(message.text)
+            if status != 200:
+                async with state.proxy() as e:
+                    e['error'] = status
+                await getGit(message, state)
+                return
         await state.finish()
         await message.answer_photo(photo, caption=f'{message.from_user.mention} меняет своего аватара, теперь это {player.name} !!')
         return
@@ -142,7 +147,7 @@ async def endRegistation(message: types.Message, state: FSMContext):
     )
     if message.text != '-':
         newPlayer._gitlabUserName = message.text
-    status = Player.AddPlayer(newPlayer, ) 
+    status = Player.AddPlayer(newPlayer) 
     if status != 200:
         async with state.proxy() as e:
             e['error'] = status
@@ -174,7 +179,7 @@ async def changeAvatar(message: types.Message):
         reply_markup=keyboard
     )
 
-async def reRegStart(call: types.CallbackQuery):
+async def reRegStart(call: types.CallbackQuery, state: FSMContext):
     if not Player.FindPlayer(call.message.chat.id, call.from_user.id):
         await call.answer('Нужно зарегаться для такого')
         return
@@ -186,6 +191,8 @@ async def reRegStart(call: types.CallbackQuery):
     player.money -= reRegMoney
     await FSMRegistation.name.set()
     await call.message.answer('Напиши имя')
+    async with state.proxy() as e:
+        e['error'] = 200
 
     
 def register_handlers_registration(dp: Dispatcher):
@@ -197,7 +204,7 @@ def register_handlers_registration(dp: Dispatcher):
     dp.register_callback_query_handler(getAnotherPhoto, regexp="^ava0:*", state=FSMRegistation.acceptPhoto)
     dp.register_callback_query_handler(choiceGit, regexp="^ava1:*", state=FSMRegistation.acceptPhoto)
     dp.register_message_handler(endRegistation, state=FSMRegistation.GitLabSend)
-    dp.register_message_handler(changeAvatar, commands='avatar_change', state=None)
-    dp.register_callback_query_handler(reRegStart, regexp="^reRegistration", state=None)
+    dp.register_message_handler(changeAvatar, commands='re_registration', state=None)
+    dp.register_callback_query_handler(reRegStart, regexp='^reRegistration', state=None)
     
     

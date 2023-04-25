@@ -15,7 +15,7 @@ ROOT = FILE.parents[1]
 async def welcomeMessage(message: types.Message):
     text = f'''<b>Приветсвую тебя!</b>
 
-Я - <b>Омехалюль</b>, игровой бот в стиле нейронного стимпанка
+Я - <b>Механобот</b>, игровой бот в стиле нейронного стимпанка
 
 Добавляй меня в свой чат к друзьям, давай админку и вместе вы сможете:
 
@@ -40,7 +40,7 @@ async def welcomeMessage(message: types.Message):
     
 
 helpSections: dict[str, str] = {
-    "Общий": '<b>Какой разел Омехалюля вас интересует?</b>',
+    "Общий": '<b>Какой разел Механобота вас интересует?</b>',
     "Персонаж": f"""
 <b>Персонаж</b>
 Команды:
@@ -165,7 +165,7 @@ async def getHelp(message: types.Message):
             types.InlineKeyboardButton(text=helpSection, callback_data=f'help:{helpSection}_{message.from_user.id}')
         )
     await message.reply_photo(
-        caption='<b>Какой раздел Омехалюля вас интересует?</b>',
+        caption='<b>Какой раздел Механобота вас интересует?</b>',
         parse_mode='HTMl',
         photo=open(ROOT / 'static/info/' / random.choice(os.listdir(ROOT / 'static/info')), 'rb'),
         reply_markup=keyboard
