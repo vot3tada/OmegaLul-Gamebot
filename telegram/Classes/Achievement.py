@@ -1,10 +1,17 @@
 import requests
 from typing import Any
 from pathlib import Path
+import configparser
+
 
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]
+
+config = configparser.ConfigParser()
+config.read(ROOT /'config.ini')
+backhost = config['DEFAULT']['BACKHOST']
+backport = config['DEFAULT']['BACKPORT']
 
 class Achievement():
 
