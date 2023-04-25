@@ -47,7 +47,7 @@ def GetAllItems() -> Union[list[Good], None]:
 def GetRandomEventItems() -> Union[list[Good], None]:
 
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/item/type/event',
+        url=f'http://{backhost}:{backport}/api/item/type/event',
         headers={"Content-Type": "application/json"})
 
     if not responce.ok:

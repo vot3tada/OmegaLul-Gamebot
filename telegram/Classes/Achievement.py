@@ -33,7 +33,7 @@ class UserAchievement():
 
 def GetUserAchivs(chatId: int, userId: int):
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/achievement/person/{chatId}/{userId}',
+        url=f'http://{backhost}:{backport}/api/achievement/person/{chatId}/{userId}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:
@@ -45,7 +45,7 @@ def GetUserAchivs(chatId: int, userId: int):
 
 def AddUserAchiv(achiv: UserAchievement):
     responce:requests.Response = requests.post(
-        url=f'http://localhost:8080/api/achievement/person/add',
+        url=f'http://{backhost}:{backport}/api/achievement/person/add',
         json = achiv.to_json(),
         headers={"Content-Type": "application/json"})
     
@@ -54,7 +54,7 @@ def AddUserAchiv(achiv: UserAchievement):
 
 def GetAchievement(achId: int):
     responce:requests.Response = requests.get(
-        url=f'http://localhost:8080/api/achievement/id/{achId}',
+        url=f'http://{backhost}:{backport}/api/achievement/id/{achId}',
         headers={"Content-Type": "application/json"})
     
     if responce.status_code >= 400:

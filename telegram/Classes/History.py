@@ -96,7 +96,7 @@ class History():
                 setattr(self, attribute, getattr(self, attribute) + value)
                 Updater(attribute, getattr(self, attribute))
         responce:requests.Response = requests.put(
-                url=f'http://localhost:8080/api/history/update',
+                url=f'http://{backhost}:{backport}/api/history/update',
                 json = self.to_json(),
                 headers={"Content-Type": "application/json"})
         return checkAchId
