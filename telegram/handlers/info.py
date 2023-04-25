@@ -162,7 +162,7 @@ async def getHelp(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
     for helpSection in list(helpSections.keys())[1:]:
         keyboard.add(
-            types.InlineKeyboardButton(text=helpSection, callback_data=f'help:{helpSection}')
+            types.InlineKeyboardButton(text=helpSection, callback_data=f'help:{helpSection}_{message.from_user.id}')
         )
     await message.reply_photo(
         caption='<b>Какой раздел Омехалюля вас интересует?</b>',
@@ -172,16 +172,20 @@ async def getHelp(message: types.Message):
     )
 
 async def getHelpSection(call: types.CallbackQuery):
-    section = call.data.replace('help:','')
+    section, userId = call.data.replace('help:','').split('_')
+    userId = int(userId)
+    if call.from_user.id != userId:
+        await call.answer('Это не ваше')
+        return
     keyboard = types.InlineKeyboardMarkup()
     if section == 'Общий':
         for helpSection in list(helpSections.keys())[1:]:
             keyboard.add(
-                types.InlineKeyboardButton(text=helpSection, callback_data=f'help:{helpSection}')
+                types.InlineKeyboardButton(text=helpSection, callback_data=f'help:{helpSection}_{call.from_user.id}')
             )   
     else:
         keyboard.add(
-            types.InlineKeyboardButton(text='Вернуться к выбору раздела', callback_data=f'help:Общий')
+            types.InlineKeyboardButton(text='Вернуться к выбору раздела', callback_data=f'help:Общий_{call.from_user.id}')
         )
     media = types.input_media.InputMediaPhoto(
         media=types.InputFile(ROOT / 'static/info/' / random.choice(os.listdir(ROOT / 'static/info'))), 

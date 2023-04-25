@@ -21,6 +21,7 @@ class TaskState(StatesGroup):
     name = State()
     money = State()
     deadline = State()
+    take = State()
 
 async def taskList(message: types.Message):
 
@@ -254,13 +255,22 @@ async def deleteTask(call: types.CallbackQuery):
     call.data = f'myGivenTaskPage:{task.chatId}_{task.ownerUserId}_0'
     await pageMyGivenTaskList(call)
 
-async def takeTask(message: types.Message):
+async def startTakeTask(message: types.Message):
 
     if not Player.FindPlayer(message.chat.id, message.from_user.id):
         await message.reply('Нужно зарегаться для такого')
         return
+    
+    await TaskState.take.set()
+
+    await message.reply(
+        text='Напишите номер задания, которое хотите взять.',
+    )
+    
+
+async def endTakeTask(message: types.Message):
     worker = Player.GetPlayer(message.chat.id, message.from_user.id)
-    id =  message.text.replace('/task_take','').strip()
+    id =  message.text.strip()
     try:
        id = int(id)
     except:
@@ -478,11 +488,13 @@ async def setTaskDeadline(message: types.Message, state: FSMContext):
     
 async def cancelAddingTask(message: types.Message, state: FSMContext):
     await state.finish()
-    await message.reply('Создание задания отменено')
+    await message.reply('Отменено')
 
 async def remind(chatId: int, userId: int, taskId: int):
     scheduler.remove_job(f'remember_{chatId}_{userId}_{taskId}')
     task = Task.GetTask(taskId)
+    if not task:
+        return
     durationLeft = task.duration / 3
     time = ParseSeconds(durationLeft)
 
@@ -534,6 +546,7 @@ async def punish(chatId: int, userId: int, taskId: int):
     )
 
 def register_handlers_task(dp: Dispatcher):
+    dp.register_message_handler(cancelAddingTask, commands='cancel', state=[TaskState.name, TaskState.money, TaskState.deadline, TaskState.take])
     dp.register_message_handler(taskList, commands='task', state=None)
     dp.register_callback_query_handler(pageTaskList, regexp='^taskPage:*', state=None)
     dp.register_message_handler(myGivenTaskList,commands='task_given', state=None)
@@ -541,13 +554,13 @@ def register_handlers_task(dp: Dispatcher):
     dp.register_callback_query_handler(choiceMyGivenTask, regexp='^taskGivenChoice:*', state=None)
     dp.register_callback_query_handler(acceptTask, regexp='^acceptTask:*', state=None)
     dp.register_callback_query_handler(deleteTask, regexp='^deleteTask:*', state=None)
-    dp.register_message_handler(takeTask, commands='task_take', state=None)
+    dp.register_message_handler(startTakeTask, commands='task_take', state=None)
+    dp.register_message_handler(endTakeTask, state=TaskState.take)
     dp.register_message_handler(myTakenTaskList,commands='task_taken', state=None)
     dp.register_callback_query_handler(pageMyTakenTaskList, regexp='^myTakenTaskPage:*', state=None)
     dp.register_callback_query_handler(choiceMyTakenTask, regexp='^taskTakenChoice:*', state=None)
     dp.register_callback_query_handler(refuseTask, regexp='^refuseTask:*', state=None)
     dp.register_message_handler(startAddTask, commands='task_add', state=None)
-    dp.register_message_handler(cancelAddingTask, commands='task_cancel', state=[TaskState.name, TaskState.money, TaskState.deadline])
     dp.register_message_handler(setTaskName, state=TaskState.name)
     dp.register_message_handler(setTaskMoney, state=TaskState.money)
     dp.register_message_handler(setTaskDeadline, state=TaskState.deadline)
