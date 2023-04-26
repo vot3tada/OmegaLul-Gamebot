@@ -41,15 +41,18 @@ def GetAllTasks() -> list[Task]:
 
     return tasks
 
-def GetFreeTasks() -> list[Task]:
+def GetFreeTasks(chatId: int) -> list[Task]:
     responce:requests.Response = requests.get(
         url=f'http://{backhost}:{backport}/api/task/free',
         headers={"Content-Type": "application/json"})
 
     data: list[dict[str, Any]] = responce.json()
     tasks = [Task(**task) for task in data]
-
-    return tasks
+    tasks2 = []
+    for task in tasks:
+        if task.chatId == chatId:
+            tasks2.append(task)
+    return tasks2
 
 def GetPlayerGivenTasks(chatId: int, userId: int) -> list[Task]:
     responce:requests.Response = requests.get(

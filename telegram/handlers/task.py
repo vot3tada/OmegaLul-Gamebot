@@ -29,7 +29,7 @@ async def taskList(message: types.Message):
         await message.reply('Нужно зарегаться для такого')
         return
     
-    tasks: list[Task.Task] = Task.GetFreeTasks()
+    tasks: list[Task.Task] = Task.GetFreeTasks(message.chat.id)
     replytext = '<b>Список заданий</b>:\n<i>Возьмите задание, выолните и попросите Заказчика зачесть\n</i>'
     keyboard = None
     for task in tasks[:4]:
