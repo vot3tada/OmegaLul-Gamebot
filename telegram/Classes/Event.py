@@ -49,7 +49,7 @@ class Event():
     def to_json(self) -> dict[str, Any]:
         json = {
             "name": self.name,
-            "startedAt": str(self.datetime),
+            "startedAt": str(self.datetime).replace('+03:00',''),
             "chatId": self.chatId,
             "userId": self.userId
         }
